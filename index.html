@@ -129,7 +129,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <textarea id="other">
 </textarea>
 <input id="cc" type="checkbox" hidden>
-<button class="btn" id="previewBtn">Kontrollera filerna</button>
+<button class="btn" id="previewBtn">Kontrollera filerna</button><button class="btn secondary" id="formBack">Tillbaka till kvittona</button>
 </section>
 <section class="screen" id="review">
 <div class="step">Steg 4 av 5 — Slutkontroll av filer</div>
@@ -175,7 +175,7 @@ $('add').onclick=()=>$('file').click();const dropzone=$('dropzone');dropzone.onc
 ;function addFiles(fileList){[...fileList].forEach(f=>{if(f.type==='application/pdf'){photos.push({pdf:true,file:f,done:true,name:fileBaseName(f.name)}
 );render();return}
 if(!f.type.startsWith('image/')){showUploadError('Filtypen för '+f.name+' stöds inte.');return}
-let r=new FileReader;r.onload=v=>{let im=new Image;im.onload=()=>{let scale=Math.min(1,MAX/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);c.getContext('2d').drawImage(im,0,0,c.width,c.height);photos.push({canvas:c,file:f,masks:[],done:false,name:fileBaseName(f.name)}
+let r=new FileReader;r.onload=v=>{let im=new Image;im.onload=()=>{let c=cleanReceiptImage(im);photos.push({canvas:c,file:f,masks:[],done:false,name:fileBaseName(f.name)}
 );render()}
 ;im.onerror=()=>{photos.push({raw:true,file:f,done:true,name:fileBaseName(f.name)}
 );render()}
@@ -184,9 +184,11 @@ let r=new FileReader;r.onload=v=>{let im=new Image;im.onload=()=>{let scale=Math
 )}
 function showUploadError(message){$('uploadError').innerHTML='<div class="error">'+message+'</div>'}
 function fileBaseName(name){return name.replace(/\.[^.]+$/,'').slice(0,200)||'Kvitto'}
-function openReceipt(p){let image=$('lightboxImage'),pdf=$('lightboxPdf');if(p.pdf){image.style.display='none';pdf.style.display='block';pdf.data=URL.createObjectURL(p.file)}else{pdf.style.display='none';pdf.removeAttribute('data');image.style.display='block';image.src=p.canvas?p.canvas.toDataURL('image/jpeg',.92):URL.createObjectURL(p.file);image.alt=p.name||'Kvitto'}$('lightbox').classList.add('active')}
+function cleanReceiptImage(im){let scale=Math.min(1,MAX/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);let x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);let data=x.getImageData(0,0,c.width,c.height),p=data.data,w=c.width,h=c.height,lum=i=>.2126*p[i]+.7152*p[i+1]+.0722*p[i+2],border=0,bc=0,center=0,cc=0,step=Math.max(1,Math.floor(Math.min(w,h)/120));for(let y=0;y<h;y+=step)for(let xx=0;xx<w;xx+=step){let l=lum((y*w+xx)*4);if(xx<w*.08||xx>w*.92||y<h*.08||y>h*.92){border+=l;bc++}else if(xx>w*.3&&xx<w*.7&&y>h*.2&&y<h*.8){center+=l;cc++}}border/=bc;center/=cc;if(center-border<35||center<145)return c;let limit=Math.min(185,border+45),seen=new Uint8Array(w*h),q=[],head=0;for(let xx=0;xx<w;xx++){q.push(xx,(h-1)*w+xx)}for(let y=1;y<h-1;y++){q.push(y*w,y*w+w-1)}while(head<q.length){let n=q[head++];if(seen[n])continue;seen[n]=1;if(lum(n*4)>limit)continue;let xx=n%w,y=Math.floor(n/w);p[n*4]=p[n*4+1]=p[n*4+2]=255;if(xx)q.push(n-1);if(xx<w-1)q.push(n+1);if(y)q.push(n-w);if(y<h-1)q.push(n+w)}x.putImageData(data,0,0);let minX=w,minY=h,maxX=0,maxY=0;for(let y=0;y<h;y+=2)for(let xx=0;xx<w;xx+=2)if(!seen[y*w+xx]){minX=Math.min(minX,xx);maxX=Math.max(maxX,xx);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}if(maxX<=minX||maxY<=minY)return c;let m=Math.round(Math.min(w,h)*.01);minX=Math.max(0,minX-m);minY=Math.max(0,minY-m);maxX=Math.min(w-1,maxX+m);maxY=Math.min(h-1,maxY+m);let out=document.createElement('canvas');out.width=maxX-minX+1;out.height=maxY-minY+1;let ox=out.getContext('2d');ox.fillStyle='#fff';ox.fillRect(0,0,out.width,out.height);ox.drawImage(c,minX,minY,out.width,out.height,0,0,out.width,out.height);return out}
+function pdfPreviewUrl(file){return URL.createObjectURL(file)+'#page=1&zoom=page-width&pagemode=none&toolbar=0&navpanes=0&scrollbar=1&view=FitH'}
+function openReceipt(p){let image=$('lightboxImage'),pdf=$('lightboxPdf');if(p.pdf){image.style.display='none';pdf.style.display='block';pdf.data=pdfPreviewUrl(p.file)}else{pdf.style.display='none';pdf.removeAttribute('data');image.style.display='block';image.src=p.canvas?p.canvas.toDataURL('image/jpeg',.92):URL.createObjectURL(p.file);image.alt=p.name||'Kvitto'}$('lightbox').classList.add('active')}
 function closeLightbox(){$('lightbox').classList.remove('active');$('lightboxImage').removeAttribute('src');$('lightboxPdf').removeAttribute('data')}
-function renderReview(){$('reviewFiles').innerHTML='';photos.forEach((p,i)=>{let card=document.createElement('article');card.className='review-file';let heading=document.createElement('h2');heading.textContent=(p.name||('Kvitto '+(i+1)))+(p.amount?' — '+Number(p.amount).toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr':'');card.append(heading);if(p.pdf){let obj=document.createElement('object');obj.type='application/pdf';obj.data=URL.createObjectURL(p.file);obj.innerHTML='<p>PDF-filen kan inte visas i webbläsaren, men öppnas inte i en ny flik.</p>';card.append(obj)}
+function renderReview(){$('reviewFiles').innerHTML='';photos.forEach((p,i)=>{let card=document.createElement('article');card.className='review-file';let heading=document.createElement('h2');heading.textContent=(p.name||('Kvitto '+(i+1)))+(p.amount?' — '+Number(p.amount).toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr':'');card.append(heading);if(p.pdf){let obj=document.createElement('object');obj.type='application/pdf';obj.data=pdfPreviewUrl(p.file);obj.innerHTML='<p>PDF-filen kan inte visas i webbläsaren, men öppnas inte i en ny flik.</p>';card.append(obj)}
 else{let im=new Image;im.alt=p.name||('Kvitto '+(i+1));im.src=p.canvas?p.canvas.toDataURL('image/jpeg',.92):URL.createObjectURL(p.file);card.append(im)}
 $('reviewFiles').append(card)}
 )}
@@ -214,7 +216,7 @@ cv.onmousedown=down;cv.onmousemove=move;window.onmouseup=up;cv.ontouchstart=down
 ;$('clear').onclick=()=>{photos[idx].masks=[];draw()}
 ;$('next').onclick=()=>{let p=photos[idx],c=p.canvas.getContext('2d');c.fillStyle='#000';p.masks.forEach(m=>c.fillRect(m.x,m.y,m.w,m.h));p.done=true;let n=photos.findIndex((x,i)=>i>idx&&!x.pdf&&!x.done);if(n>=0){idx=n;load()}
 else show('form')}
-;$('previewBtn').onclick=()=>{let name=$('name').value.trim(),email=$('email').value.trim();$('formError').innerHTML='';if(!name)return $('formError').innerHTML='<div class="error">Fyll i ditt namn.</div>';if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return $('formError').innerHTML='<div class="error">E-postadressen ser inte korrekt ut.</div>';$('previewThumbs').innerHTML='';photos.forEach(p=>{let d=document.createElement('div');d.className='thumb';if(p.pdf)d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">📄</div>';else if(p.canvas){let im=new Image;im.src=p.canvas.toDataURL('image/jpeg',.8);d.append(im)}
+;$('formBack').onclick=()=>show('upload');$('previewBtn').onclick=()=>{let name=$('name').value.trim(),email=$('email').value.trim();$('formError').innerHTML='';if(!name)return $('formError').innerHTML='<div class="error">Fyll i ditt namn.</div>';if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return $('formError').innerHTML='<div class="error">E-postadressen ser inte korrekt ut.</div>';$('previewThumbs').innerHTML='';photos.forEach(p=>{let d=document.createElement('div');d.className='thumb';if(p.pdf)d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">📄</div>';else if(p.canvas){let im=new Image;im.src=p.canvas.toDataURL('image/jpeg',.8);d.append(im)}
 else d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">🖼️</div>';d.style.cursor='pointer';d.onclick=()=>openReceipt(p);d.title=p.name||'Kvitto';$('previewThumbs').append(d)}
 );$('summary').innerHTML=`<div class="row">
 <span>Namn</span>
