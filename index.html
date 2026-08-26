@@ -96,14 +96,15 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 </section>
 <section class="screen" id="mask">
 <div class="step">Steg 2 av 5 — Dölj känsliga uppgifter</div>
-<h1>Täck över det som inte ska synas</h1>
-<p class="subtitle">Kontrollera bilden. Dölj bara sådant som inte ska följa med.</p>
-<div class="info"><strong>Gör så här:</strong><br>Dra fingret över exempelvis personnummer, kontonummer eller kortnummer.<br><br>Om inget behöver döljas kan du gå vidare direkt.</div>
-<div class="canvaswrap">
+<h1 id="maskTitle">Täck över det som inte ska synas</h1>
+<p class="subtitle" id="maskSubtitle">Kontrollera bilden. Dölj bara sådant som inte ska följa med.</p>
+<div class="info" id="maskInstructions"><strong>Gör så här:</strong><br>Dra fingret över exempelvis personnummer, kontonummer eller kortnummer.<br><br>Om inget behöver döljas kan du gå vidare direkt.</div>
+<div id="pdfMaskReview" hidden></div>
+<div class="canvaswrap" id="maskCanvasWrap">
 <canvas id="canvas">
 </canvas>
 </div>
-<div class="toolbar">
+<div class="toolbar" id="maskToolbar">
 <button id="undo">↩ Ta bort senaste markeringen</button>
 <button id="clear">Ta bort alla markeringar</button>
 </div>
@@ -164,9 +165,9 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <button class="lightbox-close" id="lightboxClose" aria-label="Stäng förhandsvisning">✕</button>
 <img id="lightboxImage" alt="Förhandsvisning av kvitto"><div id="lightboxPdf" class="pdf-preview"></div>
 </div>
-<script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));maxReached=Math.max(maxReached,n);document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'');x.disabled=i>maxReached||(i===1&&!photos.some(p=>!p.pdf&&!p.raw));x.setAttribute('aria-current',i===n?'step':'false')}
+<script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));maxReached=Math.max(maxReached,n);document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'');x.disabled=i>maxReached;x.setAttribute('aria-current',i===n?'step':'false')}
 );scrollTo(0,0)}
-function goToStep(n){if(n>maxReached)return;if(n===0)return show('upload');if(n===1){let first=photos.findIndex(p=>!p.pdf&&!p.raw);if(first<0)return;idx=first;show('mask');load();return}if(n===3)renderReview();show(screens[n])}
+function goToStep(n){if(n>maxReached)return;if(n===0)return show('upload');if(n===1){idx=photos.findIndex(p=>!p.pdf&&!p.raw);show('mask');if(idx<0)showPdfReview();else{showImageMask();load()}return}if(n===3)renderReview();show(screens[n])}
 document.querySelectorAll('.seg').forEach(button=>button.onclick=()=>goToStep(Number(button.dataset.step)));
 $('restart').onclick=()=>{if(confirm('Det du har lagt in tas bort. Vill du avbryta och börja om?'))location.reload()};
 $('add').onclick=()=>$('file').click();const dropzone=$('dropzone');dropzone.onclick=()=>$('file').click();dropzone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click()}
@@ -203,8 +204,10 @@ else d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-s
 ;d.append(b);let input=document.createElement('input');input.className='receipt-name';input.value=p.name||('Kvitto '+(i+1));input.maxLength=200;input.placeholder='Vad gäller kvittot?';input.setAttribute('aria-label','Vad kvitto '+(i+1)+' gäller');input.oninput=e=>{p.name=e.target.value}
 ;let amountWrap=document.createElement('div');amountWrap.className='receipt-amount-wrap';let amountInput=document.createElement('input');amountInput.className='receipt-amount';amountInput.type='number';amountInput.min='0';amountInput.step='0.01';amountInput.placeholder='Belopp';amountInput.value=p.amount||'';amountInput.setAttribute('aria-label','Belopp för kvitto '+(i+1));amountInput.oninput=e=>{p.amount=e.target.value};amountWrap.append(amountInput,document.createTextNode('kr'));let hint=document.createElement('div');hint.className='receipt-hint';hint.textContent='Klicka för att förhandsgranska';item.append(d,input,amountWrap,hint);$('thumbs').append(item)}
 );$('continue').disabled=!photos.length||processing>0}
-$('continue').onclick=()=>{idx=photos.findIndex(p=>!p.pdf&&!p.done);if(idx<0)return show('form');show('mask');load()}
-;let cv=$('canvas'),ctx=cv.getContext('2d');function load(){let p=photos[idx];cv.width=p.canvas.width;cv.height=p.canvas.height;draw()}
+$('continue').onclick=()=>{idx=photos.findIndex(p=>!p.pdf&&!p.done);show('mask');if(idx<0)showPdfReview();else{showImageMask();load()}}
+;function showPdfReview(){$('maskTitle').textContent='Kontrollera PDF-filerna';$('maskSubtitle').textContent='Öppna varje PDF och kontrollera att rätt dokument har lagts till.';$('maskInstructions').innerHTML='<strong>PDF-filer kan inte täckas över här.</strong><br>Om något känsligt syns behöver du ta bort filen och redigera den innan du laddar upp den igen.';$('maskCanvasWrap').hidden=true;$('maskToolbar').hidden=true;$('pdfMaskReview').hidden=false;$('pdfMaskReview').innerHTML='';photos.filter(p=>p.pdf).forEach((p,i)=>{let b=document.createElement('button');b.className='pdf-open';b.textContent='📄 Förhandsgranska '+(p.name||('PDF '+(i+1)));b.onclick=()=>openReceipt(p);$('pdfMaskReview').append(b)});$('next').textContent='PDF-filerna är kontrollerade – gå vidare'}
+function showImageMask(){$('maskTitle').textContent='Täck över det som inte ska synas';$('maskSubtitle').textContent='Kontrollera bilden. Dölj bara sådant som inte ska följa med.';$('maskInstructions').innerHTML='<strong>Gör så här:</strong><br>Dra fingret över exempelvis personnummer, kontonummer eller kortnummer.<br><br>Om inget behöver döljas kan du gå vidare direkt.';$('maskCanvasWrap').hidden=false;$('maskToolbar').hidden=false;$('pdfMaskReview').hidden=true;$('next').textContent='Klar – gå vidare'}
+let cv=$('canvas'),ctx=cv.getContext('2d');function load(){let p=photos[idx];cv.width=p.canvas.width;cv.height=p.canvas.height;draw()}
 function draw(){let p=photos[idx];ctx.drawImage(p.canvas,0,0);ctx.fillStyle='#000';p.masks.forEach(m=>ctx.fillRect(m.x,m.y,m.w,m.h));if(current){ctx.fillStyle='#000a';ctx.fillRect(current.x,current.y,current.w,current.h)}
 }
 function pos(e){let r=cv.getBoundingClientRect(),t=e.touches?.[0]||e;return{x:(t.clientX-r.left)*cv.width/r.width,y:(t.clientY-r.top)*cv.height/r.height}
@@ -216,7 +219,7 @@ function move(e){if(!drawing)return;e.preventDefault();let p=pos(e);current={x:M
 function up(){if(!drawing)return;drawing=false;if(current.w>4&&current.h>4)photos[idx].masks.push(current);current=null;draw()}
 cv.onmousedown=down;cv.onmousemove=move;window.onmouseup=up;cv.ontouchstart=down;cv.ontouchmove=move;cv.ontouchend=up;$('undo').onclick=()=>{photos[idx].masks.pop();draw()}
 ;$('clear').onclick=()=>{photos[idx].masks=[];draw()}
-;$('next').onclick=()=>{let p=photos[idx],c=p.canvas.getContext('2d');c.fillStyle='#000';p.masks.forEach(m=>c.fillRect(m.x,m.y,m.w,m.h));p.done=true;let n=photos.findIndex((x,i)=>i>idx&&!x.pdf&&!x.done);if(n>=0){idx=n;load()}
+;$('next').onclick=()=>{if(idx<0)return show('form');let p=photos[idx],c=p.canvas.getContext('2d');c.fillStyle='#000';p.masks.forEach(m=>c.fillRect(m.x,m.y,m.w,m.h));p.done=true;let n=photos.findIndex((x,i)=>i>idx&&!x.pdf&&!x.done);if(n>=0){idx=n;load()}
 else show('form')}
 ;$('formBack').onclick=()=>show('upload');$('previewBtn').onclick=()=>{let name=$('name').value.trim(),email=$('email').value.trim();$('formError').innerHTML='';if(!name)return $('formError').innerHTML='<div class="error">Fyll i ditt namn.</div>';if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return $('formError').innerHTML='<div class="error">E-postadressen ser inte korrekt ut.</div>';$('previewThumbs').innerHTML='';photos.forEach(p=>{let d=document.createElement('div');d.className='thumb';if(p.pdf)d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">📄</div>';else if(p.canvas){let im=new Image;im.src=p.canvas.toDataURL('image/jpeg',.8);d.append(im)}
 else d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">🖼️</div>';d.style.cursor='pointer';d.onclick=()=>openReceipt(p);d.title=p.name||'Kvitto';$('previewThumbs').append(d)}
