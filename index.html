@@ -12,10 +12,10 @@ body{max-width:640px;margin:auto;padding:20px 16px 40px}
 .header{position:sticky;top:0;background:var(--paper);padding:10px 0 12px;text-align:center;border-bottom:1px solid var(--line);z-index:5}
 .logo{display:block;width:54px;height:54px;object-fit:contain;margin:auto}
 .restart{position:absolute;right:0;top:16px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);padding:9px 11px;font:inherit;font-size:.82rem;font-weight:700}.header{position:sticky}.restart:focus-visible,.btn:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #1a6fd9;outline-offset:2px}
-.timeline{display:flex;gap:6px;max-width:320px;margin:8px auto 0}
-.seg{height:4px;background:var(--line);flex:1;border-radius:3px}
-.seg.active,.seg.done{background:var(--action)}
-.seg.done{opacity:.55}
+.timeline{display:flex;gap:6px;max-width:480px;margin:10px auto 0}
+.seg{min-width:0;height:34px;padding:0 3px;border:0;border-top:4px solid var(--line);background:transparent;color:var(--muted);flex:1;font:inherit;font-size:.74rem;font-weight:700;white-space:nowrap}
+.seg.active,.seg.done{border-top-color:var(--action);color:var(--action)}
+.seg.done{cursor:pointer}.seg.active{background:#eef5f0;border-radius:0 0 7px 7px}.seg:disabled{cursor:not-allowed;opacity:.6}
 .screen{display:none}
 .screen.active{display:block}
 .step{color:var(--action);font-size:.85rem;font-weight:700;text-transform:uppercase;margin-top:18px}
@@ -64,17 +64,12 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <header class="header">
 <img class="logo" src="idv-mark.png" alt="Idrottsveteranerna">
 <button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>
-<div class="timeline">
-<i class="seg active">
-</i>
-<i class="seg">
-</i>
-<i class="seg">
-</i>
-<i class="seg">
-</i>
-<i class="seg">
-</i>
+<div class="timeline" aria-label="Steg i formuläret">
+<button class="seg active" type="button" data-step="0">Steg 1</button>
+<button class="seg" type="button" data-step="1" disabled>Steg 2</button>
+<button class="seg" type="button" data-step="2" disabled>Steg 3</button>
+<button class="seg" type="button" data-step="3" disabled>Steg 4</button>
+<button class="seg" type="button" data-step="4" disabled>Steg 5</button>
 </div>
 </header>
 <main>
@@ -169,8 +164,10 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <button class="lightbox-close" id="lightboxClose" aria-label="Stäng förhandsvisning">✕</button>
 <img id="lightboxImage" alt="Förhandsvisning av kvitto"><div id="lightboxPdf" class="pdf-preview"></div>
 </div>
-<script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0;const screens=['upload','mask','form','review','preview'];function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'')}
+<script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));maxReached=Math.max(maxReached,n);document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'');x.disabled=i>maxReached||(i===1&&!photos.some(p=>!p.pdf&&!p.raw));x.setAttribute('aria-current',i===n?'step':'false')}
 );scrollTo(0,0)}
+function goToStep(n){if(n>maxReached)return;if(n===0)return show('upload');if(n===1){let first=photos.findIndex(p=>!p.pdf&&!p.raw);if(first<0)return;idx=first;show('mask');load();return}if(n===3)renderReview();show(screens[n])}
+document.querySelectorAll('.seg').forEach(button=>button.onclick=()=>goToStep(Number(button.dataset.step)));
 $('restart').onclick=()=>{if(confirm('Det du har lagt in tas bort. Vill du avbryta och börja om?'))location.reload()};
 $('add').onclick=()=>$('file').click();const dropzone=$('dropzone');dropzone.onclick=()=>$('file').click();dropzone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click()}
 }
