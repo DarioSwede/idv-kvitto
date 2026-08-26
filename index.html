@@ -11,6 +11,7 @@ html,body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-s
 body{max-width:640px;margin:auto;padding:20px 16px 40px}
 .header{position:sticky;top:0;background:var(--paper);padding:10px 0 12px;text-align:center;border-bottom:1px solid var(--line);z-index:5}
 .logo{display:block;width:54px;height:54px;object-fit:contain;margin:auto}
+.restart{position:absolute;right:0;top:16px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);padding:9px 11px;font:inherit;font-size:.82rem;font-weight:700}.header{position:sticky}.restart:focus-visible,.btn:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #1a6fd9;outline-offset:2px}
 .timeline{display:flex;gap:6px;max-width:320px;margin:8px auto 0}
 .seg{height:4px;background:var(--line);flex:1;border-radius:3px}
 .seg.active,.seg.done{background:var(--action)}
@@ -62,6 +63,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <body>
 <header class="header">
 <img class="logo" src="idv-mark.png" alt="Idrottsveteranerna">
+<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>
 <div class="timeline">
 <i class="seg active">
 </i>
@@ -79,11 +81,11 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <section class="screen active" id="upload">
 <div class="step">Steg 1 av 5 — Ladda upp kvitton</div>
 <h1>Lägg till dina kvitton</h1>
-<p class="subtitle">Ta ett foto, välj en eller flera filer eller dra kvittofiler från datorn. Du kan lägga till flera kvitton.</p>
+<p class="subtitle">Börja med att lägga till ett eller flera kvitton.</p>
 <p class="subtitle">
 <strong>Godkända format:</strong> PDF, JPG/JPEG, PNG, HEIC/HEIF, WebP och AVIF. Högst 10 MB per fil.</p>
-<div class="info">Så här går det till:<br>1. Ta ett foto, välj filer eller dra och släpp kvitton från datorn<br>2. Måla över eventuella personuppgifter, t.ex. kontonummer<br>3. Ange vad varje kvitto gäller och belopp<br>4. Fyll i dina uppgifter<br>5. Förhandsgranska och skicka in</div>
-<div id="uploadError">
+<div class="info"><strong>Du får hjälp steg för steg.</strong><br><br>1. Lägg till kvittona.<br>2. Dölj känsliga uppgifter.<br>3. Fyll i namn och belopp.<br>4. Kontrollera kvittona.<br>5. Skicka in.</div>
+<div id="uploadError" aria-live="polite">
 </div>
 <div class="thumbs" id="thumbs">
 </div>
@@ -94,29 +96,29 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 </div>
 <div class="bar">
 <button class="btn" id="add">📷 Ta foto eller välj filer</button>
-<button class="btn secondary" id="continue" disabled>Fortsätt</button>
+<button class="btn secondary" id="continue" disabled>Nästa: dölj känsliga uppgifter</button>
 </div>
 </section>
 <section class="screen" id="mask">
 <div class="step">Steg 2 av 5 — Dölj känsliga uppgifter</div>
 <h1>Täck över det som inte ska synas</h1>
-<p class="subtitle">Dra fingret över personnummer, kontonummer eller kortnummer.</p>
-<div class="info">✋ Dra fingret över texten du vill dölja.</div>
+<p class="subtitle">Kontrollera bilden. Dölj bara sådant som inte ska följa med.</p>
+<div class="info"><strong>Gör så här:</strong><br>Dra fingret över exempelvis personnummer, kontonummer eller kortnummer.<br><br>Om inget behöver döljas kan du gå vidare direkt.</div>
 <div class="canvaswrap">
 <canvas id="canvas">
 </canvas>
 </div>
 <div class="toolbar">
-<button id="undo">↩ Ångra senaste</button>
-<button id="clear">Rensa allt</button>
+<button id="undo">↩ Ta bort senaste markeringen</button>
+<button id="clear">Ta bort alla markeringar</button>
 </div>
-<button class="btn" id="next">Klar med den här bilden</button>
+<button class="btn" id="next">Klar – gå vidare</button>
 </section>
 <section class="screen" id="form">
 <div class="step">Steg 3 av 5 — Fyll i uppgifter</div>
 <h1>Vem gäller kvittot?</h1>
-<p class="subtitle">Fyll i det du vet. Bara namn och e-post är obligatoriskt.</p>
-<div id="formError">
+<p class="subtitle">Fyll i vem som skickar in kvittona. Fält med stjärna (*) måste fyllas i.</p>
+<div id="formError" aria-live="polite">
 </div>
 <label>Ditt namn *</label>
 <input id="name" autocomplete="name">
@@ -124,34 +126,36 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <input id="email" type="email" autocomplete="email">
 <label>Vilket tillfälle gäller det? (valfritt)</label>
 <input id="event" placeholder="T.ex. Fyradagarsmarschen 2026">
-<div class="info">Namn och belopp anges vid respektive kvitto i steg 1.</div>
+<div class="info"><strong>Saknas ett kvittonamn eller belopp?</strong><br>Tryck på ”Tillbaka till kvittona” längst ned. Det du redan har fyllt i finns kvar.</div>
 <label>Övrig information (valfritt)</label>
 <textarea id="other">
 </textarea>
 <input id="cc" type="checkbox" hidden>
-<button class="btn" id="previewBtn">Kontrollera filerna</button><button class="btn secondary" id="formBack">Tillbaka till kvittona</button>
+<button class="btn" id="previewBtn">Nästa: kontrollera kvittona</button><button class="btn secondary" id="formBack">Tillbaka till kvittona</button>
 </section>
 <section class="screen" id="review">
 <div class="step">Steg 4 av 5 — Slutkontroll av filer</div>
 <h1>Kontrollera varje kvitto en sista gång</h1>
-<p class="subtitle">Granska att rätt fil är uppladdad och att känsliga uppgifter är dolda innan du går vidare.</p>
+<p class="subtitle">Öppna varje PDF och bild. Kontrollera att det är rätt kvitto och att känsliga uppgifter är dolda.</p>
+<div class="info">När alla kvitton ser rätt ut, tryck på den gröna knappen.</div>
 <div id="reviewFiles">
 </div>
-<button class="btn" id="reviewNext">Filerna ser rätt ut</button>
+<button class="btn" id="reviewNext">Ja, kvittona ser rätt ut</button>
 <button class="btn secondary" id="reviewEdit">Tillbaka och ändra</button>
 </section>
 <section class="screen" id="preview">
 <div class="step">Steg 5 av 5 — Kontrollera och skicka</div>
 <h1>Stämmer allt?</h1>
+<div class="info">1. Kontrollera sammanställningen.<br>2. Kryssa i rutan.<br>3. Tryck på ”Skicka in kvitton”.</div>
 <div class="thumbs" id="previewThumbs">
 </div>
 <div class="card" id="summary">
 </div>
 <label>
-<input id="confirm" type="checkbox" style="width:auto"> Jag har kontrollerat att uppgifterna stämmer och att inget känsligt syns på bilderna.</label>
-<div id="sendError">
+<input id="confirm" type="checkbox" style="width:auto"> Ja, uppgifterna stämmer och kvittona är klara att skickas.</label>
+<div id="sendError" aria-live="polite">
 </div>
-<button class="btn" id="send" disabled>Skicka in kvitto</button>
+<button class="btn" id="send" disabled>Skicka in kvitton</button>
 <button class="btn secondary" id="back">Tillbaka och ändra</button>
 </section>
 <section class="screen" id="done">
@@ -167,6 +171,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 </div>
 <script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0;const screens=['upload','mask','form','review','preview'];function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'')}
 );scrollTo(0,0)}
+$('restart').onclick=()=>{if(confirm('Det du har lagt in tas bort. Vill du avbryta och börja om?'))location.reload()};
 $('add').onclick=()=>$('file').click();const dropzone=$('dropzone');dropzone.onclick=()=>$('file').click();dropzone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click()}
 }
 ;['dragenter','dragover'].forEach(type=>dropzone.addEventListener(type,e=>{e.preventDefault();dropzone.classList.add('dragover')}
@@ -248,7 +253,7 @@ catch{j={}
 }
 if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));$('doneText').textContent='Kvittot och den färdiga PDF-filen har sparats säkert.';show('done')}
 catch(e){$('sendError').innerHTML=`<div class="error">${e.message}
-</div>`;$('send').disabled=false;$('send').textContent='Skicka in kvitto'}
+</div>`;$('send').disabled=false;$('send').textContent='Skicka in kvitton'}
 }
 }
 )();</script>
