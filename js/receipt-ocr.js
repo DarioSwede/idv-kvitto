@@ -42,21 +42,6 @@ export function findTotalAmount(text){
   return candidates[0]?.amount??null;
 }
 
-export function findReceiptName(text){
-  const blocked=/\b(kvitto|receipt|org\.?nr|moms|datum|date|total|summa|att betala|belopp|kort|terminal|butik|kund)\b/i;
-  const lines=String(text||'').split(/\r?\n/).map(line=>line.replace(/[^\p{L}\p{N}&'. -]/gu,' ').replace(/\s+/g,' ').trim()).filter(Boolean);
-  const candidates=lines.slice(0,10).filter(line=>{
-    const letters=(line.match(/\p{L}/gu)||[]).length;
-    const digits=(line.match(/\d/g)||[]).length;
-    return letters>=3&&digits<=letters&&!blocked.test(line)&&line.length<=60;
-  });
-  candidates.sort((a,b)=>{
-    const score=line=>((line===line.toUpperCase())?4:0)+Math.min((line.match(/\p{L}/gu)||[]).length,20)/20;
-    return score(b)-score(a);
-  });
-  return candidates[0]||null;
-}
-
 function loadTesseract(){
   if(window.Tesseract)return Promise.resolve(window.Tesseract);
   return new Promise((resolve,reject)=>{
@@ -76,13 +61,13 @@ async function getWorker(logger){
 }
 
 async function processReceipt(detail){
-  const {canvas,getAmount,getName,setSuggestion,setNameSuggestion,setOcrState}=detail;
+  const {canvas,getAmount,setSuggestion,setOcrState}=detail;
   if(!canvas||typeof getAmount!=='function'||typeof setSuggestion!=='function')return;
-  if(getAmount()&&getName?.()){
+  if(getAmount()){
     setOcrState?.('manual');
     return;
   }
-  setOcrState?.('working','OCR läser namn och belopp lokalt …');
+  setOcrState?.('working','OCR läser totalbelopp lokalt …');
   try{
     const worker=await getWorker(message=>{
       if(message.status==='recognizing text'&&Number.isFinite(message.progress)){
@@ -91,17 +76,11 @@ async function processReceipt(detail){
     });
     const {data}=await worker.recognize(canvas);
     const amount=findTotalAmount(data.text);
-    const name=findReceiptName(data.text);
     const amountApplied=amount!==null&&!getAmount();
-    const nameApplied=!!name&&!getName?.();
     if(amountApplied){
       setSuggestion(amount.toFixed(2));
     }
-    if(nameApplied)setNameSuggestion?.(name);
-    const found=[];
-    if(nameApplied)found.push('namn');
-    if(amountApplied)found.push('belopp');
-    setOcrState?.(found.length?'suggested':'none',found.length?'OCR-förslag – kontrollera namn och belopp':'OCR hittade inga säkra förslag – fyll i själv');
+    setOcrState?.(amountApplied?'suggested':'none',amountApplied?'OCR-förslag – kontrollera beloppet':'OCR hittade inget säkert belopp – fyll i själv');
   }catch(error){
     console.warn('OCR misslyckades utan att blockera formuläret:',error);
     setOcrState?.('error','OCR kunde inte läsa kvittot – fyll i själv');
