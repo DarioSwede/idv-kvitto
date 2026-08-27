@@ -1,6 +1,24 @@
 const TESSERACT_URL='https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js';
 let workerPromise;
 
+async function recognizeWithTimeout(worker,canvas){
+  let timeout;
+  try{
+    return await Promise.race([
+      worker.recognize(canvas),
+      new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('OCR tog för lång tid.')),45000)})
+    ]);
+  }catch(error){
+    if(error.message==='OCR tog för lång tid.'){
+      await worker.terminate().catch(()=>{});
+      workerPromise=null;
+    }
+    throw error;
+  }finally{
+    clearTimeout(timeout);
+  }
+}
+
 function normalizeAmount(value){
   const cleaned=value.replace(/\s/g,'').replace(/[^\d,.-]/g,'');
   if(!cleaned)return null;
@@ -71,10 +89,11 @@ async function processReceipt(detail){
   try{
     const worker=await getWorker(message=>{
       if(message.status==='recognizing text'&&Number.isFinite(message.progress)){
-        setOcrState?.('working',`OCR läser kvittot … ${Math.round(message.progress*100)} %`);
+        const progress=Math.round(message.progress*100);
+        setOcrState?.('working',progress>=100?'OCR slutför avläsningen …':`OCR läser kvittot … ${progress} %`);
       }
     });
-    const {data}=await worker.recognize(canvas);
+    const {data}=await recognizeWithTimeout(worker,canvas);
     const amount=findTotalAmount(data.text);
     const amountApplied=amount!==null&&!getAmount();
     if(amountApplied){
