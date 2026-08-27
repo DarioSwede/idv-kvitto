@@ -73,6 +73,7 @@ async function processReceipt(detail){
   if(!canvas||typeof getAmount!=='function'||typeof setSuggestion!=='function')return;
   if(getAmount()){
     setOcrState?.('manual');
+    setGlobalStatus('Ett belopp är redan ifyllt manuellt. OCR har inte skrivit över det.','done');
     return;
   }
   setOcrState?.('working');
@@ -88,7 +89,8 @@ async function processReceipt(detail){
     if(amount!==null&&!getAmount()){
       setSuggestion(amount.toFixed(2));
       setOcrState?.('suggested');
-      setGlobalStatus('OCR har föreslagit ett totalbelopp. Kontrollera och ändra vid behov.','suggested');
+      const formatted=amount.toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2});
+      setGlobalStatus(`OCR-förslag: ${formatted} kr. Kontrollera beloppet och gå sedan vidare.`,'suggested');
     }else if(getAmount()){
       setOcrState?.('manual');
       setGlobalStatus('Ditt manuella belopp behölls.','done');
@@ -106,6 +108,7 @@ async function processReceipt(detail){
 export function initReceiptOcr(){
   let queue=Promise.resolve();
   document.addEventListener('receipt-ready-for-ocr',event=>{
-    queue=queue.then(()=>processReceipt(event.detail)).catch(()=>{});
+    event.detail.handled=true;
+    queue=queue.then(()=>processReceipt(event.detail)).catch(()=>{}).then(()=>event.detail.complete?.());
   });
 }

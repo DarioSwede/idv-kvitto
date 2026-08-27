@@ -27,11 +27,9 @@ export function applyTemplates(html){
     let mask=html.slice(maskStart,maskEnd)
       .replace('<h1 id="maskTitle">Täck över det som inte ska synas</h1>','<h1 id="maskTitle">Dölj känsliga uppgifter</h1>')
       .replace('<p class="subtitle" id="maskSubtitle">Kontrollera bilden. Dölj bara sådant som inte ska följa med.</p>','<p class="subtitle" id="maskSubtitle">Slå på markering när du vill täcka över något. Stäng av den för att scrolla fritt över sidan och kvittot.</p>')
-      .replace('<div class="info" id="maskInstructions"><strong>Gör så här:</strong><br>Dra fingret över exempelvis personnummer, kontonummer eller kortnummer.<br><br>Om inget behöver döljas kan du gå vidare direkt.</div>','<div class="mask-toggle-card" id="maskToggleCard"><div class="mask-toggle-copy"><strong>Markera för att dölja</strong><span>Dra över t.ex. personnummer, kontonummer eller kortnummer.</span></div><label class="switch" aria-label="Slå på eller stäng av markering"><input type="checkbox" id="maskModeToggle"><span class="switch-track"></span></label></div><div class="mask-status" id="maskModeStatus">Markering av – du kan scrolla fritt.</div><div id="maskInstructions" hidden></div>');
+      .replace('<div class="info" id="maskInstructions"><strong>Gör så här:</strong><br>Dra fingret över exempelvis personnummer, kontonummer eller kortnummer.<br><br>Om inget behöver döljas kan du gå vidare direkt.</div>','<div class="mask-toggle-card" id="maskToggleCard"><div class="mask-toggle-copy"><strong>Markera för att dölja</strong><span>Dra över t.ex. personnummer, kontonummer eller kortnummer.</span></div><label class="switch" aria-label="Slå på eller stäng av markering"><input type="checkbox" id="maskModeToggle"><span class="switch-track"></span></label></div><div class="mask-status" id="maskModeStatus">Markering av – du kan scrolla fritt.</div><div class="ocr-status" id="ocrStatus" role="status" aria-live="polite" hidden></div><div id="maskInstructions" hidden></div>');
     html=html.slice(0,maskStart)+mask+html.slice(maskEnd);
   }
-
-  html=html.replace('<div id="formError" aria-live="polite">\n</div>','<div id="formError" aria-live="polite">\n</div><div class="ocr-status" id="ocrStatus" role="status" aria-live="polite" hidden></div>');
 
   const doneStart=html.indexOf('<section class="screen" id="done">');
   const doneEnd=html.indexOf('</section>',doneStart)+10;
