@@ -5,8 +5,8 @@ async function boot(){
   if(!response.ok)throw new Error('Kunde inte ladda formuläret');
   let html=await response.text();
   html=applyTemplates(html);
-  html=html.replace('</head>','<link rel="stylesheet" href="styles/app.css?v=20260827-1"></head>');
-  html=html.replace('</body>','<script type="module" src="js/app-ui.js?v=20260827-1"><\/script></body>');
+  html=html.replace('</head>','<link rel="stylesheet" href="styles/app.css?v=20260827-2"></head>');
+  html=html.replace('</body>','<script type="module" src="js/app-ui.js?v=20260827-2"><\/script></body>');
   document.open();
   document.write(html);
   document.close();

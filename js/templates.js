@@ -31,6 +31,8 @@ export function applyTemplates(html){
     html=html.slice(0,maskStart)+mask+html.slice(maskEnd);
   }
 
+  html=html.replace('<div id="formError" aria-live="polite">\n</div>','<div id="formError" aria-live="polite">\n</div><div class="ocr-status" id="ocrStatus" role="status" aria-live="polite" hidden></div>');
+
   const doneStart=html.indexOf('<section class="screen" id="done">');
   const doneEnd=html.indexOf('</section>',doneStart)+10;
   if(doneStart>-1){
