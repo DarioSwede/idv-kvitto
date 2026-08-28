@@ -12,6 +12,7 @@ export function initMaskMode(){
       mask.classList.toggle('mask-on',marking);
       mask.classList.toggle('mask-off',!marking);
     }
+    if(canvas)canvas.style.touchAction=marking?'none':'pan-y pinch-zoom';
     if(status)status.textContent=marking?'Markering på – dra över det du vill dölja.':'Markering av – du kan scrolla fritt.';
   }
 
