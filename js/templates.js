@@ -10,10 +10,8 @@ export function applyTemplates(html){
 <p class="subtitle">Lägg till ett eller flera kvitton. På dator kan du dra dem direkt till rutan nedan.</p>
 <div id="uploadError" aria-live="polite"></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
-<input type="file" id="cameraFile" accept="image/*" capture="environment">
-<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Dra och släpp kvittofiler här eller välj filer"><strong>Dra och släpp kvittofiler här</strong><span>eller välj ett av alternativen nedan</span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
-<div class="upload-actions"><button class="btn" id="camera" type="button">📷 Ta foto</button><button class="btn secondary" id="add" type="button">📁 Välj filer</button></div>
-<div class="file-status" id="fileStatus"><span class="count" id="fileCount">0</span><span id="fileStatusText">Inga filer tillagda ännu</span></div>
+<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Dra och släpp kvittofiler här eller välj filer"><strong>Dra och släpp kvittofiler här</strong><span>eller använd knappen nedan</span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
+<div class="upload-actions"><button class="btn" id="add" type="button" style="grid-column:1/-1">📷 Ta foto / välj filer <span id="fileCountBadge" hidden style="display:none;margin-left:.55rem;min-width:1.75rem;height:1.75rem;padding:0 .45rem;border-radius:999px;background:rgba(255,255,255,.22);align-items:center;justify-content:center;font-size:.82rem;vertical-align:middle">0</span></button></div>
 <div id="uploadThumbHome"><div class="thumbs" id="thumbs"></div></div>
 <div class="info steps-help"><strong>Så här går det till</strong><ol><li>Lägg till ett eller flera kvitton.</li><li>Kontrollera miniatyrerna, namn och belopp. Öppna ett kvitto om du behöver inspektera eller maskera uppgifter.</li><li>Fyll i dina uppgifter och övrig information.</li><li>Kontrollera kvittona och sammanställningen.</li><li>Skicka in.</li></ol></div>
 <div class="trust-note">🛡 Dina uppgifter hanteras tryggt och används endast för detta ärende.</div>
