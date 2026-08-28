@@ -6,7 +6,7 @@ async function boot(){
   let html=await response.text();
   html=applyTemplates(html);
   html=html.replace('</head>','<link rel="stylesheet" href="styles/app.css?v=20260828-1"></head>');
-  html=html.replace('</body>','<script type="module" src="js/app-ui.js?v=20260828-2"><\/script></body>');
+  html=html.replace('</body>','<script type="module" src="js/app-ui.js?v=20260828-3"><\/script></body>');
   document.open();
   document.write(html);
   document.close();
