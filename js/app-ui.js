@@ -1,4 +1,4 @@
-import {initUploadUi} from './upload-ui.js?v=20260828-2';
+import {initUploadUi} from './upload-ui.js?v=20260828-3';
 import {initMaskMode} from './mask-mode.js?v=20260828-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260827-8';
