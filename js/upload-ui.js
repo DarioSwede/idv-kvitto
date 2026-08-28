@@ -1,18 +1,40 @@
 export function initUploadUi(){
   const thumbs=document.getElementById('thumbs');
   const badge=document.getElementById('fileCountBadge');
+  const continueBtn=document.getElementById('continue');
+  const restartBtn=document.getElementById('restart');
+  const upload=document.getElementById('upload');
 
   function sync(){
     const n=thumbs?thumbs.children.length:0;
-    if(!badge)return;
-    badge.textContent=String(n);
-    badge.hidden=n===0;
-    badge.style.display=n===0?'none':'inline-flex';
-    badge.setAttribute('aria-label',n===1?'1 fil tillagd':n+' filer tillagda');
+    const hasReceipts=n>0;
+    const onFirstStep=!!upload?.classList.contains('active');
+
+    if(badge){
+      badge.textContent=String(n);
+      badge.hidden=!hasReceipts;
+      badge.style.display=hasReceipts?'inline-flex':'none';
+      badge.setAttribute('aria-label',n===1?'1 fil tillagd':n+' filer tillagda');
+    }
+
+    if(continueBtn){
+      continueBtn.disabled=!hasReceipts;
+      continueBtn.hidden=!hasReceipts;
+      continueBtn.style.display=hasReceipts?'':'none';
+    }
+
+    if(restartBtn){
+      const hideRestart=onFirstStep&&!hasReceipts;
+      restartBtn.hidden=hideRestart;
+      restartBtn.style.display=hideRestart?'none':'';
+    }
   }
 
   if(thumbs){
     new MutationObserver(sync).observe(thumbs,{childList:true});
-    sync();
   }
+  if(upload){
+    new MutationObserver(sync).observe(upload,{attributes:true,attributeFilter:['class']});
+  }
+  sync();
 }
