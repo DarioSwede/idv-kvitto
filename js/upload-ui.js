@@ -1,6 +1,9 @@
 export function initUploadUi(){
   const thumbs=document.getElementById('thumbs');
   const badge=document.getElementById('fileCountBadge');
+  const addLabel=document.getElementById('addLabel');
+  const listTitle=document.getElementById('receiptListTitle');
+  const listHelp=document.getElementById('receiptListHelp');
   const continueBtn=document.getElementById('continue');
   const restartBtn=document.getElementById('restart');
   const upload=document.getElementById('upload');
@@ -16,6 +19,10 @@ export function initUploadUi(){
       badge.style.display=hasReceipts?'inline-flex':'none';
       badge.setAttribute('aria-label',n===1?'1 fil tillagd':n+' filer tillagda');
     }
+
+    if(addLabel)addLabel.textContent=hasReceipts?'＋ Lägg till fler kvitton':'📷 Ta foto / välj filer';
+    if(listTitle)listTitle.hidden=!hasReceipts;
+    if(listHelp)listHelp.hidden=!hasReceipts;
 
     if(continueBtn){
       continueBtn.disabled=!hasReceipts;

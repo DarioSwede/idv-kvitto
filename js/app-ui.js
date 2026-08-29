@@ -1,4 +1,4 @@
-import {initUploadUi} from './upload-ui.js?v=20260828-3';
+import {initUploadUi} from './upload-ui.js?v=20260829-2';
 import {initMaskMode} from './mask-mode.js?v=20260828-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260829-1';
@@ -7,18 +7,15 @@ initUploadUi();
 initMaskMode();
 initDonePage();
 initReceiptOcr();
-initStep2Manager();
+initReceiptManager();
 
-function initStep2Manager(){
+function initReceiptManager(){
   const state=window.__idvReceiptState;
   if(!state)return;
 
   const upload=document.getElementById('upload');
-  const mask=document.getElementById('mask');
   const thumbs=document.getElementById('thumbs');
-  const maskList=document.getElementById('maskReceiptList');
   const continueBtn=document.getElementById('continue');
-  const nextBtn=document.getElementById('next');
   const lightbox=document.getElementById('lightbox');
   const closeBtn=document.getElementById('lightboxClose');
   const image=document.getElementById('lightboxImage');
@@ -30,7 +27,9 @@ function initStep2Manager(){
   const toolbarHost=document.getElementById('inspectorToolbarHost');
   const inspectorTools=document.getElementById('inspectorTools');
   const toggle=document.getElementById('maskModeToggle');
-  const step2Tab=document.querySelector('.seg[data-step="1"]');
+  const previewBtn=document.getElementById('previewBtn');
+  const backBtn=document.getElementById('back');
+  const reviewNext=document.getElementById('reviewNext');
 
   let inspectingImage=false;
 
@@ -38,25 +37,6 @@ function initStep2Manager(){
     if(!toggle)return;
     toggle.checked=!!on;
     toggle.dispatchEvent(new Event('change',{bubbles:true}));
-  }
-
-  function moveThumbsToStep2(){
-    if(thumbs&&maskList&&thumbs.parentElement!==maskList)maskList.appendChild(thumbs);
-  }
-
-  function showManager(){
-    state.show('mask');
-    moveThumbsToStep2();
-    if(canvasWrap&&editorStorage&&canvasWrap.parentElement!==editorStorage)editorStorage.appendChild(canvasWrap);
-    if(toolbar&&editorStorage&&toolbar.parentElement!==editorStorage)editorStorage.appendChild(toolbar);
-    if(inspectorTools)inspectorTools.hidden=true;
-    closeInspector(false);
-    wireThumbnails();
-    if(nextBtn){
-      nextBtn.textContent='Klar – gå vidare';
-      nextBtn.disabled=state.photos.length===0;
-    }
-    window.scrollTo(0,0);
   }
 
   function applyMasks(){
@@ -83,7 +63,7 @@ function initStep2Manager(){
     if(pdf){pdf.style.display='none';pdf.innerHTML=''}
     wireThumbnails();
     if(focusBack){
-      const active=document.querySelector('#maskReceiptList .thumb[data-inspected="true"]');
+      const active=document.querySelector('#uploadThumbHome .thumb[data-inspected="true"]');
       if(active)active.focus();
     }
   }
@@ -91,11 +71,10 @@ function initStep2Manager(){
   function inspectImage(index,thumb){
     const p=state.photos[index];
     if(!p||!p.canvas)return;
-    document.querySelectorAll('#maskReceiptList .thumb').forEach(el=>el.removeAttribute('data-inspected'));
+    document.querySelectorAll('#uploadThumbHome .thumb').forEach(el=>el.removeAttribute('data-inspected'));
     if(thumb)thumb.dataset.inspected='true';
     state.idx=index;
     state.load();
-    if(nextBtn)nextBtn.textContent='Klar – gå vidare';
     inspectingImage=true;
     if(image)image.style.display='none';
     if(pdf){pdf.style.display='none';pdf.innerHTML=''}
@@ -113,7 +92,7 @@ function initStep2Manager(){
   }
 
   function inspectPdf(p,thumb){
-    document.querySelectorAll('#maskReceiptList .thumb').forEach(el=>el.removeAttribute('data-inspected'));
+    document.querySelectorAll('#uploadThumbHome .thumb').forEach(el=>el.removeAttribute('data-inspected'));
     if(thumb)thumb.dataset.inspected='true';
     inspectingImage=false;
     if(inspectorTools)inspectorTools.hidden=true;
@@ -147,17 +126,21 @@ function initStep2Manager(){
     });
   }
 
-  if(continueBtn)continueBtn.onclick=showManager;
-  if(step2Tab)step2Tab.onclick=()=>{
-    if(step2Tab.disabled)return;
-    showManager();
-  };
-  if(nextBtn)nextBtn.onclick=()=>{
+  if(continueBtn)continueBtn.onclick=()=>{
     if(!state.photos.length)return state.show('upload');
     applyMasks();
     state.render();
     state.show('form');
   };
+
+  if(previewBtn){
+    const buildPreview=previewBtn.onclick;
+    previewBtn.onclick=()=>{
+      buildPreview?.();
+      if(document.getElementById('review')?.classList.contains('active'))reviewNext?.click();
+    };
+  }
+  if(backBtn)backBtn.onclick=()=>state.show('form');
 
   if(closeBtn)closeBtn.onclick=()=>closeInspector();
   if(lightbox)lightbox.onclick=e=>{if(e.target===lightbox)closeInspector()};
@@ -165,12 +148,8 @@ function initStep2Manager(){
 
   if(thumbs){
     new MutationObserver(()=>{
-      if(mask?.classList.contains('active')){
-        wireThumbnails();
-        if(nextBtn)nextBtn.disabled=state.photos.length===0;
-      }
+      wireThumbnails();
     }).observe(thumbs,{childList:true,subtree:false});
   }
-
-  if(upload)upload.classList.add('upload-thumbs-hidden');
+  wireThumbnails();
 }
