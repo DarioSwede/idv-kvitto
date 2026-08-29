@@ -35,6 +35,7 @@ h1{font-size:clamp(1.8rem,6vw,2.45rem);line-height:1.06;margin:10px 0 12px}
 .bar #continue{transition:.18s ease}.bar #continue:disabled{background:#fff;color:var(--muted);border:2px solid var(--line)}
 .bar #continue:not(:disabled){background:var(--action);color:white;border-color:var(--action);box-shadow:0 8px 20px rgba(45,106,79,.16)}
 .receipt-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.receipt-actions .btn{margin:0;height:100%}
+.copy-option{display:flex;align-items:flex-start;gap:12px;margin:18px 0;padding:15px 16px;border:1px solid #cfe3d6;border-radius:14px;background:rgba(238,245,240,.82);cursor:pointer}.copy-option input{flex:0 0 auto;width:22px;height:22px;margin:1px 0 0}.copy-option span{min-width:0}.copy-option strong{display:block}.copy-option small{display:block;margin-top:4px;color:var(--muted);font-weight:400;line-height:1.4}.copy-summary b{text-align:right;overflow-wrap:anywhere}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:12px}
 .receipt-item{width:auto;background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:13px;padding:9px}
 .receipt-item .thumb{height:130px}
@@ -47,6 +48,7 @@ h1{font-size:clamp(1.8rem,6vw,2.45rem);line-height:1.06;margin:10px 0 12px}
 .mask-off #canvas{touch-action:auto!important}.mask-on #canvas{touch-action:none!important}.canvaswrap{overscroll-behavior:auto}.mask-status{font-size:.88rem;color:var(--muted);margin:-5px 0 12px}
 .toolbar[hidden]{display:none!important}
 .done-mode .header{display:none!important}.done-mode::before{inset:0;background-position:center 280px;background-size:min(74vw,460px) auto;opacity:.055}.done-panel{padding-top:28px}.done-kicker{color:var(--action);font-weight:800;text-transform:uppercase;letter-spacing:.04em}.done-panel h1{margin-top:8px}.done-message{font-size:1.08rem;line-height:1.55;color:var(--ink)}.payout-note{margin:22px 0;padding:16px;border:1px solid #cfe3d6;border-radius:14px;background:rgba(238,245,240,.82);line-height:1.5}.payout-note strong{display:block;margin-bottom:5px}.done-question{font-weight:800;font-size:1.05rem;margin:26px 0 8px}
+.copy-result{margin:18px 0;padding:14px 16px;border:1px solid #b9d7c5;border-radius:12px;background:#eef5f0;color:#285e47;font-weight:700;line-height:1.45}.copy-result[data-state="warning"]{border-color:#e4cc9a;background:#fff7e8;color:#76531c}
 .review-edit-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px;margin-bottom:14px}.review-edit-grid label{margin:0;font-size:.88rem}.review-edit-grid input{margin-top:5px}.review-amount-wrap{display:flex;align-items:center;gap:6px}.review-amount-wrap input{min-width:0}.review-amount-wrap{font-size:.88rem;color:var(--muted)}
 
 /* Steg 2: miniatyrhantering + inspektionsläge */

@@ -8,6 +8,24 @@ initMaskMode();
 initDonePage();
 initReceiptOcr();
 initReceiptManager();
+initEmailCopy();
+
+async function initEmailCopy(){
+  const checkbox=document.getElementById('cc');
+  const help=document.querySelector('.copy-option small');
+  const api=window.__idvReceiptApi;
+  if(!checkbox||!help||!api)return;
+  checkbox.disabled=true;
+  help.textContent='Kontrollerar om e-postkopian är tillgänglig …';
+  try{
+    const response=await fetch(api.endpoint,{headers:{apikey:api.key,Authorization:'Bearer '+api.key}});
+    const result=await response.json();
+    checkbox.disabled=!result.email_configured;
+    help.textContent=result.email_configured?'Kopian innehåller sammanställningen och den färdiga PDF-filen.':'E-postkopian är inte aktiverad ännu.';
+  }catch{
+    help.textContent='E-postkopian kan inte användas just nu.';
+  }
+}
 
 function initReceiptManager(){
   const state=window.__idvReceiptState;
@@ -137,6 +155,19 @@ function initReceiptManager(){
     const buildPreview=previewBtn.onclick;
     previewBtn.onclick=()=>{
       buildPreview?.();
+      const summary=document.getElementById('summary');
+      const cc=document.getElementById('cc');
+      const email=document.getElementById('email')?.value.trim().toLowerCase();
+      if(summary&&cc){
+        const row=document.createElement('div');
+        row.className='row copy-summary';
+        const label=document.createElement('span');
+        label.textContent='Kopia till dig';
+        const value=document.createElement('b');
+        value.textContent=cc.checked?`Ja – ${email}`:'Nej';
+        row.append(label,value);
+        summary.append(row);
+      }
       if(document.getElementById('review')?.classList.contains('active'))reviewNext?.click();
     };
   }

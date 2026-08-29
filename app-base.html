@@ -165,7 +165,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <button class="lightbox-close" id="lightboxClose" aria-label="Stäng förhandsvisning">✕</button>
 <img id="lightboxImage" alt="Förhandsvisning av kvitto"><div id="lightboxPdf" class="pdf-preview"></div>
 </div>
-<script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));maxReached=Math.max(maxReached,n);document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'');x.disabled=i>maxReached;x.setAttribute('aria-current',i===n?'step':'false')}
+<script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];window.__idvReceiptApi={endpoint:ENDPOINT,key:ANON_KEY};function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));maxReached=Math.max(maxReached,n);document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'');x.disabled=i>maxReached;x.setAttribute('aria-current',i===n?'step':'false')}
 );scrollTo(0,0)}
 function goToStep(n){if(n>maxReached)return;if(n===0)return show('upload');if(n===1){idx=photos.findIndex(p=>!p.pdf&&!p.raw);show('mask');if(idx<0)showPdfReview();else{showImageMask();load()}return}if(n===3)renderReview();show(screens[n])}
 document.querySelectorAll('.seg').forEach(button=>button.onclick=()=>goToStep(Number(button.dataset.step)));
@@ -250,7 +250,7 @@ $('send').disabled=true;$('send').textContent='Skickar …';let res=await fetch(
 }
 catch{j={}
 }
-if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));$('doneText').textContent='Kvittot och den färdiga PDF-filen har sparats säkert.';show('done')}
+if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));let doneText=$('doneText');doneText.textContent=j.copy_requested?(j.copy_sent?'En kopia med sammanställningen och PDF-filen har skickats till din e-postadress.':(j.copy_error||'Kvittona är inskickade, men kopian kunde inte skickas.')):'Kvittot och den färdiga PDF-filen har sparats säkert.';doneText.dataset.state=j.copy_requested&&!j.copy_sent?'warning':'success';show('done')}
 catch(e){$('sendError').innerHTML=`<div class="error">${e.message}
 </div>`;$('send').disabled=false;$('send').textContent='Skicka in kvitton'}
 }

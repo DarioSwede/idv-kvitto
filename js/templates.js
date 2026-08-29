@@ -70,11 +70,12 @@ export function applyTemplates(html){
   html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','<div class="step">Steg 2 av 3 — Dina uppgifter</div>');
   html=html.replace('<div class="step">Steg 5 av 5 — Kontrollera och skicka</div>','<div class="step">Steg 3 av 3 — Kontrollera och skicka</div>');
   html=html.replace('Nästa: kontrollera kvittona','Nästa: kontrollera och skicka');
+  html=html.replace('<input id="cc" type="checkbox" hidden>','<label class="copy-option"><input id="cc" type="checkbox"><span><strong>Skicka en kopia till min e-postadress</strong><small>Kopian innehåller sammanställningen och den färdiga PDF-filen.</small></span></label>');
 
   const doneStart=html.indexOf('<section class="screen" id="done">');
   const doneEnd=html.indexOf('</section>',doneStart)+10;
   if(doneStart>-1){
-    const done=`<section class="screen" id="done"><div class="done-panel"><div class="done-kicker">Idrottsveteranerna</div><h1>Tack! Vi har tagit emot ditt kvitto.</h1><p class="done-message">Tack för att du skickade in ditt underlag till IDV. Ditt kvitto är mottaget och kommer att hanteras vidare enligt vår ersättningsrutin.</p><div class="payout-note"><strong>Om utbetalningen</strong><span>Information om handläggningstid, utbetalningssätt och vilka bankuppgifter som behövs kommer att uppdateras här när IDV:s rutin är fastställd.</span></div><p class="done-question">Vill du skicka in fler kvitton?</p><button class="btn" id="restartDone" type="button">Skicka in ett till kvitto</button><span id="doneText" hidden></span></div></section>`;
+    const done=`<section class="screen" id="done"><div class="done-panel"><div class="done-kicker">Idrottsveteranerna</div><h1>Tack! Vi har tagit emot ditt kvitto.</h1><p class="done-message">Tack för att du skickade in ditt underlag till IDV. Ditt kvitto är mottaget och kommer att hanteras vidare enligt vår ersättningsrutin.</p><p class="copy-result" id="doneText" aria-live="polite"></p><div class="payout-note"><strong>Om utbetalningen</strong><span>Information om handläggningstid, utbetalningssätt och vilka bankuppgifter som behövs kommer att uppdateras här när IDV:s rutin är fastställd.</span></div><p class="done-question">Vill du skicka in fler kvitton?</p><button class="btn" id="restartDone" type="button">Skicka in ett till kvitto</button></div></section>`;
     html=html.slice(0,doneStart)+done+html.slice(doneEnd);
   }
   return html;
