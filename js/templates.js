@@ -18,11 +18,12 @@ export function applyTemplates(html){
 <h1>Lägg till och kontrollera kvitton</h1>
 <p class="subtitle">Lägg till ett eller flera kvitton. De visas direkt här på sidan.</p>
 <div id="uploadError" aria-live="polite"></div>
+<div id="uploadSuccess" class="upload-success" aria-live="polite" hidden></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
 <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Dra och släpp kvittofiler här eller välj filer"><strong>Dra och släpp kvittofiler här</strong><span>eller använd knappen nedan</span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
 <div class="upload-actions"><button class="btn" id="add" type="button" style="grid-column:1/-1"><span id="addLabel">📷 Ta foto / välj filer</span><span id="fileCountBadge" hidden style="display:none;margin-left:.55rem;min-width:1.75rem;height:1.75rem;padding:0 .45rem;border-radius:999px;background:rgba(255,255,255,.22);align-items:center;justify-content:center;font-size:.82rem;vertical-align:middle">0</span></button></div>
 <p class="file-picker-note">På Mac öppnas den mapp du använde senast. Välj <strong>Bilder</strong> eller <strong>Hämtade filer</strong> i vänsterkanten om du hamnar fel.</p>
-<div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Ändra namn eller belopp direkt. Tryck på bilden för att kontrollera eller maskera kvittot.</p><div class="thumbs" id="thumbs"></div></div>
+<div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Använd knappen Ändra namn, fyll i belopp och tryck på bilden om du vill kontrollera eller maskera kvittot.</p><div class="thumbs" id="thumbs"></div></div>
 <div class="info steps-help"><strong>Så här går det till</strong><ol><li>Lägg till och kontrollera alla kvitton här.</li><li>Fyll i dina uppgifter.</li><li>Kontrollera sammanställningen och skicka in.</li></ol></div>
 <div class="trust-note">🛡 Dina uppgifter hanteras tryggt och används endast för detta ärende.</div>
 <div class="bar receipt-actions"><button class="btn secondary" id="restart" type="button">Avbryt</button><button class="btn" id="continue" disabled>Nästa: dina uppgifter</button></div>
@@ -49,8 +50,10 @@ export function applyTemplates(html){
 <div class="inspector-panel">
   <div class="inspector-stage" id="inspectorStage"><img id="lightboxImage" alt="Förhandsvisning av kvitto"><div id="lightboxPdf" class="pdf-preview"></div><div id="inspectorCanvasHost"></div></div>
   <div class="inspector-tools" id="inspectorTools" hidden>
-    <div class="mask-toggle-card"><div class="mask-toggle-copy"><strong>Maskera känsliga uppgifter</strong><span>Slå på markering och dra över det som ska döljas. Stäng av för att scrolla fritt.</span></div><label class="switch" aria-label="Slå på eller av maskering"><input id="maskModeToggle" type="checkbox"><span class="switch-track"></span></label></div>
+    <div class="mask-intro">Vill du dölja något? Slå på maskering här.</div>
+    <div class="mask-toggle-card"><div class="mask-toggle-copy"><strong><span class="mask-toggle-icon" aria-hidden="true">◻</span> Maskera känsliga uppgifter</strong><span>Slå på maskering och dra över det som ska döljas. Stäng av för att scrolla fritt.</span></div><label class="switch" aria-label="Slå på eller av maskering"><input id="maskModeToggle" type="checkbox"><span class="switch-track"></span></label></div>
     <div class="mask-status" id="maskModeStatus">Markering av – du kan scrolla fritt.</div>
+    <div class="mask-added-status" id="maskAddedStatus" aria-live="polite" hidden>✓ Maskering tillagd</div>
     <div id="inspectorToolbarHost"></div>
   </div>
 </div>

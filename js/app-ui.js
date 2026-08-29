@@ -1,7 +1,7 @@
 import {initUploadUi} from './upload-ui.js?v=20260829-2';
-import {initMaskMode} from './mask-mode.js?v=20260828-1';
+import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
-import {initReceiptOcr} from './receipt-ocr.js?v=20260829-2';
+import {initReceiptOcr} from './receipt-ocr.js?v=20260830-1';
 
 initUploadUi();
 initMaskMode();
@@ -106,6 +106,7 @@ function initReceiptManager(){
     }
     if(inspectorTools)inspectorTools.hidden=false;
     setMasking(false);
+    document.dispatchEvent(new CustomEvent('receipt-mask-change',{detail:{count:Array.isArray(p.masks)?p.masks.length:0}}));
     if(lightbox)lightbox.classList.add('active','image-inspector');
   }
 
@@ -136,7 +137,7 @@ function initReceiptManager(){
       if(hasMask&&!badge){
         badge=document.createElement('div');
         badge.className='mask-badge';
-        badge.textContent='Maskering tillagd';
+        badge.textContent='✓ Maskering tillagd';
         item.appendChild(badge);
       }else if(!hasMask&&badge){
         badge.remove();

@@ -3,6 +3,7 @@ export function initMaskMode(){
   const toggle=document.getElementById('maskModeToggle');
   const mask=document.getElementById('mask');
   const status=document.getElementById('maskModeStatus');
+  const addedStatus=document.getElementById('maskAddedStatus');
   let marking=false;
 
   function setMaskMode(on){
@@ -13,7 +14,7 @@ export function initMaskMode(){
       mask.classList.toggle('mask-off',!marking);
     }
     if(canvas)canvas.style.touchAction=marking?'none':'pan-y pinch-zoom';
-    if(status)status.textContent=marking?'Markering på – dra över det du vill dölja.':'Markering av – du kan scrolla fritt.';
+    if(status){status.textContent=marking?'● Maskering på – dra över det du vill dölja.':'Maskering av – du kan scrolla fritt.';status.dataset.state=marking?'on':'off'}
   }
 
   if(toggle){
@@ -26,4 +27,9 @@ export function initMaskMode(){
       canvas.addEventListener(type,e=>{if(!marking)e.stopImmediatePropagation()},true);
     });
   }
+
+  document.addEventListener('receipt-mask-change',event=>{
+    const count=Number(event.detail?.count)||0;
+    if(addedStatus){addedStatus.hidden=count===0;addedStatus.textContent=count===1?'✓ Maskering tillagd':`✓ ${count} maskeringar tillagda`}
+  });
 }
