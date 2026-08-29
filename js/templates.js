@@ -5,9 +5,9 @@ export function applyTemplates(html){
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
   const timelineEnd=html.indexOf('</div>',timelineStart)+6;
   const timeline=`<div class="timeline" aria-label="Steg i formuläret">
-<button class="seg active" type="button" data-step="0">1. Kvitton</button>
-<button class="seg" type="button" data-step="1" disabled>2. Uppgifter</button>
-<button class="seg" type="button" data-step="2" disabled>3. Kontrollera</button>
+<button class="seg active" type="button" data-step="0" title="Gå till kvitton">1. Kvitton</button>
+<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled>2. Uppgifter</button>
+<button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled>3. Kontrollera</button>
 </div>`;
   if(timelineStart>-1)html=html.slice(0,timelineStart)+timeline+html.slice(timelineEnd);
 
@@ -70,6 +70,8 @@ export function applyTemplates(html){
   html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','<div class="step">Steg 2 av 3 — Dina uppgifter</div>');
   html=html.replace('<div class="step">Steg 5 av 5 — Kontrollera och skicka</div>','<div class="step">Steg 3 av 3 — Kontrollera och skicka</div>');
   html=html.replace('Nästa: kontrollera kvittona','Nästa: kontrollera och skicka');
+  html=html.replace('<button class="btn secondary" id="formBack">Tillbaka till kvittona</button>','<button class="btn secondary" id="formBack" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka till kvittona</button>');
+  html=html.replace('<button class="btn secondary" id="back">Tillbaka och ändra</button>','<button class="btn secondary" id="back" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka och ändra</button>');
   html=html.replace('<input id="cc" type="checkbox" hidden>','<label class="copy-option"><input id="cc" type="checkbox"><span><strong>Skicka en kopia till min e-postadress</strong><small>Kopian innehåller sammanställningen och den färdiga PDF-filen.</small></span></label>');
 
   const doneStart=html.indexOf('<section class="screen" id="done">');

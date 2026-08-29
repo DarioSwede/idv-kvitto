@@ -8,8 +8,11 @@ body::before{content:"";position:fixed;inset:105px 0 0;z-index:0;pointer-events:
 .timeline{max-width:none;margin:0 88px 0 0;gap:7px;align-items:start}
 .seg{height:48px;padding:7px 2px 0;border-top-width:4px;font-size:.73rem;opacity:.42;transition:.18s ease}
 .seg:not(:disabled){opacity:1;cursor:pointer}
+.seg:not(:disabled):hover,.seg:not(:disabled):focus-visible{background:#eef5f0;border-radius:0 0 9px 9px;outline:2px solid transparent}
 .seg.active{background:#eef5f0;border-radius:0 0 9px 9px}
 .seg.done{background:transparent}
+.seg.done:hover,.seg.done:focus-visible{background:#f2f4f1}
+.btn[hidden]{display:none!important}
 .screen.active{animation:screenIn .18s ease}
 @keyframes screenIn{from{opacity:.7;transform:translateY(3px)}to{opacity:1;transform:none}}
 .step{margin-top:16px;letter-spacing:.02em}
