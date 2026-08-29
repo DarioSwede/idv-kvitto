@@ -1,6 +1,6 @@
 export function applyTemplates(html){
   html=html.replace('<img class="logo" src="idv-mark.png" alt="Idrottsveteranerna">','');
-  html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','<button class="restart" id="restart" type="button">Avbryt</button>');
+  html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','');
 
   const uploadStart=html.indexOf('<section class="screen active" id="upload">');
   const uploadEnd=html.indexOf('</section>',uploadStart)+10;
@@ -32,7 +32,7 @@ export function applyTemplates(html){
   <div class="canvaswrap" id="maskCanvasWrap"><canvas id="canvas"></canvas></div>
   <div class="toolbar" id="maskToolbar"><button id="undo" type="button">↩ Ta bort senaste markeringen</button><button id="clear" type="button">Ta bort alla markeringar</button></div>
 </div>
-<button class="btn" id="next">Klar – gå vidare</button>
+<div class="step2-actions"><button class="btn secondary" id="restart" type="button">Avbryt</button><button class="btn" id="next">Klar – gå vidare</button></div>
 </section>`;
   if(maskStart>-1) html=html.slice(0,maskStart)+mask+html.slice(maskEnd);
 

@@ -1,22 +1,14 @@
 const TESSERACT_URL='https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js';
 let workerPromise;
 
-async function recognizeWithTimeout(worker,canvas){
+const OCR_TIMEOUT_MS=45000;
+
+function timeoutAfter(ms){
   let timeout;
-  try{
-    return await Promise.race([
-      worker.recognize(canvas),
-      new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('OCR tog för lång tid.')),45000)})
-    ]);
-  }catch(error){
-    if(error.message==='OCR tog för lång tid.'){
-      await worker.terminate().catch(()=>{});
-      workerPromise=null;
-    }
-    throw error;
-  }finally{
-    clearTimeout(timeout);
-  }
+  const promise=new Promise((_,reject)=>{
+    timeout=setTimeout(()=>reject(new Error('OCR tog för lång tid.')),ms);
+  });
+  return {promise,cancel:()=>clearTimeout(timeout)};
 }
 
 function normalizeAmount(value){
@@ -86,14 +78,26 @@ async function processReceipt(detail){
     return;
   }
   setOcrState?.('working','OCR läser totalbelopp lokalt …');
+  let active=true;
+  let worker;
+  const watchdog=timeoutAfter(OCR_TIMEOUT_MS);
   try{
-    const worker=await getWorker(message=>{
-      if(message.status==='recognizing text'&&Number.isFinite(message.progress)){
-        const progress=Math.round(message.progress*100);
-        setOcrState?.('working',progress>=100?'OCR slutför avläsningen …':`OCR läser kvittot … ${progress} %`);
+    const ocrJob=(async()=>{
+      worker=await getWorker(message=>{
+        if(active&&message.status==='recognizing text'&&Number.isFinite(message.progress)){
+          const progress=Math.round(message.progress*100);
+          setOcrState?.('working',progress>=100?'OCR bearbetar resultatet …':`OCR läser kvittot … ${progress} %`);
+        }
+      });
+      if(!active){
+        void worker.terminate().catch(()=>{});
+        return null;
       }
-    });
-    const {data}=await recognizeWithTimeout(worker,canvas);
+      return worker.recognize(canvas);
+    })();
+    const result=await Promise.race([ocrJob,watchdog.promise]);
+    if(!active||!result)return;
+    const {data}=result;
     const amount=findTotalAmount(data.text);
     const amountApplied=amount!==null&&!getAmount();
     if(amountApplied){
@@ -103,13 +107,32 @@ async function processReceipt(detail){
   }catch(error){
     console.warn('OCR misslyckades utan att blockera formuläret:',error);
     setOcrState?.('error','OCR kunde inte läsa kvittot – fyll i själv');
+    if(error.message==='OCR tog för lång tid.'){
+      workerPromise=null;
+      void worker?.terminate().catch(()=>{});
+    }
+  }finally{
+    active=false;
+    watchdog.cancel();
   }
 }
 
 export function initReceiptOcr(){
   let queue=Promise.resolve();
   document.addEventListener('receipt-ready-for-ocr',event=>{
-    event.detail.handled=true;
-    queue=queue.then(()=>processReceipt(event.detail)).catch(()=>{}).then(()=>event.detail.complete?.());
+    const detail=event.detail||{};
+    detail.handled=true;
+    const run=async()=>{
+      try{
+        await processReceipt(detail);
+      }finally{
+        try{
+          await detail.complete?.();
+        }catch(error){
+          console.warn('OCR-kön kunde inte slutföra kvittot:',error);
+        }
+      }
+    };
+    queue=queue.catch(()=>{}).then(run);
   });
 }
