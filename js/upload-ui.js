@@ -1,3 +1,14 @@
+export function getPlatformUploadHelp(nav=globalThis.navigator){
+  const platform=String(nav?.userAgentData?.platform||nav?.platform||'').toLowerCase();
+  const userAgent=String(nav?.userAgent||'').toLowerCase();
+  const isAppleMobile=/iphone|ipad|ipod/.test(userAgent)||(platform==='macintel'&&Number(nav?.maxTouchPoints)>1);
+  if(isAppleMobile)return 'Välj Kamera, Bilder eller Filer.';
+  if(platform.includes('mac'))return 'Välj Bilder eller Hämtade filer i sidomenyn.';
+  if(platform.includes('win'))return 'Välj Bilder eller Hämtade filer i Utforskaren.';
+  if(/android/.test(userAgent))return 'Välj Kamera, Bilder eller Filer.';
+  return 'Välj bilder eller filer från din enhet.';
+}
+
 export function initUploadUi(){
   const thumbs=document.getElementById('thumbs');
   const badge=document.getElementById('fileCountBadge');
@@ -7,11 +18,18 @@ export function initUploadUi(){
   const continueBtn=document.getElementById('continue');
   const restartBtn=document.getElementById('restart');
   const upload=document.getElementById('upload');
+  const dropzoneTitle=document.getElementById('dropzoneTitle');
+  const platformHelp=document.getElementById('platformHelp');
+
+  if(platformHelp)platformHelp.textContent=getPlatformUploadHelp();
 
   function sync(){
     const n=thumbs?thumbs.children.length:0;
     const hasReceipts=n>0;
     const onFirstStep=!!upload?.classList.contains('active');
+
+    if(thumbs)thumbs.dataset.columns=String(Math.min(Math.max(n,1),3));
+    if(dropzoneTitle)dropzoneTitle.textContent=hasReceipts?'Lägg till fler kvitton':'Lägg till kvitton';
 
     if(badge){
       badge.textContent=String(n);
