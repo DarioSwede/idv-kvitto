@@ -57,13 +57,13 @@ export function applyTemplates(html){
   html=html.replace(oldLightbox,lightbox);
 
   const stateNeedle="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];";
-  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','form','preview'];window.__idvReceiptState={get photos(){return photos},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
+  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','form','preview'];window.__idvReceiptState={get photos(){return photos},get processing(){return processing},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
   html=html.replace(stateNeedle,stateReplacement);
 
   const goToStepStart=html.indexOf('function goToStep(n){');
   const goToStepEnd=html.indexOf("document.querySelectorAll('.seg')",goToStepStart);
   if(goToStepStart>-1&&goToStepEnd>-1){
-    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached)return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
+    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached||(n>0&&window.__idvCanLeaveReceipts&&!window.__idvCanLeaveReceipts()))return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
   }
 
   html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','');

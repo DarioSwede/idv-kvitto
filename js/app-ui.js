@@ -160,7 +160,7 @@ function initReceiptManager(){
   }
 
   if(continueBtn)continueBtn.onclick=()=>{
-    if(!state.photos.length)return state.show('upload');
+    if(!state.photos.length||!window.__idvCanLeaveReceipts?.())return state.show('upload');
     applyMasks();
     state.render();
     state.show('form');
