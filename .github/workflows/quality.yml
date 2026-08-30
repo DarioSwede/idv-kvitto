@@ -1,0 +1,32 @@
+name: Quality checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Check JavaScript syntax
+        run: |
+          for file in js/*.js; do
+            node --check "$file"
+          done
+
+      - name: Test OCR amount parsing
+        run: |
+          node --input-type=module -e "const m=await import('./js/receipt-ocr.js'); const cases=[['TOTALT 245,50 kr',245.5],['Att betala 1 234,00',1234],['Moms 2,92\\nTotalt 22,00',22]]; for(const [text,want] of cases){const got=m.findTotalAmount(text);if(got!==want)throw new Error(text+': '+got)} console.log('OCR parser: 3/3')"
+
+      - name: Check patch formatting
+        if: github.event_name == 'pull_request'
+        run: git diff --check "${{ github.event.pull_request.base.sha }}...HEAD"
