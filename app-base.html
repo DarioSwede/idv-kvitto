@@ -139,7 +139,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <section class="screen" id="preview">
 <div class="step">Steg 5 av 5 — Kontrollera och skicka</div>
 <h1>Stämmer allt?</h1>
-<div class="info">1. Kontrollera sammanställningen.<br>2. Kryssa i rutan.<br>3. Tryck på ”Skicka in kvitton”.</div>
+<div class="info">1. Kontrollera att alla kvitton är med.<br>2. Kryssa i rutan att uppgifterna stämmer.<br>3. Tryck på ”Skicka in kvitton”.</div>
 <div class="thumbs" id="previewThumbs">
 </div>
 <div class="card" id="summary">
@@ -219,6 +219,7 @@ cv.onmousedown=down;cv.onmousemove=move;window.onmouseup=up;cv.ontouchstart=down
 ;$('next').onclick=()=>{if(idx<0)return show('form');let p=photos[idx],c=p.canvas.getContext('2d');c.fillStyle='#000';p.masks.forEach(m=>c.fillRect(m.x,m.y,m.w,m.h));p.done=true;let n=photos.findIndex((x,i)=>i>idx&&!x.pdf&&!x.done);if(n>=0){idx=n;load()}else show('form')}
 ;$('formBack').onclick=()=>show('upload');$('previewBtn').onclick=()=>{let name=$('name').value.trim(),email=$('email').value.trim();$('formError').innerHTML='';if(!name)return $('formError').innerHTML='<div class="error">Fyll i ditt namn.</div>';if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return $('formError').innerHTML='<div class="error">E-postadressen ser inte korrekt ut.</div>';$('previewThumbs').innerHTML='';photos.forEach(p=>{let d=document.createElement('div');d.className='thumb';if(p.pdf)d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">📄</div>';else if(p.canvas){let im=new Image;im.src=p.canvas.toDataURL('image/jpeg',.8);d.append(im)}
 else d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">🖼️</div>';d.style.cursor='pointer';d.onclick=()=>openReceipt(p);d.title=p.name||'Kvitto';$('previewThumbs').append(d)}
+);$('previewThumbs').dataset.columns=String(Math.min(Math.max(photos.length,1),3)
 );$('summary').innerHTML=`<div class="row">
 <span>Namn</span>
 <b>${name}
