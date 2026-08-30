@@ -2,11 +2,13 @@ import {initUploadUi} from './upload-ui.js?v=20260830-7';
 import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
+import {initContactValidation} from './contact-validation.js?v=20260830-8';
 
 initUploadUi();
 initMaskMode();
 initDonePage();
 initReceiptOcr();
+initContactValidation();
 initReceiptManager();
 initEmailCopy();
 
@@ -169,6 +171,7 @@ function initReceiptManager(){
   if(previewBtn){
     const buildPreview=previewBtn.onclick;
     previewBtn.onclick=()=>{
+      if(!window.__idvCanLeaveContact?.())return;
       buildPreview?.();
       const summary=document.getElementById('summary');
       const cc=document.getElementById('cc');

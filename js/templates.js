@@ -63,7 +63,7 @@ export function applyTemplates(html){
   const goToStepStart=html.indexOf('function goToStep(n){');
   const goToStepEnd=html.indexOf("document.querySelectorAll('.seg')",goToStepStart);
   if(goToStepStart>-1&&goToStepEnd>-1){
-    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached||(n>0&&window.__idvCanLeaveReceipts&&!window.__idvCanLeaveReceipts()))return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
+    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached||(n>0&&window.__idvCanLeaveReceipts&&!window.__idvCanLeaveReceipts())||(n>1&&window.__idvCanLeaveContact&&!window.__idvCanLeaveContact()))return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
   }
 
   html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','');
