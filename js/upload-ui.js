@@ -28,6 +28,7 @@ export function initUploadUi(){
   const upload=document.getElementById('upload');
   const dropzoneTitle=document.getElementById('dropzoneTitle');
   const platformHelp=document.getElementById('platformHelp');
+  const uploadInstructions=document.getElementById('uploadInstructions');
 
   if(platformHelp)platformHelp.textContent=getPlatformUploadHelp();
 
@@ -47,6 +48,7 @@ export function initUploadUi(){
 
     if(thumbs)thumbs.dataset.columns=String(Math.min(Math.max(n,1),3));
     if(dropzoneTitle)dropzoneTitle.textContent=hasReceipts?'Välj fler kvittofiler':'Välj kvittofiler';
+    if(uploadInstructions)uploadInstructions.textContent=hasReceipts?'Välj filer, ändra namn, välj föreslaget belopp eller skriv in eget.':'Välj filer från dator eller telefon.';
 
     if(badge){
       badge.textContent=String(n);
