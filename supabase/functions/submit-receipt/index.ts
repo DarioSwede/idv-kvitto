@@ -7,6 +7,7 @@ const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json; charset
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/heic", "image/heif", "application/pdf"]);
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: jsonHeaders });
 const shortText = (value: string, max = 95) => { const clean = value.replace(/[\r\n\t]+/g, " ").trim(); return clean.length > max ? clean.slice(0, max - 1) + "…" : clean; };
+const pdfSafeText = (value: string) => value.normalize("NFC").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, "...").replace(/[^\x20-\x7E\u00A0-\u00FF]/gu, "?");
 const formatAmount = (amount: number | null) => amount === null ? "" : new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + " kr";
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]!));
 const toBase64 = (bytes: Uint8Array) => { let result = ""; for (let i = 0; i < bytes.length; i += 32768) result += String.fromCharCode(...bytes.subarray(i, i + 32768)); return btoa(result); };
@@ -70,10 +71,10 @@ Deno.serve(async (req: Request) => {
         uploadedPaths.push(path);
         fileRows.push({ submission_id: submission.id, storage_path: path, original_name: file.name.slice(0, 255) || `kvitto-${index + 1}`, display_name: displayName, display_amount: displayAmount, mime_type: file.type, size_bytes: file.size });
         const details = [displayName, formatAmount(displayAmount)].filter(Boolean).join(" · ");
-        const footer = shortText(`${details} · Inskickat ${timestamp} av ${senderName} · Skapad via IDV-appen`);
+        const footer = pdfSafeText(shortText(`${details} · Inskickat ${timestamp} av ${senderName} · Skapad via IDV-appen`));
         const stamp = (page: any) => { page.drawRectangle({ x: 0, y: 0, width: page.getWidth(), height: 28, color: rgb(1, 1, 1), opacity: 0.94 }); if (logo) page.drawImage(logo, { x: 8, y: 3, width: 22, height: 22 }); page.drawText(footer, { x: logo ? 36 : 12, y: 9, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); };
         if (file.type === "application/pdf") { const sourcePdf = await PDFDocument.load(bytes); const pages = await finalPdf.copyPages(sourcePdf, sourcePdf.getPageIndices()); for (const page of pages) { finalPdf.addPage(page); stamp(page); } }
-        else if (file.type === "image/jpeg" || file.type === "image/png") { const image = file.type === "image/png" ? await finalPdf.embedPng(bytes) : await finalPdf.embedJpg(bytes); const page = finalPdf.addPage([595.28, 841.89]), maxWidth = page.getWidth() - 72, maxHeight = page.getHeight() - 110, scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1), width = image.width * scale, height = image.height * scale; page.drawText(shortText(details, 70), { x: 36, y: page.getHeight() - 36, size: 12, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawImage(image, { x: (page.getWidth() - width) / 2, y: 38 + (maxHeight - height) / 2, width, height }); stamp(page); }
+        else if (file.type === "image/jpeg" || file.type === "image/png") { const image = file.type === "image/png" ? await finalPdf.embedPng(bytes) : await finalPdf.embedJpg(bytes); const page = finalPdf.addPage([595.28, 841.89]), maxWidth = page.getWidth() - 72, maxHeight = page.getHeight() - 110, scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1), width = image.width * scale, height = image.height * scale; page.drawText(pdfSafeText(shortText(details, 70)), { x: 36, y: page.getHeight() - 36, size: 12, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawImage(image, { x: (page.getWidth() - width) / 2, y: 38 + (maxHeight - height) / 2, width, height }); stamp(page); }
         else throw new Error(`${file.name} kunde inte omvandlas till PDF. Öppna bilden på telefonen och spara den som JPG.`);
       }
       const { error: filesError } = await supabase.from("receipt_files").insert(fileRows); if (filesError) throw filesError;
