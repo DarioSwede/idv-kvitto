@@ -6,7 +6,7 @@ body::before{content:"";position:fixed;inset:92px 0 0;z-index:0;pointer-events:n
 .logo{display:block!important;position:absolute;left:2px;top:6px;width:44px;height:44px}
 .restart{top:5px;right:0;padding:10px 13px;border-radius:12px;background:rgba(255,255,255,.8);font-size:.82rem}
 .timeline{max-width:none;margin:0 0 0 54px;gap:7px;align-items:start}
-.seg{height:48px;padding:7px 2px 0;border-top-width:4px;font-size:.73rem;opacity:.48;transition:.18s ease}
+.seg{min-height:52px;height:auto;padding:7px 3px;border-top-width:4px;font-size:.73rem;line-height:1.25;white-space:normal;opacity:.48;transition:.18s ease}
 .seg:not(:disabled){opacity:1;cursor:pointer}
 .seg:not(:disabled):hover,.seg:not(:disabled):focus-visible{background:#e2f0e7;border-color:#2d6a4f;color:#1f5c42;border-radius:0 0 10px 10px;box-shadow:0 5px 12px rgba(45,106,79,.12);outline:2px solid transparent}
 .seg.active{background:#dceee3;border-color:#1f5c42;color:#184c36;border-radius:0 0 10px 10px;box-shadow:inset 0 -2px 0 #2d6a4f,0 5px 12px rgba(45,106,79,.14);font-weight:900}

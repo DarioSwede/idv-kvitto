@@ -4,18 +4,18 @@ export function applyTemplates(html){
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
   const timelineEnd=html.indexOf('</div>',timelineStart)+6;
   const timeline=`<div class="timeline" aria-label="Steg i formuläret">
-<button class="seg active" type="button" data-step="0" title="Gå till kvitton">1. Kvitton</button>
-<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled>2. Uppgifter</button>
-<button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled>3. Kontrollera</button>
+<button class="seg active" type="button" data-step="0" title="Gå till kvitton">1. Bifoga kvitton</button>
+<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled>2. Dina uppgifter</button>
+<button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled>3. Kontrollera och skicka</button>
 </div>`;
   if(timelineStart>-1)html=html.slice(0,timelineStart)+timeline+html.slice(timelineEnd);
 
   const uploadStart=html.indexOf('<section class="screen active" id="upload">');
   const uploadEnd=html.indexOf('</section>',uploadStart)+10;
   const upload=`<section class="screen active" id="upload">
-<div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Kvitton <span>·</span> <b>2.</b> Uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
+<div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Bifoga kvitton <span>·</span> <b>2.</b> Dina uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
 <h1>Lägg till kvitton</h1>
-<p class="subtitle">Välj filerna och kontrollera dem här på sidan.</p>
+<p class="subtitle">Välj filer, ändra namn, välj eller fyll i belopp.</p>
 <div id="uploadError" aria-live="polite"></div>
 <div id="uploadSuccess" class="upload-success" aria-live="polite" hidden></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>

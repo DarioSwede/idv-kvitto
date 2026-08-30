@@ -9,6 +9,10 @@ export function getPlatformUploadHelp(nav=globalThis.navigator){
   return 'Välj bilder eller filer från din enhet.';
 }
 
+export function hasCompleteReceiptAmounts(values,receiptCount=values.length){
+  return receiptCount>0&&values.length===receiptCount&&values.every(value=>String(value).trim()!==''&&Number(value)>0);
+}
+
 export function initUploadUi(){
   const thumbs=document.getElementById('thumbs');
   const badge=document.getElementById('fileCountBadge');
@@ -26,6 +30,8 @@ export function initUploadUi(){
   function sync(){
     const n=thumbs?thumbs.children.length:0;
     const hasReceipts=n>0;
+    const amountInputs=thumbs?[...thumbs.querySelectorAll('.receipt-amount')]:[];
+    const allAmountsComplete=hasCompleteReceiptAmounts(amountInputs.map(input=>input.value),n);
     const onFirstStep=!!upload?.classList.contains('active');
 
     if(thumbs)thumbs.dataset.columns=String(Math.min(Math.max(n,1),3));
@@ -43,9 +49,10 @@ export function initUploadUi(){
     if(listHelp)listHelp.hidden=!hasReceipts;
 
     if(continueBtn){
-      continueBtn.disabled=!hasReceipts;
+      continueBtn.disabled=!allAmountsComplete;
       continueBtn.hidden=!hasReceipts;
       continueBtn.style.display=hasReceipts?'':'none';
+      continueBtn.title=allAmountsComplete?'':'Fyll i belopp på alla kvitton för att gå vidare';
     }
 
     if(restartBtn){
@@ -57,6 +64,7 @@ export function initUploadUi(){
 
   if(thumbs){
     new MutationObserver(sync).observe(thumbs,{childList:true});
+    thumbs.addEventListener('input',sync);
   }
   if(upload){
     new MutationObserver(sync).observe(upload,{attributes:true,attributeFilter:['class']});
