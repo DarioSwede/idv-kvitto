@@ -7,7 +7,7 @@ const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json; charset
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/heic", "image/heif", "application/pdf"]);
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: jsonHeaders });
 const shortText = (value: string, max = 95) => { const clean = value.replace(/[\r\n\t]+/g, " ").trim(); return clean.length > max ? clean.slice(0, max - 1) + "…" : clean; };
-const pdfSafeText = (value: string) => value.normalize("NFC").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, "...").replace(/[^\x20-\x7E\u00A0-\u00FF]/g, "?");
+const pdfSafeText = (value: string) => value.normalize("NFC").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, "...").replace(/[^\x20-\x7E\u00A0-\u00FF]/gu, "?");
 const formatAmount = (amount: number | null) => amount === null ? "" : new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + " kr";
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]!));
 const toBase64 = (bytes: Uint8Array) => { let result = ""; for (let i = 0; i < bytes.length; i += 32768) result += String.fromCharCode(...bytes.subarray(i, i + 32768)); return btoa(result); };
