@@ -1,4 +1,4 @@
-import {initUploadUi} from './upload-ui.js?v=20260830-5';
+import {initUploadUi} from './upload-ui.js?v=20260830-7';
 import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
@@ -160,7 +160,7 @@ function initReceiptManager(){
   }
 
   if(continueBtn)continueBtn.onclick=()=>{
-    if(!state.photos.length)return state.show('upload');
+    if(!state.photos.length||!window.__idvCanLeaveReceipts?.())return state.show('upload');
     applyMasks();
     state.render();
     state.show('form');

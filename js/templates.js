@@ -4,18 +4,18 @@ export function applyTemplates(html){
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
   const timelineEnd=html.indexOf('</div>',timelineStart)+6;
   const timeline=`<div class="timeline" aria-label="Steg i formuläret">
-<button class="seg active" type="button" data-step="0" title="Gå till kvitton">1. Kvitton</button>
-<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled>2. Uppgifter</button>
-<button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled>3. Kontrollera</button>
+<button class="seg active" type="button" data-step="0" title="Gå till kvitton">1. Bifoga kvitton</button>
+<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled>2. Dina uppgifter</button>
+<button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled>3. Kontrollera och skicka</button>
 </div>`;
   if(timelineStart>-1)html=html.slice(0,timelineStart)+timeline+html.slice(timelineEnd);
 
   const uploadStart=html.indexOf('<section class="screen active" id="upload">');
   const uploadEnd=html.indexOf('</section>',uploadStart)+10;
   const upload=`<section class="screen active" id="upload">
-<div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Kvitton <span>·</span> <b>2.</b> Uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
+<div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Bifoga kvitton <span>·</span> <b>2.</b> Dina uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
 <h1>Lägg till kvitton</h1>
-<p class="subtitle">Välj filerna och kontrollera dem här på sidan.</p>
+<p class="subtitle">Välj filer, ändra namn, välj eller fyll i belopp.</p>
 <div id="uploadError" aria-live="polite"></div>
 <div id="uploadSuccess" class="upload-success" aria-live="polite" hidden></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
@@ -57,13 +57,13 @@ export function applyTemplates(html){
   html=html.replace(oldLightbox,lightbox);
 
   const stateNeedle="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];";
-  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','form','preview'];window.__idvReceiptState={get photos(){return photos},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
+  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','form','preview'];window.__idvReceiptState={get photos(){return photos},get processing(){return processing},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
   html=html.replace(stateNeedle,stateReplacement);
 
   const goToStepStart=html.indexOf('function goToStep(n){');
   const goToStepEnd=html.indexOf("document.querySelectorAll('.seg')",goToStepStart);
   if(goToStepStart>-1&&goToStepEnd>-1){
-    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached)return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
+    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached||(n>0&&window.__idvCanLeaveReceipts&&!window.__idvCanLeaveReceipts()))return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
   }
 
   html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','');

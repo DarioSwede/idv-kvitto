@@ -9,6 +9,14 @@ export function getPlatformUploadHelp(nav=globalThis.navigator){
   return 'Välj bilder eller filer från din enhet.';
 }
 
+export function hasCompleteReceiptAmounts(values,receiptCount=values.length){
+  return receiptCount>0&&values.length===receiptCount&&values.every(value=>String(value).trim()!==''&&Number(value)>0);
+}
+
+export function canContinueReceiptStep(values,receiptCount=values.length,processing=0){
+  return Number(processing)===0&&hasCompleteReceiptAmounts(values,receiptCount);
+}
+
 export function initUploadUi(){
   const thumbs=document.getElementById('thumbs');
   const badge=document.getElementById('fileCountBadge');
@@ -23,9 +31,18 @@ export function initUploadUi(){
 
   if(platformHelp)platformHelp.textContent=getPlatformUploadHelp();
 
+  function canLeaveReceipts(){
+    const n=thumbs?thumbs.children.length:0;
+    const amounts=thumbs?[...thumbs.querySelectorAll('.receipt-amount')].map(input=>input.value):[];
+    const processing=window.__idvReceiptState?.processing||0;
+    return canContinueReceiptStep(amounts,n,processing);
+  }
+  window.__idvCanLeaveReceipts=canLeaveReceipts;
+
   function sync(){
     const n=thumbs?thumbs.children.length:0;
     const hasReceipts=n>0;
+    const canContinue=canLeaveReceipts();
     const onFirstStep=!!upload?.classList.contains('active');
 
     if(thumbs)thumbs.dataset.columns=String(Math.min(Math.max(n,1),3));
@@ -43,9 +60,10 @@ export function initUploadUi(){
     if(listHelp)listHelp.hidden=!hasReceipts;
 
     if(continueBtn){
-      continueBtn.disabled=!hasReceipts;
+      continueBtn.disabled=!canContinue;
       continueBtn.hidden=!hasReceipts;
       continueBtn.style.display=hasReceipts?'':'none';
+      continueBtn.title=canContinue?'':'Fyll i belopp på alla kvitton och vänta tills filerna är klara';
     }
 
     if(restartBtn){
@@ -57,6 +75,7 @@ export function initUploadUi(){
 
   if(thumbs){
     new MutationObserver(sync).observe(thumbs,{childList:true});
+    thumbs.addEventListener('input',sync);
   }
   if(upload){
     new MutationObserver(sync).observe(upload,{attributes:true,attributeFilter:['class']});
