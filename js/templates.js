@@ -15,14 +15,14 @@ export function applyTemplates(html){
   const uploadEnd=html.indexOf('</section>',uploadStart)+10;
   const upload=`<section class="screen active" id="upload">
 <div class="step">Steg 1 av 3 — Kvitton</div>
-<h1>Lägg till och kontrollera kvitton</h1>
-<p class="subtitle">Lägg till ett eller flera kvitton. De visas direkt här på sidan.</p>
+<div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Kvitton <span>·</span> <b>2.</b> Uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
+<h1>Lägg till kvitton</h1>
+<p class="subtitle">Välj filerna och kontrollera dem här på sidan.</p>
 <div id="uploadError" aria-live="polite"></div>
 <div id="uploadSuccess" class="upload-success" aria-live="polite" hidden></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
-<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Lägg till kvitton genom att klicka eller dra och släppa"><strong id="dropzoneTitle">Lägg till kvitton</strong><span class="dropzone-action">Klicka här eller dra och släpp filer</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
+<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Välj kvittofiler genom att klicka eller dra och släppa"><strong id="dropzoneTitle">Välj kvittofiler</strong><span class="dropzone-action">Klicka eller dra och släpp här</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
 <div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Byt namn, fyll i belopp eller tryck på bilden för maskering.</p><div class="thumbs" id="thumbs"></div></div>
-<div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Lägg till kvitton <span>·</span> <b>2.</b> Fyll i uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
 <div class="trust-note">🛡 Dina uppgifter hanteras tryggt och används endast för detta ärende.</div>
 <div class="bar receipt-actions"><button class="btn secondary" id="restart" type="button">Avbryt</button><button class="btn" id="continue" disabled>Nästa: dina uppgifter</button></div>
 </section>`;
@@ -73,8 +73,6 @@ export function applyTemplates(html){
   html=html.replace('Nästa: kontrollera kvittona','Nästa: kontrollera och skicka');
   html=html.replace('<button class="btn secondary" id="formBack">Tillbaka till kvittona</button>','<button class="btn secondary" id="formBack" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka till kvittona</button>');
   html=html.replace('<button class="btn secondary" id="back">Tillbaka och ändra</button>','<button class="btn secondary" id="back" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka och ändra</button>');
-  html=html.replace('<input id="cc" type="checkbox" hidden>','<label class="copy-option"><input id="cc" type="checkbox"><span><strong>Skicka en kopia till min e-postadress</strong><small>Kopian innehåller sammanställningen och den färdiga PDF-filen.</small></span></label>');
-
   const doneStart=html.indexOf('<section class="screen" id="done">');
   const doneEnd=html.indexOf('</section>',doneStart)+10;
   if(doneStart>-1){

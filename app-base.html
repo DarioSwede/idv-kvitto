@@ -116,17 +116,14 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <p class="subtitle">Fyll i vem som skickar in kvittona. Fält med stjärna (*) måste fyllas i.</p>
 <div id="formError" aria-live="polite">
 </div>
-<label>Ditt namn *</label>
-<input id="name" autocomplete="name">
-<label>Din e-postadress *</label>
-<input id="email" type="email" autocomplete="email">
-<label>Vilket tillfälle gäller det? (valfritt)</label>
-<input id="event" placeholder="T.ex. Fyradagarsmarschen 2026">
-<div class="info"><strong>Saknas ett kvittonamn eller belopp?</strong><br>Tryck på ”Tillbaka till kvittona” längst ned. Det du redan har fyllt i finns kvar.</div>
-<label>Övrig information (valfritt)</label>
-<textarea id="other">
-</textarea>
-<input id="cc" type="checkbox" hidden>
+<input id="name" autocomplete="name" aria-label="Ditt namn" placeholder="Ditt namn *">
+<div class="email-copy-field">
+<input id="email" type="email" autocomplete="email" aria-label="Din e-postadress" placeholder="Din e-postadress *">
+<label class="copy-option"><input id="cc" type="checkbox" checked><span><strong>Skicka en kopia till mig</strong><small>Kopia till adressen ovan.</small></span></label>
+</div>
+<input id="event" aria-label="Vilket tillfälle gäller det?" placeholder="Tillfälle (valfritt), t.ex. Fyradagarsmarschen 2026">
+<textarea id="other" rows="1" aria-label="Övrig information" placeholder="Övrig information (valfritt)"></textarea>
+<div class="info missing-receipt"><span><strong>Saknas ett kvittonamn eller belopp?</strong><small>Det du fyllt i här sparas.</small></span><button type="button" id="addMoreReceipts">+ Lägg till fler kvitton</button></div>
 <button class="btn" id="previewBtn">Nästa: kontrollera kvittona</button><button class="btn secondary" id="formBack">Tillbaka till kvittona</button>
 </section>
 <section class="screen" id="review">

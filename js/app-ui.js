@@ -1,4 +1,4 @@
-import {initUploadUi} from './upload-ui.js?v=20260830-3';
+import {initUploadUi} from './upload-ui.js?v=20260830-5';
 import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
@@ -21,8 +21,10 @@ async function initEmailCopy(){
     const response=await fetch(api.endpoint,{headers:{apikey:api.key,Authorization:'Bearer '+api.key}});
     const result=await response.json();
     checkbox.disabled=!result.email_configured;
+    checkbox.checked=!!result.email_configured;
     help.textContent=result.email_configured?'Kopian innehåller sammanställningen och den färdiga PDF-filen.':'E-postkopian är inte aktiverad ännu.';
   }catch{
+    checkbox.checked=false;
     help.textContent='E-postkopian kan inte användas just nu.';
   }
 }
@@ -48,8 +50,20 @@ function initReceiptManager(){
   const previewBtn=document.getElementById('previewBtn');
   const backBtn=document.getElementById('back');
   const reviewNext=document.getElementById('reviewNext');
+  const addMoreReceipts=document.getElementById('addMoreReceipts');
+  const otherInfo=document.getElementById('other');
 
   let inspectingImage=false;
+
+  if(addMoreReceipts)addMoreReceipts.onclick=()=>state.show('upload');
+  if(otherInfo){
+    const resizeOtherInfo=()=>{
+      otherInfo.style.height='auto';
+      otherInfo.style.height=otherInfo.scrollHeight+'px';
+    };
+    otherInfo.addEventListener('input',resizeOtherInfo);
+    resizeOtherInfo();
+  }
 
   function setMasking(on){
     if(!toggle)return;

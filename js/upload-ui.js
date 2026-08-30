@@ -29,7 +29,7 @@ export function initUploadUi(){
     const onFirstStep=!!upload?.classList.contains('active');
 
     if(thumbs)thumbs.dataset.columns=String(Math.min(Math.max(n,1),3));
-    if(dropzoneTitle)dropzoneTitle.textContent=hasReceipts?'Lägg till fler kvitton':'Lägg till kvitton';
+    if(dropzoneTitle)dropzoneTitle.textContent=hasReceipts?'Välj fler kvittofiler':'Välj kvittofiler';
 
     if(badge){
       badge.textContent=String(n);
