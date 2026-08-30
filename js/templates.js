@@ -1,5 +1,4 @@
 export function applyTemplates(html){
-  html=html.replace('<img class="logo" src="idv-mark.png" alt="Idrottsveteranerna">','');
   html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','');
 
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
@@ -14,7 +13,6 @@ export function applyTemplates(html){
   const uploadStart=html.indexOf('<section class="screen active" id="upload">');
   const uploadEnd=html.indexOf('</section>',uploadStart)+10;
   const upload=`<section class="screen active" id="upload">
-<div class="step">Steg 1 av 3 — Kvitton</div>
 <div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Kvitton <span>·</span> <b>2.</b> Uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
 <h1>Lägg till kvitton</h1>
 <p class="subtitle">Välj filerna och kontrollera dem här på sidan.</p>
@@ -23,7 +21,7 @@ export function applyTemplates(html){
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
 <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Välj kvittofiler genom att klicka eller dra och släppa"><strong id="dropzoneTitle">Välj kvittofiler</strong><span class="dropzone-action">Klicka eller dra och släpp här</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
 <div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Byt namn, fyll i belopp eller tryck på bilden för maskering.</p><div class="thumbs" id="thumbs"></div></div>
-<div class="trust-note">🛡 Dina uppgifter hanteras tryggt och används endast för detta ärende.</div>
+<div class="trust-note">✉ Dina kvitton skickas till <strong>betala@idrottsveteranerna.se</strong>.</div>
 <div class="bar receipt-actions"><button class="btn secondary" id="restart" type="button">Avbryt</button><button class="btn" id="continue" disabled>Nästa: dina uppgifter</button></div>
 </section>`;
   if(uploadStart>-1) html=html.slice(0,uploadStart)+upload+html.slice(uploadEnd);
@@ -68,8 +66,8 @@ export function applyTemplates(html){
     html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached)return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
   }
 
-  html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','<div class="step">Steg 2 av 3 — Dina uppgifter</div>');
-  html=html.replace('<div class="step">Steg 5 av 5 — Kontrollera och skicka</div>','<div class="step">Steg 3 av 3 — Kontrollera och skicka</div>');
+  html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','');
+  html=html.replace('<div class="step">Steg 5 av 5 — Kontrollera och skicka</div>','');
   html=html.replace('Nästa: kontrollera kvittona','Nästa: kontrollera och skicka');
   html=html.replace('<button class="btn secondary" id="formBack">Tillbaka till kvittona</button>','<button class="btn secondary" id="formBack" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka till kvittona</button>');
   html=html.replace('<button class="btn secondary" id="back">Tillbaka och ändra</button>','<button class="btn secondary" id="back" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka och ändra</button>');
@@ -79,5 +77,6 @@ export function applyTemplates(html){
     const done=`<section class="screen" id="done"><div class="done-panel"><div class="done-kicker">Idrottsveteranerna</div><h1>Tack! Vi har tagit emot ditt kvitto.</h1><p class="done-message">Tack för att du skickade in ditt underlag till IDV. Ditt kvitto är mottaget och kommer att hanteras vidare enligt vår ersättningsrutin.</p><p class="copy-result" id="doneText" aria-live="polite"></p><div class="payout-note"><strong>Om utbetalningen</strong><span>Information om handläggningstid, utbetalningssätt och vilka bankuppgifter som behövs kommer att uppdateras här när IDV:s rutin är fastställd.</span></div><p class="done-question">Vill du skicka in fler kvitton?</p><button class="btn" id="restartDone" type="button">Skicka in ett till kvitto</button></div></section>`;
     html=html.slice(0,doneStart)+done+html.slice(doneEnd);
   }
+  html=html.replace('</main>','</main><footer class="security-note"><strong>Säker överföring</strong><span>Dina uppgifter och kvitton skickas krypterat med HTTPS (TLS).</span></footer>');
   return html;
 }
