@@ -27,7 +27,11 @@ jobs:
 
       - name: Test OCR amount parsing
         run: |
-          node --input-type=module -e "const m=await import('./js/receipt-ocr.js'); const cases=[['TOTALT 245,50 kr',245.5],['Att betala 1 234,00',1234],['Moms 2,92\\nTotalt 22,00',22]]; for(const [text,want] of cases){const got=m.findTotalAmount(text);if(got!==want)throw new Error(text+': '+got)} console.log('OCR parser: 3/3')"
+          node --input-type=module -e "const m=await import('./js/receipt-ocr.js'); const cases=[['TOTALT 245,50 kr',245.5],['Att betala 1 234,00',1234],['Moms 2,92\\nTotalt 22,00',22]]; for(const [text,want] of cases){const got=m.findTotalAmount(text);if(got!==want)throw new Error(text+': '+got)} if(!m.shouldRetryOcr({amount:null,suspicious:false}))throw new Error('Tomt OCR-resultat måste köras igen'); if(m.shouldRetryOcr({amount:245.5,suspicious:false}))throw new Error('Säkert OCR-resultat ska inte köras igen'); if(m.calculateOcrScale(1600,1200)!==1.1875)throw new Error('Stora bilder ska inte förstoras minst 1,5x'); console.log('OCR checks: 6/6')"
+
+      - name: Test platform-specific upload help
+        run: |
+          node --input-type=module -e "const m=await import('./js/upload-ui.js'); const cases=[[{platform:'MacIntel',userAgent:'Macintosh',maxTouchPoints:0},'Hämtade filer'],[{platform:'Win32',userAgent:'Windows'},'Utforskaren'],[{platform:'MacIntel',userAgent:'Macintosh',maxTouchPoints:5},'Kamera'],[{platform:'Linux',userAgent:'Android'},'Kamera']]; for(const [nav,want] of cases){const got=m.getPlatformUploadHelp(nav);if(!got.includes(want))throw new Error(want+': '+got)} console.log('Platform help: 4/4')"
 
       - name: Check patch formatting
         if: github.event_name == 'pull_request'

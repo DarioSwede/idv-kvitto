@@ -20,11 +20,9 @@ export function applyTemplates(html){
 <div id="uploadError" aria-live="polite"></div>
 <div id="uploadSuccess" class="upload-success" aria-live="polite" hidden></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
-<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Dra och släpp kvittofiler här eller välj filer"><strong>Dra och släpp kvittofiler här</strong><span>eller använd knappen nedan</span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
-<div class="upload-actions"><button class="btn" id="add" type="button" style="grid-column:1/-1"><span id="addLabel">📷 Ta foto / välj filer</span><span id="fileCountBadge" hidden style="display:none;margin-left:.55rem;min-width:1.75rem;height:1.75rem;padding:0 .45rem;border-radius:999px;background:rgba(255,255,255,.22);align-items:center;justify-content:center;font-size:.82rem;vertical-align:middle">0</span></button></div>
-<p class="file-picker-note">På Mac öppnas den mapp du använde senast. Välj <strong>Bilder</strong> eller <strong>Hämtade filer</strong> i vänsterkanten om du hamnar fel.</p>
-<div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Använd knappen Ändra namn, fyll i belopp och tryck på bilden om du vill kontrollera eller maskera kvittot.</p><div class="thumbs" id="thumbs"></div></div>
-<div class="info steps-help"><strong>Så här går det till</strong><ol><li>Lägg till och kontrollera alla kvitton här.</li><li>Fyll i dina uppgifter.</li><li>Kontrollera sammanställningen och skicka in.</li></ol></div>
+<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Lägg till kvitton genom att klicka eller dra och släppa"><strong id="dropzoneTitle">Lägg till kvitton</strong><span class="dropzone-action">Klicka här eller dra och släpp filer</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
+<div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Byt namn, fyll i belopp eller tryck på bilden för maskering.</p><div class="thumbs" id="thumbs"></div></div>
+<div class="info steps-help"><strong>Tre enkla steg:</strong><p><b>1.</b> Lägg till kvitton <span>·</span> <b>2.</b> Fyll i uppgifter <span>·</span> <b>3.</b> Kontrollera och skicka</p></div>
 <div class="trust-note">🛡 Dina uppgifter hanteras tryggt och används endast för detta ärende.</div>
 <div class="bar receipt-actions"><button class="btn secondary" id="restart" type="button">Avbryt</button><button class="btn" id="continue" disabled>Nästa: dina uppgifter</button></div>
 </section>`;

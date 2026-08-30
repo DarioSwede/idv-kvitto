@@ -170,7 +170,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 function goToStep(n){if(n>maxReached)return;if(n===0)return show('upload');if(n===1){idx=photos.findIndex(p=>!p.pdf&&!p.raw);show('mask');if(idx<0)showPdfReview();else{showImageMask();load()}return}if(n===3)renderReview();show(screens[n])}
 document.querySelectorAll('.seg').forEach(button=>button.onclick=()=>goToStep(Number(button.dataset.step)));
 $('restart').onclick=()=>{if(confirm('Det du har lagt in tas bort. Vill du avbryta och börja om?'))location.reload()};
-$('add').onclick=()=>$('file').click();const dropzone=$('dropzone');dropzone.onclick=()=>$('file').click();dropzone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click()}
+const dropzone=$('dropzone');dropzone.onclick=()=>$('file').click();dropzone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click()}
 }
 ;['dragenter','dragover'].forEach(type=>dropzone.addEventListener(type,e=>{e.preventDefault();dropzone.classList.add('dragover')}
 ));['dragleave','drop'].forEach(type=>dropzone.addEventListener(type,e=>{e.preventDefault();dropzone.classList.remove('dragover')}
