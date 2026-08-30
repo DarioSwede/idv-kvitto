@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
     const { data: submission, error: submissionError } = await supabase.from("receipt_submissions").insert({ sender_name: senderName, sender_email: senderEmail, event_tag: eventTag, other_info: otherInfo, amount_total: amountTotal || null, cc_self: false }).select("id").single();
     if (submissionError) throw submissionError;
     const uploadedPaths: string[] = [];
-    let finalPdfBytes: Uint8Array;
+    let finalPdfBytes: Uint8Array, finalPdfUrl: string | null = null;
     try {
       const fileRows = [], finalPdf = await PDFDocument.create(), footerFont = await finalPdf.embedFont(StandardFonts.Helvetica);
       let logo: Awaited<ReturnType<typeof finalPdf.embedPng>> | null = null;
@@ -82,12 +82,14 @@ Deno.serve(async (req: Request) => {
       const { error: finalUploadError } = await supabase.storage.from("receipt-files").upload(finalPdfPath, finalPdfBytes, { contentType: "application/pdf", upsert: false }); if (finalUploadError) throw finalUploadError;
       uploadedPaths.push(finalPdfPath);
       const { error: updateError } = await supabase.from("receipt_submissions").update({ final_pdf_path: finalPdfPath }).eq("id", submission.id); if (updateError) throw updateError;
+      const { data: signedPdf, error: signedPdfError } = await supabase.storage.from("receipt-files").createSignedUrl(finalPdfPath, 900);
+      if (signedPdfError) console.error("final PDF preview link failed", signedPdfError); else finalPdfUrl = signedPdf.signedUrl;
     } catch (error) { if (uploadedPaths.length) await supabase.storage.from("receipt-files").remove(uploadedPaths); await supabase.from("receipt_submissions").delete().eq("id", submission.id); throw error; }
     let copyResult: { sent: boolean; error?: string; id?: string | null } = { sent: false };
     if (ccSelf) {
       copyResult = await sendSelfCopy({ senderName, senderEmail, eventTag, otherInfo, receiptNames, receiptAmounts, amountTotal, submittedAt, pdfBytes: finalPdfBytes! });
       if (copyResult.sent) await supabase.from("receipt_submissions").update({ cc_self: true }).eq("id", submission.id);
     }
-    return respond({ ok: true, submission_id: submission.id, copy_requested: ccSelf, copy_sent: copyResult.sent, copy_error: copyResult.error ?? null });
+    return respond({ ok: true, submission_id: submission.id, copy_requested: ccSelf, copy_sent: copyResult.sent, copy_error: copyResult.error ?? null, final_pdf_url: finalPdfUrl, final_pdf_expires_in: finalPdfUrl ? 900 : null });
   } catch (error) { console.error("submit-receipt failed", error); const message = error instanceof Error && error.message.includes("kunde inte omvandlas") ? error.message : "Något gick fel. Försök igen om en stund."; return respond({ error: message }, 500); }
 });

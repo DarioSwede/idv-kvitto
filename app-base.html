@@ -248,7 +248,7 @@ $('send').disabled=true;$('send').textContent='Skickar …';let res=await fetch(
 }
 catch{j={}
 }
-if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));let doneText=$('doneText');doneText.textContent=j.copy_requested?(j.copy_sent?'En kopia med sammanställningen och PDF-filen har skickats till din e-postadress.':(j.copy_error||'Kvittona är inskickade, men kopian kunde inte skickas.')):'Kvittot och den färdiga PDF-filen har sparats säkert.';doneText.dataset.state=j.copy_requested&&!j.copy_sent?'warning':'success';show('done')}
+if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));let doneText=$('doneText');doneText.textContent=j.copy_requested?(j.copy_sent?'En kopia med sammanställningen och PDF-filen har skickats till din e-postadress.':(j.copy_error||'Kvittona är inskickade, men kopian kunde inte skickas.')):'Kvittot och den färdiga PDF-filen har sparats säkert.';doneText.dataset.state=j.copy_requested&&!j.copy_sent?'warning':'success';let submittedPdf=$('submittedPdf');if(submittedPdf&&j.final_pdf_url){submittedPdf.href=j.final_pdf_url;submittedPdf.hidden=false}show('done')}
 catch(e){$('sendError').innerHTML=`<div class="error">${e.message}
 </div>`;$('send').disabled=false;$('send').textContent='Skicka in kvitton'}
 }
