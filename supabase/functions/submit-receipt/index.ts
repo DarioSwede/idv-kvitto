@@ -62,7 +62,6 @@ Deno.serve(async (req: Request) => {
       const fileRows = [], finalPdf = await PDFDocument.create(), footerFont = await finalPdf.embedFont(StandardFonts.Helvetica);
       let logo: Awaited<ReturnType<typeof finalPdf.embedPng>> | null = null;
       try { const logoResponse = await fetch("https://darioswede.github.io/idv-kvitto/idv-mark.png"); if (logoResponse.ok) logo = await finalPdf.embedPng(new Uint8Array(await logoResponse.arrayBuffer())); } catch { /* PDF remains valid without the decorative mark. */ }
-      const timestamp = new Intl.DateTimeFormat("sv-SE", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Stockholm" }).format(submittedAt);
       for (const [index, file] of files.entries()) {
         const displayName = receiptNames[index], displayAmount = receiptAmounts[index];
         const rawExtension = file.name.includes(".") ? file.name.split(".").pop()! : "bin", extension = rawExtension.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
@@ -71,10 +70,11 @@ Deno.serve(async (req: Request) => {
         uploadedPaths.push(path);
         fileRows.push({ submission_id: submission.id, storage_path: path, original_name: file.name.slice(0, 255) || `kvitto-${index + 1}`, display_name: displayName, display_amount: displayAmount, mime_type: file.type, size_bytes: file.size });
         const details = [displayName, formatAmount(displayAmount)].filter(Boolean).join(" · ");
-        const footer = pdfSafeText(shortText(`${details} · Inskickat ${timestamp} av ${senderName} · Skapad via IDV-appen`));
-        const stamp = (page: any) => { page.drawRectangle({ x: 0, y: 0, width: page.getWidth(), height: 28, color: rgb(1, 1, 1), opacity: 0.94 }); if (logo) page.drawImage(logo, { x: 8, y: 3, width: 22, height: 22 }); page.drawText(footer, { x: logo ? 36 : 12, y: 9, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); };
+        const stampSender = pdfSafeText(`Avsändare: ${shortText(senderName, 45)} · E-post: ${shortText(senderEmail, 55)}`);
+        const stampReceipt = pdfSafeText(`Kvitto: ${shortText(displayName, 60)} · Belopp: ${formatAmount(displayAmount) || "—"}`);
+        const stamp = (page: any) => { page.drawRectangle({ x: 0, y: 0, width: page.getWidth(), height: 44, color: rgb(1, 1, 1), opacity: 0.94 }); if (logo) page.drawImage(logo, { x: 8, y: 9, width: 26, height: 26 }); const textX = logo ? 42 : 12; page.drawText(stampSender, { x: textX, y: 25, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawText(stampReceipt, { x: textX, y: 11, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); };
         if (file.type === "application/pdf") { const sourcePdf = await PDFDocument.load(bytes); const pages = await finalPdf.copyPages(sourcePdf, sourcePdf.getPageIndices()); for (const page of pages) { finalPdf.addPage(page); stamp(page); } }
-        else if (file.type === "image/jpeg" || file.type === "image/png") { const image = file.type === "image/png" ? await finalPdf.embedPng(bytes) : await finalPdf.embedJpg(bytes); const page = finalPdf.addPage([595.28, 841.89]), maxWidth = page.getWidth() - 72, maxHeight = page.getHeight() - 110, scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1), width = image.width * scale, height = image.height * scale; page.drawText(pdfSafeText(shortText(details, 70)), { x: 36, y: page.getHeight() - 36, size: 12, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawImage(image, { x: (page.getWidth() - width) / 2, y: 38 + (maxHeight - height) / 2, width, height }); stamp(page); }
+        else if (file.type === "image/jpeg" || file.type === "image/png") { const image = file.type === "image/png" ? await finalPdf.embedPng(bytes) : await finalPdf.embedJpg(bytes); const page = finalPdf.addPage([595.28, 841.89]), maxWidth = page.getWidth() - 72, maxHeight = page.getHeight() - 122, scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1), width = image.width * scale, height = image.height * scale; page.drawText(pdfSafeText(shortText(details, 70)), { x: 36, y: page.getHeight() - 36, size: 12, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawImage(image, { x: (page.getWidth() - width) / 2, y: 50 + (maxHeight - height) / 2, width, height }); stamp(page); }
         else throw new Error(`${file.name} kunde inte omvandlas till PDF. Öppna bilden på telefonen och spara den som JPG.`);
       }
       const { error: filesError } = await supabase.from("receipt_files").insert(fileRows); if (filesError) throw filesError;
