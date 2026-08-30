@@ -1,5 +1,7 @@
 const TESSERACT_URL='https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js';
 let workerPromise;
+let tesseractPromise;
+let workerLogger;
 
 const OCR_TIMEOUT_MS=45000;
 
@@ -75,9 +77,14 @@ export function findTotalAmount(text){
   return extractTotalCandidate(text).amount;
 }
 
-function enhanceCanvas(source,mode='contrast'){
+export function calculateOcrScale(width,height){
   const maxWidth=1900;
-  const desiredScale=Math.max(1.5,Math.min(2.6,maxWidth/Math.max(source.width,1)));
+  const maxHeight=2600;
+  return Math.max(1,Math.min(2.6,maxWidth/Math.max(width,1),maxHeight/Math.max(height,1)));
+}
+
+function enhanceCanvas(source,mode='contrast'){
+  const desiredScale=calculateOcrScale(source.width,source.height);
   const width=Math.max(1,Math.round(source.width*desiredScale));
   const height=Math.max(1,Math.round(source.height*desiredScale));
   const canvas=document.createElement('canvas');
@@ -108,19 +115,28 @@ function enhanceCanvas(source,mode='contrast'){
 
 function loadTesseract(){
   if(window.Tesseract)return Promise.resolve(window.Tesseract);
-  return new Promise((resolve,reject)=>{
-    const existing=document.querySelector(`script[src="${TESSERACT_URL}"]`);
-    const script=existing||document.createElement('script');
-    script.addEventListener('load',()=>window.Tesseract?resolve(window.Tesseract):reject(new Error('OCR kunde inte startas.')),{once:true});
-    script.addEventListener('error',()=>reject(new Error('OCR-biblioteket kunde inte laddas.')),{once:true});
-    if(!existing){script.src=TESSERACT_URL;script.crossOrigin='anonymous';document.head.append(script)}
+  if(tesseractPromise)return tesseractPromise;
+  tesseractPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    const fail=message=>{
+      script.remove();
+      tesseractPromise=null;
+      reject(new Error(message));
+    };
+    script.addEventListener('load',()=>window.Tesseract?resolve(window.Tesseract):fail('OCR kunde inte startas.'),{once:true});
+    script.addEventListener('error',()=>fail('OCR-biblioteket kunde inte laddas.'),{once:true});
+    script.src=TESSERACT_URL;
+    script.crossOrigin='anonymous';
+    document.head.append(script);
   });
+  return tesseractPromise;
 }
 
 async function getWorker(logger){
+  workerLogger=logger;
   if(!workerPromise){
     workerPromise=loadTesseract().then(async({createWorker})=>{
-      const worker=await createWorker('swe',1,{logger});
+      const worker=await createWorker('swe',1,{logger:message=>workerLogger?.(message)});
       await worker.setParameters({
         user_defined_dpi:'300',
         preserve_interword_spaces:'1'
@@ -134,6 +150,17 @@ async function getWorker(logger){
 async function recognize(worker,canvas){
   const result=await worker.recognize(canvas);
   return extractTotalCandidate(result?.data?.text||'');
+}
+
+export function shouldRetryOcr(result){
+  return result?.amount===null||result?.suspicious===true;
+}
+
+export function selectOcrResult(primary,retry){
+  if(retry.amount!==null&&!retry.suspicious)return retry;
+  if(primary.amount===null)return primary;
+  if(retry.amount!==null&&retry.amount>primary.amount&&retry.candidates[0]?.score>=primary.candidates[0]?.score-2)return retry;
+  return primary.suspicious?{...primary,amount:null}:primary;
 }
 
 async function processReceipt(detail){
@@ -161,13 +188,11 @@ async function processReceipt(detail){
       }
 
       const primary=await recognize(worker,enhanceCanvas(canvas,'contrast'));
-      if(!primary.suspicious)return primary;
+      if(!shouldRetryOcr(primary))return primary;
 
-      setOcrState?.('working','OCR dubbelkontrollerar ett osäkert belopp …');
+      setOcrState?.('working',primary.amount===null?'OCR provar en tydligare bild …':'OCR dubbelkontrollerar ett osäkert belopp …');
       const retry=await recognize(worker,enhanceCanvas(canvas,'threshold'));
-      if(retry.amount!==null&&!retry.suspicious)return retry;
-      if(retry.amount!==null&&retry.amount>primary.amount&&retry.candidates[0]?.score>=primary.candidates[0]?.score-2)return retry;
-      return primary.suspicious?{...primary,amount:null}:primary;
+      return selectOcrResult(primary,retry);
     })();
 
     const result=await Promise.race([ocrJob,watchdog.promise]);
@@ -187,6 +212,7 @@ async function processReceipt(detail){
     }
   }finally{
     active=false;
+    workerLogger=null;
     watchdog.cancel();
   }
 }
