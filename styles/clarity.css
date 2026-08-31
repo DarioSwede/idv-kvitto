@@ -1,0 +1,76 @@
+/* IDV Kvitto – tydligare färger och högre visuell kontrast */
+:root{
+  --ink:#12251f;
+  --paper:#f7f5ef;
+  --panel:#ffffff;
+  --line:#c9d1cb;
+  --action:#176b4a;
+  --action-dark:#0f5137;
+  --action-soft:#e5f2ea;
+  --muted:#5d6c65;
+  --warning:#9a5b12;
+  --warning-bg:#fff4df;
+  --danger:#a13232;
+  --danger-bg:#fdecec;
+}
+
+html,body{background:var(--paper);color:var(--ink)}
+.header{background:rgba(247,245,239,.98);border-bottom-color:#c7cec8}
+
+/* Stegindikator – tydligt vad som är klart, aktivt och ej tillgängligt */
+.seg{border-top-color:#d8ddd9;color:#7d8983;opacity:1}
+.seg:disabled{color:#a4aca8;opacity:.72}
+.seg.done{border-top-color:#6f9f87;color:#356b52;font-weight:800}
+.seg.active{background:var(--action-soft);border-color:var(--action);color:var(--action-dark);box-shadow:inset 0 -3px 0 var(--action),0 4px 12px rgba(23,107,74,.15);font-weight:900}
+.seg:not(:disabled):hover,.seg:not(:disabled):focus-visible{background:#edf6f0;border-color:var(--action);color:var(--action-dark)}
+
+.step{color:var(--action-dark);font-weight:900}
+h1{color:#102820}
+.subtitle{color:#56665f}
+
+/* Primära och sekundära val */
+.btn{background:var(--action);color:#fff;box-shadow:0 5px 14px rgba(23,107,74,.14)}
+.btn:hover,.btn:focus-visible{background:var(--action-dark)}
+.btn.secondary{background:#fff;color:#173b2e;border:2px solid #9caca4;box-shadow:none}
+.btn.secondary:hover,.btn.secondary:focus-visible{background:#edf4ef;border-color:#638674;color:#123f2d}
+.btn:disabled{background:#eceeea!important;color:#7c8781!important;border-color:#d0d5d1!important;box-shadow:none!important;opacity:1}
+
+.restart{background:#fff;color:#263832;border-color:#c6cec8}
+.restart:hover,.restart:focus-visible{border-color:#889a90;background:#f1f4f1}
+
+/* Uppladdning */
+.dropzone{background:#fff;border-color:#8aa999;box-shadow:0 8px 24px rgba(20,65,47,.07)}
+.dropzone:hover,.dropzone:focus-visible,.dropzone.dragover{border-color:var(--action);background:#eef7f1;outline-color:rgba(23,107,74,.18)}
+.dropzone::before{border-color:var(--action);color:var(--action)}
+.dropzone-action{color:var(--action-dark)}
+
+/* Kort, formulär och fält */
+.receipt-item,.card,.review-file,.email-copy-field{background:#fff;border-color:#cbd3cd;box-shadow:0 4px 14px rgba(26,46,42,.05)}
+input,textarea{border-color:#b9c4bd;color:var(--ink);background:#fff}
+input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(23,107,74,.12);outline:none}
+.receipt-amount-wrap .receipt-amount{border-color:#6f9f87!important}
+
+/* Information och status – olika färger för olika betydelser */
+.info,.trust-note,.copy-option{background:#edf6f0;border-color:#c2dccd;color:#244c3b}
+.upload-success,.mask-added-status,.receipt-hint[data-state="accepted"]{background:#e2f3e8;border-color:#8fc2a4;color:#155d40}
+.receipt-hint[data-state="working"]{background:#eef2f0;color:#465a50}
+.receipt-hint[data-state="suggested"]{background:#e7f3eb;border-color:#4f9a72;color:#14583d}
+.receipt-hint[data-state="suggested"]::before{content:"Förslag · ";font-weight:900}
+.receipt-hint[data-state="error"],.error{background:var(--danger-bg);border-color:#e6b8b8;color:#8a2929}
+.copy-result[data-state="warning"]{background:var(--warning-bg);border-color:#e5bf7d;color:#71460d}
+
+/* Maskering – på-läget ska inte kunna missas */
+.mask-toggle-card{background:#f1f6f3;border-color:#a9c6b5}
+.mask-on .mask-toggle-card{background:#dff1e6;border-color:var(--action);box-shadow:0 0 0 4px rgba(23,107,74,.13)}
+.mask-status[data-state="on"]{background:var(--action-dark);color:#fff}
+.switch-track{background:#8f9c95}
+.switch input:checked+.switch-track{background:var(--action)}
+
+/* Slutkontroll */
+.row{border-bottom-color:#e0e5e1}
+#confirm{accent-color:var(--action)}
+
+@media(max-width:520px){
+  .bar{background:linear-gradient(to bottom,rgba(247,245,239,0),var(--paper) 20%)}
+  .bar .btn:not(:disabled){box-shadow:0 8px 20px rgba(23,107,74,.18)}
+}
