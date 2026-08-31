@@ -72,8 +72,8 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
 #confirm{accent-color:var(--action)}
 
 /* Sidfot */
-.security-note{border-top-color:#c9d1cb}
-.build-meta{display:block;margin-top:14px;padding-top:10px;border-top:1px solid #d8ddd9;font-size:.72rem;line-height:1.5;color:#78847e}
+.security-note{border-top:0!important;margin-top:0;padding-top:6px}
+.build-meta{display:block;margin-top:14px;padding-top:0;border-top:0;font-size:.72rem;line-height:1.5;color:#78847e}
 
 @media(max-width:520px){
   .bar{background:linear-gradient(to bottom,rgba(247,245,239,0),var(--paper) 20%)}
