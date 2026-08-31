@@ -1,0 +1,51 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Read and validate version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('version.json','utf8')).version")
+          BUILD=$(node -p "JSON.parse(require('fs').readFileSync('version.json','utf8')).build")
+          test -n "$VERSION"
+          test -n "$BUILD"
+          grep -Fq "## $VERSION" CHANGELOG.md
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Stop if release already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG finns redan."
+            exit 1
+          fi
+
+      - name: Create tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "IDV Kvitto $VERSION"
+          git push origin "$TAG"
+          gh release create "$TAG" --title "IDV Kvitto $VERSION" --notes-file CHANGELOG.md

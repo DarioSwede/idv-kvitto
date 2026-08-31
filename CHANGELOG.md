@@ -1,5 +1,12 @@
 # Versionshistorik
 
+## 2026.08.31.2
+- Integritetsinformation läggs till och länkas från formulärets sidfot.
+- README med drift, versionering och återställning införs.
+- Playwright-smoketest testar den faktiska webbappen och kritiska delar av kvittoflödet.
+- Kvalitetskontrollen verifierar att `version.json` och `CHANGELOG.md` är synkroniserade.
+- Manuell release-workflow skapar Git-tagg och GitHub Release från aktuell version.
+
 ## 2026.08.31.1
 - Central versionsfil (`version.json`) införs.
 - Sidan läser aktuell version automatiskt och använder build-id för cache-busting.
