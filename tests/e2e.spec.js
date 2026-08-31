@@ -47,6 +47,13 @@ test('kvittoflödet startar, validerar och når slutkontrollen',async({page})=>{
   await expect(page.locator('#summary')).toContainText('125');
   await expect(page.locator('#summary')).toContainText('81,60 kr');
   await expect(page.locator('#summary')).toContainText('206,60 kr');
+  await page.evaluate(()=>{
+    const amount=document.querySelector('#reviewFiles .review-amount-wrap input');
+    amount.value='150';
+    amount.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  await expect(page.locator('#summary .receipt-total')).toContainText('150,00 kr');
+  await expect(page.locator('#summary .grand-total')).toContainText('231,60 kr');
   await page.locator('#confirm').check();
   await expect(page.getByRole('button',{name:'Skicka in kvitton'})).toBeEnabled();
 });

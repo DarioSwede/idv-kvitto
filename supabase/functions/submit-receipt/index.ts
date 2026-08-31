@@ -59,7 +59,7 @@ Deno.serve(async (req: Request) => {
     if (receiptNames.length !== files.length || receiptNames.some((name) => !name || name.length > 200)) return respond({ error: "Ange vad varje kvitto gäller." }, 400);
     if (receiptAmounts.length !== files.length || receiptAmounts.some((amount) => amount !== null && (!Number.isFinite(amount) || amount < 0 || amount > 9999999999.99))) return respond({ error: "Kontrollera beloppen." }, 400);
     if (travelEnabled) {
-      if (!travelApproved || travelKm === null || !Number.isFinite(travelKm) || travelKm <= 0 || travelKm > 10000) return respond({ error: "Kontrollera antal kilometer och godkänn reseersättningen." }, 400);
+      if (!travelApproved || travelKm === null || !Number.isFinite(travelKm) || travelKm < 0.01 || travelKm > 10000 || Math.abs(travelKm * 100 - Math.round(travelKm * 100)) > 1e-9) return respond({ error: "Kontrollera antal kilometer och godkänn reseersättningen." }, 400);
       if (!travelDescription || travelDescription.length > 500) return respond({ error: "Beskriv resan med högst 500 tecken." }, 400);
       const expected = Math.round(travelKm * 2.4 * 100) / 100;
       if (!Number.isFinite(travelAmount) || travelAmount !== expected) return respond({ error: "Reseersättningen stämmer inte med 2,40 kr per kilometer." }, 400);

@@ -3,7 +3,7 @@ export const MAX_TRAVEL_KM=10000;
 
 export function calculateTravelAmount(km){
   const value=Number(km);
-  if(!Number.isFinite(value)||value<=0||value>MAX_TRAVEL_KM)return null;
+  if(!Number.isFinite(value)||value<0.01||value>MAX_TRAVEL_KM||Math.abs(value*100-Math.round(value*100))>1e-9)return null;
   return Math.round(value*TRAVEL_RATE_PER_KM*100)/100;
 }
 
