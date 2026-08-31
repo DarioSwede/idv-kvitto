@@ -19,11 +19,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Check JavaScript syntax
         run: |
-          for file in js/*.js; do
+          for file in js/*.js tests/*.js playwright.config.js; do
             node --check "$file"
           done
+
+      - name: Validate version metadata
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; const m=JSON.parse(fs.readFileSync('version.json','utf8')); if(!/^\\d{4}\\.\\d{2}\\.\\d{2}\\.\\d+$/.test(m.version))throw new Error('Ogiltigt versionsformat: '+m.version); if(!/^\\d{8}-\\d+$/.test(m.build))throw new Error('Ogiltigt build-id: '+m.build); const c=fs.readFileSync('CHANGELOG.md','utf8'); if(!c.includes('## '+m.version))throw new Error('CHANGELOG saknar version '+m.version); console.log('Version metadata OK:',m.version,m.build)"
 
       - name: Test OCR amount parsing
         run: |
@@ -36,6 +45,15 @@ jobs:
       - name: Test contact validation
         run: |
           node --input-type=module -e "const m=await import('./js/contact-validation.js'); const valid=[['Tor','tor@example.se'],[' Tor ','tor+idv@example.co.uk']]; const invalid=[['','tor@example.se'],['Tor',''],['Tor','tor@localhost'],['Tor','tor example.se'],['Tor','tor@example.c']]; for(const value of valid){if(!m.hasValidContactDetails(...value))throw new Error('Ska vara giltig: '+value)} for(const value of invalid){if(m.hasValidContactDetails(...value))throw new Error('Ska vara ogiltig: '+value)} console.log('Contact validation: 7/7')"
+
+      - name: Install E2E dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser smoke tests
+        run: npm run test:e2e
 
       - name: Check patch formatting
         if: github.event_name == 'pull_request'
