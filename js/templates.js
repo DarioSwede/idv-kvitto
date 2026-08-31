@@ -76,6 +76,6 @@ export function applyTemplates(html){
     const done=`<section class="screen" id="done"><div class="done-panel"><div class="done-kicker">Idrottsveteranerna</div><h1>Tack! Vi har tagit emot ditt kvitto.</h1><p class="done-message">Tack för att du skickade in ditt underlag till IDV. Ditt kvitto är mottaget och kommer att hanteras vidare enligt vår ersättningsrutin.</p><p class="copy-result" id="doneText" aria-live="polite"></p><div class="payout-note"><strong>Om utbetalningen</strong><span>Information om handläggningstid, utbetalningssätt och vilka bankuppgifter som behövs kommer att uppdateras här när IDV:s rutin är fastställd.</span></div><p class="done-question">Vill du skicka in fler kvitton?</p><button class="btn" id="restartDone" type="button">Skicka in ett till kvitto</button></div></section>`;
     html=html.slice(0,doneStart)+done+html.slice(doneEnd);
   }
-  html=html.replace('</main>','</main><footer class="security-note"><strong>Säker överföring</strong><span>Dina uppgifter och kvitton skickas krypterat med HTTPS (TLS).</span></footer>');
+  html=html.replace('</main>','</main><footer class="security-note"><strong>Säker överföring</strong><span>Dina uppgifter och kvitton skickas krypterat med HTTPS (TLS).</span><small class="build-meta">Version 2026.08.31 · Byggd av Zimmerman<br>© 2026 Idrottsveteranerna</small></footer>');
   return html;
 }
