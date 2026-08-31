@@ -1,12 +1,13 @@
-import {applyTemplates} from './templates.js?v=20260831-3';
-
 async function boot(){
-  const response=await fetch('app-base.html?v=20260831-3',{cache:'no-store'});
+  const meta=window.__IDV_VERSION||{version:'dev',build:String(Date.now()),released:''};
+  const build=encodeURIComponent(meta.build||meta.version||Date.now());
+  const {applyTemplates}=await import(`./templates.js?v=${build}`);
+  const response=await fetch(`app-base.html?v=${build}`,{cache:'no-store'});
   if(!response.ok)throw new Error('Kunde inte ladda formuläret');
   let html=await response.text();
-  html=applyTemplates(html);
-  html=html.replace('</head>','<link rel="stylesheet" href="styles/app.css?v=20260831-3"><link rel="stylesheet" href="styles/clarity.css?v=20260831-3"></head>');
-  html=html.replace('</body>','<script type="module" src="js/app-ui.js?v=20260831-3"><\/script></body>');
+  html=applyTemplates(html,meta);
+  html=html.replace('</head>',`<link rel="stylesheet" href="styles/app.css?v=${build}"><link rel="stylesheet" href="styles/clarity.css?v=${build}"></head>`);
+  html=html.replace('</body>',`<script type="module" src="js/app-ui.js?v=${build}"><\/script></body>`);
   document.open();
   document.write(html);
   document.close();
