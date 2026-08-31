@@ -1,6 +1,7 @@
 {
   "name": "idv-kvitto",
   "private": true,
+  "type": "module",
   "scripts": {
     "test:e2e": "playwright test"
   },
