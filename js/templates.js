@@ -18,9 +18,8 @@ export function applyTemplates(html){
 <div id="uploadError" aria-live="polite"></div>
 <div id="uploadSuccess" class="upload-success" aria-live="polite" hidden></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
-<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Välj kvittofiler genom att klicka eller dra och släppa"><strong id="dropzoneTitle">Välj kvittofiler</strong><span class="dropzone-action">Klicka eller dra och släpp här</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span></div>
+<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Välj kvittofiler genom att klicka eller dra och släppa"><strong id="dropzoneTitle">Välj kvittofiler</strong><span class="dropzone-action">Klicka eller dra och släpp här</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span><span class="dropzone-delivery">✉ Skickas till <strong>betala@idrottsveteranerna.se</strong></span></div>
 <div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Byt namn, fyll i belopp eller tryck på bilden för maskering.</p><div class="thumbs" id="thumbs"></div></div>
-<div class="trust-note">✉ Dina kvitton skickas till <strong>betala@idrottsveteranerna.se</strong>.</div>
 <div class="bar receipt-actions"><button class="btn secondary" id="restart" type="button">Avbryt</button><button class="btn" id="continue" disabled>Nästa: dina uppgifter</button></div>
 </section>`;
   if(uploadStart>-1) html=html.slice(0,uploadStart)+upload+html.slice(uploadEnd);
