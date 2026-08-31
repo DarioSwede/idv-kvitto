@@ -33,8 +33,8 @@ test('kvittoflödet startar, validerar och når slutkontrollen',async({page})=>{
   await expect(page.getByRole('heading',{name:'Vem gäller kvittot?'})).toBeVisible();
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
-  await expect(page.getByRole('button',{name:'Nästa: kontrollera kvittona'})).toBeEnabled();
-  await page.getByRole('button',{name:'Nästa: kontrollera kvittona'}).click();
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
+  await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
 
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
   await expect(page.locator('#summary')).toContainText('Testperson');
