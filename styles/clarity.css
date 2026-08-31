@@ -49,6 +49,9 @@ h1{color:#102820}
 
 /* Kort, formulär och fält */
 .receipt-item,.card,.review-file,.email-copy-field{background:#fff;border-color:#cbd3cd;box-shadow:0 4px 14px rgba(26,46,42,.05)}
+.travel-card{margin:16px 0;padding:16px;border:1px solid #cbd3cd;border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(26,46,42,.05)}
+.travel-option,.travel-approval{display:flex;align-items:flex-start;gap:10px;margin:0}.travel-option input,.travel-approval input{width:auto;margin-top:3px;accent-color:var(--action)}
+#travelFields{margin-top:14px;padding-top:4px;border-top:1px solid #e0e5e1}.travel-calculation{margin:12px 0 0;padding:12px;border-radius:10px;background:var(--action-soft);color:var(--action-dark);font-weight:800}.travel-error{color:var(--danger);font-weight:700}.travel-error:empty{display:none}.travel-approval{margin-top:10px;padding:12px;border:1px solid #8fc2a4;border-radius:10px;background:#e2f3e8}.travel-summary b{max-width:62%;text-align:right}.grand-total{margin-top:6px;padding-top:12px;font-weight:900}
 input,textarea{border-color:#b9c4bd;color:var(--ink);background:#fff}
 input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(23,107,74,.12);outline:none}
 .receipt-amount-wrap .receipt-amount{border-color:#6f9f87!important}
