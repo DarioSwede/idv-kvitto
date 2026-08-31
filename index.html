@@ -12,6 +12,21 @@ html,body{margin:0;background:#faf8f3;color:#1a2e2a;font-family:-apple-system,"S
 </head>
 <body>
 <div class="boot">Laddar kvittoformuläret …</div>
-<script type="module" src="js/boot.js?v=20260831-2"></script>
+<script type="module">
+(async()=>{
+  try{
+    const response=await fetch('version.json',{cache:'no-store'});
+    if(!response.ok)throw new Error('Kunde inte läsa versionsinformation');
+    const meta=await response.json();
+    window.__IDV_VERSION=meta;
+    const build=encodeURIComponent(meta.build||meta.version||Date.now());
+    await import(`./js/boot.js?v=${build}`);
+  }catch(err){
+    const bootEl=document.querySelector('.boot');
+    if(bootEl)bootEl.textContent='Kunde inte ladda formuläret. Ladda om sidan.';
+    console.error(err);
+  }
+})();
+</script>
 </body>
 </html>
