@@ -43,6 +43,7 @@ h1{color:#102820}
 .dropzone:hover,.dropzone:focus-visible,.dropzone.dragover{border-color:var(--action);background:#eef7f1;outline-color:rgba(23,107,74,.18)}
 .dropzone::before{border-color:var(--action);color:var(--action)}
 .dropzone-action{color:var(--action-dark)}
+#upload .receipt-actions{background:none}
 
 /* Kort, formulär och fält */
 .receipt-item,.card,.review-file,.email-copy-field{background:#fff;border-color:#cbd3cd;box-shadow:0 4px 14px rgba(26,46,42,.05)}
@@ -70,7 +71,12 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
 .row{border-bottom-color:#e0e5e1}
 #confirm{accent-color:var(--action)}
 
+/* Sidfot */
+.security-note{border-top:0!important;margin-top:0;padding-top:6px}
+.build-meta{display:block;margin-top:14px;padding-top:0;border-top:0;font-size:.72rem;line-height:1.5;color:#78847e}
+
 @media(max-width:520px){
   .bar{background:linear-gradient(to bottom,rgba(247,245,239,0),var(--paper) 20%)}
+  #upload .receipt-actions{background:none}
   .bar .btn:not(:disabled){box-shadow:0 8px 20px rgba(23,107,74,.18)}
 }
