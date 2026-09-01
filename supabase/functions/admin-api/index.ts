@@ -10,6 +10,11 @@ const cors={
   'Content-Type':'application/json; charset=utf-8'
 };
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
+async function withCors(response:Response){
+  const headers=new Headers(response.headers);
+  Object.entries(cors).forEach(([key,value])=>headers.set(key,value));
+  return new Response(await response.text(),{status:response.status,statusText:response.statusText,headers});
+}
 
 Deno.serve(async(req:Request)=>{
   if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
@@ -43,7 +48,7 @@ Deno.serve(async(req:Request)=>{
     }
     return reply({error:'Okänd admin-route.'},404);
   }catch(error){
-    if(error instanceof Response)return error;
+    if(error instanceof Response)return withCors(error);
     console.error('admin-api failed',error);
     return reply({error:'Adminbegäran kunde inte genomföras.'},500);
   }
