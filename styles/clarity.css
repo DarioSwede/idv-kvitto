@@ -45,6 +45,7 @@ h1{color:#102820}
 .dropzone-action{color:var(--action-dark)}
 .dropzone-delivery{display:block;margin:14px auto 0;padding-top:10px;border-top:1px solid #e1e6e2;color:#6b7871;font-size:.76rem;line-height:1.35}
 .dropzone-delivery strong{color:#4e6359;font-weight:700}
+.privacy-link-row{text-align:center;margin:-3px 0 14px}
 #upload .receipt-actions{background:none}
 
 /* Kort, formulär och fält */
