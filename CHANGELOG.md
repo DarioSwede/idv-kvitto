@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.01.4
+- Ensamma huvudknappar centreras även i övriga steg i flödet för ett mer konsekvent visuellt uttryck.
+- När en sekundär knapp blir synlig återgår huvudknappen till ordinarie radlayout.
+
 ## 2026.09.01.3
 - Toppmenyn får en mjukare, sammanhållen progressdesign med tydliga steg och bättre mobil läsbarhet.
 - Knappen "Nästa: dina uppgifter" centreras när inget kvitto ännu lagts till i läget Endast kvitton.

@@ -38,3 +38,31 @@ test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{
   await page.getByLabel(/Endast reseräkning/).check();
   await expect(actions).not.toHaveClass(/continue-centered/);
 });
+
+test('ensamma huvudknappar centreras i senare steg',async({page})=>{
+  await page.goto('/');
+  await waitForAppState(page);
+  await page.getByLabel(/Endast reseräkning/).check();
+  await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
+
+  const formButton=page.locator('#form #previewBtn');
+  const formBox=await page.locator('#form').boundingBox();
+  const formButtonBox=await formButton.boundingBox();
+  expect(formBox&&formButtonBox).toBeTruthy();
+  expect(Math.abs((formButtonBox.x+formButtonBox.width/2)-(formBox.x+formBox.width/2))).toBeLessThan(2);
+  expect(formButtonBox.width).toBeLessThanOrEqual(360.5);
+
+  await page.getByLabel('Ditt namn').fill('Layouttest');
+  await page.getByLabel('Din e-postadress').fill('layout@example.se');
+  await page.getByLabel('Antal kilometer').fill('10');
+  await page.getByLabel('Beskriv resan').fill('Tur och retur');
+  await page.getByLabel(/Jag godkänner det föreslagna/).check();
+  await formButton.click();
+
+  const sendButton=page.locator('#preview #send');
+  const previewBox=await page.locator('#preview').boundingBox();
+  const sendBox=await sendButton.boundingBox();
+  expect(previewBox&&sendBox).toBeTruthy();
+  expect(Math.abs((sendBox.x+sendBox.width/2)-(previewBox.x+previewBox.width/2))).toBeLessThan(2);
+  expect(sendBox.width).toBeLessThanOrEqual(360.5);
+});
