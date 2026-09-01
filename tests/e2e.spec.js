@@ -3,6 +3,10 @@ import fs from 'node:fs';
 
 const version=JSON.parse(fs.readFileSync(new URL('../version.json',import.meta.url),'utf8')).version;
 
+async function waitForAppState(page){
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+}
+
 test('kvittoflödet startar, validerar och når slutkontrollen',async({page})=>{
   await page.route('**/functions/v1/**',async route=>{
     if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":false}'});
@@ -14,6 +18,7 @@ test('kvittoflödet startar, validerar och når slutkontrollen',async({page})=>{
   await expect(page.locator('#deliveryNote')).toContainText('betala@idrottsveteranerna.se');
   await expect(page.locator('.build-meta')).toContainText(`Version ${version}`);
   await expect(page.getByRole('link',{name:/personuppgifter/i})).toBeVisible();
+  await waitForAppState(page);
 
   await page.evaluate(()=>{
     const state=window.__idvReceiptState;
@@ -61,6 +66,7 @@ test('kvittoflödet startar, validerar och når slutkontrollen',async({page})=>{
 test('reseersättning kan ändras och stängas av utan kvarvarande belopp',async({page})=>{
   await page.goto('/');
   await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
+  await waitForAppState(page);
   await page.evaluate(()=>window.__idvReceiptState.show('form'));
   await page.getByRole('checkbox',{name:'Har du rest med eget fordon och ska ha reseersättning?'}).check();
   await page.getByLabel('Antal kilometer').fill('34');
@@ -76,6 +82,8 @@ test('reseersättning kan ändras och stängas av utan kvarvarande belopp',async
 
 test('integritetslänken ligger under uppladdningen och bevarar uppladdat kvitto',async({page})=>{
   await page.goto('/');
+  await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
+  await waitForAppState(page);
   await page.evaluate(()=>{
     const state=window.__idvReceiptState;
     const canvas=document.createElement('canvas');
