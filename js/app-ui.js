@@ -4,6 +4,7 @@ import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
 import {initTravelReimbursement} from './travel-reimbursement.js';
+import {initSubmissionMode} from './submission-mode.js';
 
 initUploadUi();
 initMaskMode();
@@ -11,6 +12,7 @@ initDonePage();
 initReceiptOcr();
 initContactValidation();
 initTravelReimbursement();
+initSubmissionMode();
 initReceiptManager();
 initEmailCopy();
 
@@ -164,7 +166,8 @@ function initReceiptManager(){
   }
 
   if(continueBtn)continueBtn.onclick=()=>{
-    if(!state.photos.length||!window.__idvCanLeaveReceipts?.())return state.show('upload');
+    const modes=window.__idvSubmissionMode;
+    if(!modes?.hasRequiredReceipts?.()||!window.__idvCanLeaveReceipts?.())return state.show('upload');
     applyMasks();
     state.render();
     state.show('form');
