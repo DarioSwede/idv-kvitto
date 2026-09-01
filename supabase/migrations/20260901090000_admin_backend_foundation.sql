@@ -1,5 +1,30 @@
 -- IDV Kvitto: modulär admin/backend-grund
 
+-- Baslinje så migreringen även fungerar i en helt ny miljö.
+create table if not exists public.receipt_submissions (
+  id uuid primary key default gen_random_uuid(),
+  sender_name text not null,
+  sender_email text not null,
+  event_tag text not null default '',
+  other_info text not null default '',
+  amount_total numeric,
+  cc_self boolean not null default false,
+  created_at timestamptz not null default now(),
+  final_pdf_path text
+);
+
+create table if not exists public.receipt_files (
+  id uuid primary key default gen_random_uuid(),
+  submission_id uuid not null references public.receipt_submissions(id) on delete cascade,
+  storage_path text not null,
+  original_name text not null,
+  mime_type text not null,
+  size_bytes bigint not null,
+  created_at timestamptz not null default now(),
+  display_name text not null default '',
+  display_amount numeric
+);
+
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   role text not null default 'admin' check (role in ('admin','viewer')),
@@ -33,13 +58,18 @@ create table if not exists public.app_settings (
   updated_by uuid references auth.users(id)
 );
 
+alter table public.app_settings add column if not exists description text not null default '';
+alter table public.app_settings add column if not exists is_public boolean not null default false;
+alter table public.app_settings add column if not exists updated_by uuid references auth.users(id);
 alter table public.app_settings enable row level security;
 
+drop policy if exists "admins can read settings" on public.app_settings;
 create policy "admins can read settings"
 on public.app_settings for select
 to authenticated
 using (public.is_receipt_admin());
 
+drop policy if exists "admins can update settings" on public.app_settings;
 create policy "admins can update settings"
 on public.app_settings for update
 to authenticated
@@ -73,18 +103,20 @@ alter table public.receipt_submissions
 alter table public.receipt_submissions enable row level security;
 alter table public.receipt_files enable row level security;
 
--- Admin läser och uppdaterar rapporter via autentiserad session.
+drop policy if exists "admins can read receipt submissions" on public.receipt_submissions;
 create policy "admins can read receipt submissions"
 on public.receipt_submissions for select
 to authenticated
 using (public.is_receipt_admin());
 
+drop policy if exists "admins can update receipt submissions" on public.receipt_submissions;
 create policy "admins can update receipt submissions"
 on public.receipt_submissions for update
 to authenticated
 using (public.is_receipt_admin())
 with check (public.is_receipt_admin());
 
+drop policy if exists "admins can read receipt files" on public.receipt_files;
 create policy "admins can read receipt files"
 on public.receipt_files for select
 to authenticated
