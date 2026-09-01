@@ -88,3 +88,95 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
   #upload .receipt-actions{background:none}
   .bar .btn:not(:disabled){box-shadow:0 8px 20px rgba(23,107,74,.18)}
 }
+
+/* 2026-09-01: sammanhållen progressmeny */
+.header{
+  margin:0 -6px 14px;
+  padding:8px 6px 10px;
+  border-bottom:0;
+  box-shadow:none;
+}
+.timeline{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:4px;
+  max-width:620px;
+  margin:0 auto;
+  padding:8px;
+  border:1px solid rgba(23,107,74,.14);
+  border-radius:18px;
+  background:rgba(255,255,255,.82);
+  box-shadow:0 8px 24px rgba(20,65,47,.07);
+  overflow:hidden;
+}
+.timeline::before{
+  content:"";
+  position:absolute;
+  left:16.66%;
+  right:16.66%;
+  top:25px;
+  height:2px;
+  background:#dfe6e1;
+  z-index:0;
+}
+.seg{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:1fr;
+  justify-items:center;
+  align-content:start;
+  gap:5px;
+  min-height:54px;
+  padding:3px 5px 6px;
+  border:0!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#75827c;
+  opacity:1;
+  font-size:.73rem;
+  line-height:1.15;
+  transition:background .18s ease,color .18s ease,transform .18s ease;
+}
+.seg-index{
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  border:2px solid #d3dbd6;
+  border-radius:999px;
+  background:#fff;
+  color:#718079;
+  font-size:.78rem;
+  font-weight:900;
+  box-shadow:0 0 0 4px rgba(255,255,255,.88);
+}
+.seg-label{display:block;max-width:100%;font-weight:800;text-align:center;white-space:normal}
+.seg.active{color:var(--action-dark)!important;background:var(--action-soft)!important}
+.seg.active .seg-index{border-color:var(--action);background:var(--action);color:#fff;box-shadow:0 0 0 4px #e7f3eb}
+.seg.done{color:#356b52!important}
+.seg.done .seg-index{border-color:#6f9f87;background:#edf6f0;color:#245d43}
+.seg.done .seg-index::before{content:"✓"}.seg.done .seg-index{font-size:0}.seg.done .seg-index::before{font-size:.84rem}
+.seg:not(:disabled):hover,.seg:not(:disabled):focus-visible{background:#eef6f1!important;transform:translateY(-1px)}
+.seg:disabled{opacity:.72}
+
+/* Tomt kvittoläge: nästa-knappen står ensam och centrerad */
+#upload .receipt-actions.continue-centered{
+  grid-template-columns:minmax(220px,360px);
+  justify-content:center;
+}
+#upload .receipt-actions.continue-centered #continue{
+  grid-column:1;
+  width:100%;
+}
+
+@media(max-width:520px){
+  .header{margin-left:-10px;margin-right:-10px;padding-left:0;padding-right:0}
+  .timeline{border-radius:16px;padding:7px 5px;gap:1px}
+  .timeline::before{left:16%;right:16%;top:23px}
+  .seg{min-height:52px;padding:2px 2px 5px;font-size:.68rem}
+  .seg-index{width:28px;height:28px}
+  .seg-label{letter-spacing:-.01em}
+}
