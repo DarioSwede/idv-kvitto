@@ -1,5 +1,12 @@
 # Versionshistorik
 
+## 2026.09.01.1
+- Reseersättningen höjs till 25 kr per mil, alltså 2,50 kr per kilometer.
+- Servervalidering, PDF, e-post och tester använder samma beräkningsgrund.
+- Grund för modulär adminbackend läggs till med separata moduler för autentisering, inställningar och inskick.
+- Datamodellen förbereds för status Ny, Pågående och Klar, adminanteckning, handläggare och strukturerad reseinformation.
+- Centrala framtida parametrar för bland annat milersättning, filgränser, OCR, mottagaradress och lagringstid läggs i en inställningstabell.
+
 ## 2026.08.31.3
 - Valfri reseersättning för eget fordon kan anges med kilometer och resbeskrivning.
 - Appen beräknar 2,40 kr per kilometer och kräver att användaren godkänner förslaget.
