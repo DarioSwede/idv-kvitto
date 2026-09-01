@@ -6,7 +6,6 @@ async function boot(){
   if(!response.ok)throw new Error('Kunde inte ladda formuläret');
   let html=await response.text();
   html=applyTemplates(html,meta);
-  html=html.replace('</footer>','<a class="privacy-link" href="privacy.html">Så hanterar vi dina personuppgifter</a></footer>');
   html=html.replace('</head>',`<link rel="stylesheet" href="styles/app.css?v=${build}"><link rel="stylesheet" href="styles/clarity.css?v=${build}"></head>`);
   html=html.replace('</body>',`<script type="module" src="js/app-ui.js?v=${build}"><\/script></body>`);
   document.open();
