@@ -42,7 +42,7 @@ test('kvittoflödet startar, validerar och når slutkontrollen',async({page})=>{
   await page.getByRole('checkbox',{name:'Har du rest med eget fordon och ska ha reseersättning?'}).check();
   await page.getByLabel('Antal kilometer').fill('34');
   await page.getByLabel('Beskriv resan').fill('Hemmet till samlingen och tillbaka');
-  await expect(page.locator('#travelCalculation')).toHaveText('34 km ÷ 10 × 24 kr = 81,60 kr');
+  await expect(page.locator('#travelCalculation')).toHaveText('34 km ÷ 10 × 25 kr = 85,00 kr');
   await page.getByLabel(/Jag godkänner det föreslagna/).check();
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
@@ -50,15 +50,15 @@ test('kvittoflödet startar, validerar och når slutkontrollen',async({page})=>{
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
   await expect(page.locator('#summary')).toContainText('Testperson');
   await expect(page.locator('#summary')).toContainText('125');
-  await expect(page.locator('#summary')).toContainText('81,60 kr');
-  await expect(page.locator('#summary')).toContainText('206,60 kr');
+  await expect(page.locator('#summary')).toContainText('85,00 kr');
+  await expect(page.locator('#summary')).toContainText('210,00 kr');
   await page.evaluate(()=>{
     const amount=document.querySelector('#reviewFiles .review-amount-wrap input');
     amount.value='150';
     amount.dispatchEvent(new Event('input',{bubbles:true}));
   });
   await expect(page.locator('#summary .receipt-total')).toContainText('150,00 kr');
-  await expect(page.locator('#summary .grand-total')).toContainText('231,60 kr');
+  await expect(page.locator('#summary .grand-total')).toContainText('235,00 kr');
   await page.locator('#confirm').check();
   await expect(page.getByRole('button',{name:'Skicka in kvitton'})).toBeEnabled();
 });
@@ -74,7 +74,7 @@ test('reseersättning kan ändras och stängas av utan kvarvarande belopp',async
   await page.getByLabel(/Jag godkänner det föreslagna/).check();
   await page.getByLabel('Antal kilometer').fill('40');
   await expect(page.getByLabel(/Jag godkänner det föreslagna/)).not.toBeChecked();
-  await expect(page.locator('#travelCalculation')).toHaveText('40 km ÷ 10 × 24 kr = 96,00 kr');
+  await expect(page.locator('#travelCalculation')).toHaveText('40 km ÷ 10 × 25 kr = 100,00 kr');
   await page.getByRole('checkbox',{name:'Har du rest med eget fordon och ska ha reseersättning?'}).uncheck();
   const travel=await page.evaluate(()=>window.__idvTravel.getData());
   expect(travel).toEqual({enabled:false,valid:true,approved:false,km:null,description:'',amount:0,calculation:''});

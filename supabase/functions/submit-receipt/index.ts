@@ -5,6 +5,8 @@ import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 const corsHeaders = { "Access-Control-Allow-Origin": "https://darioswede.github.io", "Access-Control-Allow-Headers": "authorization, apikey, content-type", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" };
 const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/heic", "image/heif", "application/pdf"]);
+const TRAVEL_RATE_PER_KM = 2.5;
+const TRAVEL_RATE_PER_MIL = 25;
 const respond = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: jsonHeaders });
 const shortText = (value: string, max = 95) => { const clean = value.replace(/[\r\n\t]+/g, " ").trim(); return clean.length > max ? clean.slice(0, max - 1) + "…" : clean; };
 const pdfSafeText = (value: string) => value.normalize("NFC").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, "...").replace(/[^\x20-\x7E\u00A0-\u00FF]/gu, "?");
@@ -61,8 +63,8 @@ Deno.serve(async (req: Request) => {
     if (travelEnabled) {
       if (!travelApproved || travelKm === null || !Number.isFinite(travelKm) || travelKm < 0.01 || travelKm > 10000 || Math.abs(travelKm * 100 - Math.round(travelKm * 100)) > 1e-9) return respond({ error: "Kontrollera antal kilometer och godkänn reseersättningen." }, 400);
       if (!travelDescription || travelDescription.length > 500) return respond({ error: "Beskriv resan med högst 500 tecken." }, 400);
-      const expected = Math.round(travelKm * 2.4 * 100) / 100;
-      if (!Number.isFinite(travelAmount) || travelAmount !== expected) return respond({ error: "Reseersättningen stämmer inte med 2,40 kr per kilometer." }, 400);
+      const expected = Math.round(travelKm * TRAVEL_RATE_PER_KM * 100) / 100;
+      if (!Number.isFinite(travelAmount) || travelAmount !== expected) return respond({ error: `Reseersättningen stämmer inte med ${TRAVEL_RATE_PER_KM.toLocaleString('sv-SE')} kr per kilometer.` }, 400);
     } else if (travelApproved || travelKmRaw || travelDescription || travelAmountRaw) return respond({ error: "Reseuppgifter får bara skickas när reseersättning är aktiverad." }, 400);
     let totalSize = 0;
     for (const file of files) { totalSize += file.size; if (!allowedTypes.has(file.type)) return respond({ error: `Filtypen för ${file.name} stöds inte.` }, 400); if (!file.size || file.size > 10 * 1024 * 1024) return respond({ error: `${file.name} är tom eller större än 10 MB.` }, 400); }
@@ -71,11 +73,11 @@ Deno.serve(async (req: Request) => {
     if (!url || !serviceKey) throw new Error("Supabase-miljön saknar servernyckel.");
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
     const submittedAt = new Date(), receiptTotal = receiptAmounts.reduce((sum, amount) => sum + (amount ?? 0), 0), amountTotal = receiptTotal + travelAmount;
-    const calculation = travelEnabled ? `${formatNumber(travelKm!)} km ÷ 10 × 24 kr = ${formatAmount(travelAmount)}` : "";
+    const calculation = travelEnabled ? `${formatNumber(travelKm!)} km ÷ 10 × ${TRAVEL_RATE_PER_MIL} kr = ${formatAmount(travelAmount)}` : "";
     const travel: TravelDetails = { enabled: travelEnabled, km: travelKm, description: travelDescription, amount: travelAmount, calculation };
     const travelSummary = travelEnabled ? `Reseersättning\nResa: ${travelDescription}\nKilometer: ${formatNumber(travelKm!)} km\nBeräkning: ${calculation}\nGodkänt belopp: ${formatAmount(travelAmount)}` : "";
     const storedOtherInfo = [otherInfo, travelSummary].filter(Boolean).join("\n\n");
-    const { data: submission, error: submissionError } = await supabase.from("receipt_submissions").insert({ sender_name: senderName, sender_email: senderEmail, event_tag: eventTag, other_info: storedOtherInfo, amount_total: amountTotal || null, cc_self: false }).select("id").single();
+    const { data: submission, error: submissionError } = await supabase.from("receipt_submissions").insert({ sender_name: senderName, sender_email: senderEmail, event_tag: eventTag, other_info: storedOtherInfo, amount_total: amountTotal || null, receipt_total: receiptTotal || null, travel_km: travelEnabled ? travelKm : null, travel_description: travelEnabled ? travelDescription : null, travel_amount: travelEnabled ? travelAmount : null, cc_self: false }).select("id").single();
     if (submissionError) throw submissionError;
     const uploadedPaths: string[] = [];
     let finalPdfBytes: Uint8Array;

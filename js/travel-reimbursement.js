@@ -1,4 +1,5 @@
-export const TRAVEL_RATE_PER_KM=2.4;
+export const TRAVEL_RATE_PER_KM=2.5;
+export const TRAVEL_RATE_PER_MIL=25;
 export const MAX_TRAVEL_KM=10000;
 
 export function calculateTravelAmount(km){
@@ -10,7 +11,7 @@ export function calculateTravelAmount(km){
 export function formatTravelCalculation(km){
   const amount=calculateTravelAmount(km);
   if(amount===null)return '';
-  return `${Number(km).toLocaleString('sv-SE',{maximumFractionDigits:2})} km ÷ 10 × 24 kr = ${amount.toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})} kr`;
+  return `${Number(km).toLocaleString('sv-SE',{maximumFractionDigits:2})} km ÷ 10 × ${TRAVEL_RATE_PER_MIL} kr = ${amount.toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})} kr`;
 }
 
 export function initTravelReimbursement(){
