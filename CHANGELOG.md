@@ -1,5 +1,13 @@
 # Versionshistorik
 
+## 2026.09.01.2
+- Inskick delas upp i tre tydliga lägen: endast kvitton, endast reseräkning eller båda.
+- Endast reseräkning kan skickas utan kvittofiler, medan övriga lägen kräver kvitton.
+- Frontend och backend validerar varje valt flöde separat och skickar `submission_mode` i underlaget.
+- PDF och e-postsammanställning visar vilken typ av underlag som skickats in.
+- Reseersättningen fortsätter använda 25 kr per mil, alltså 2,50 kr per kilometer.
+- Den förenklade OCR-hanteringen behålls.
+
 ## 2026.09.01.1
 - Reseersättningen höjs till 25 kr per mil, alltså 2,50 kr per kilometer.
 - Servervalidering, PDF, e-post och tester använder samma beräkningsgrund.
