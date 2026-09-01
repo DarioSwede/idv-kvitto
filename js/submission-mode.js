@@ -14,6 +14,7 @@ export function initSubmissionMode(){
   const travelOption=document.querySelector('.travel-option');
   const addMore=document.querySelector('.missing-receipt');
   const summary=document.getElementById('summary');
+  const apiEndpoint=window.__idvReceiptApi?.endpoint||'';
   if(!upload||!continueBtn)return;
 
   const chooser=document.createElement('fieldset');
@@ -42,7 +43,9 @@ export function initSubmissionMode(){
       row.innerHTML='<span>Typ av underlag</span><b></b>';
       summary.prepend(row);
     }
-    row.querySelector('b').textContent=MODE_LABELS[getMode()];
+    const value=row.querySelector('b');
+    const label=MODE_LABELS[getMode()];
+    if(value&&value.textContent!==label)value.textContent=label;
   }
 
   function sync(){
@@ -78,7 +81,8 @@ export function initSubmissionMode(){
 
   const nativeFetch=window.fetch.bind(window);
   window.fetch=(input,init)=>{
-    if(init?.body instanceof FormData&&String(init.method||'GET').toUpperCase()==='POST'){
+    const url=typeof input==='string'?input:input?.url||'';
+    if(url===apiEndpoint&&init?.body instanceof FormData&&String(init.method||'GET').toUpperCase()==='POST'){
       init.body.set('submission_mode',getMode());
     }
     return nativeFetch(input,init);
