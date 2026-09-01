@@ -3,12 +3,14 @@ import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
+import {initTravelReimbursement} from './travel-reimbursement.js';
 
 initUploadUi();
 initMaskMode();
 initDonePage();
 initReceiptOcr();
 initContactValidation();
+initTravelReimbursement();
 initReceiptManager();
 initEmailCopy();
 

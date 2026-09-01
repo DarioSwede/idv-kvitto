@@ -1,5 +1,11 @@
 # Versionshistorik
 
+## 2026.08.31.3
+- Valfri reseersättning för eget fordon kan anges med kilometer och resbeskrivning.
+- Appen beräknar 2,40 kr per kilometer och kräver att användaren godkänner förslaget.
+- Kvitton, reseersättning och total visas separat i slutkontroll, PDF och inskickad sammanställning.
+- Integritetslänken ligger direkt under uppladdningsrutan och öppnas separat så uppladdade kvitton inte försvinner.
+
 ## 2026.08.31.2
 - Integritetsinformation läggs till och länkas från formulärets sidfot.
 - README med drift, versionering och återställning införs.
