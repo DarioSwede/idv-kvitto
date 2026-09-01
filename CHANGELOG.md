@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.01.5
+- "Nästa: dina uppgifter" ligger fullbredd och på samma plats i alla tre inskickslägen.
+- Avbryt-knappen tas bort från första steget.
+- Kvittolägen kräver fortfarande kvitto innan nästa steg kan öppnas, medan Endast reseräkning kan fortsätta utan kvitto.
+
 ## 2026.09.01.4
 - Ensamma huvudknappar centreras även i övriga steg i flödet för ett mer konsekvent visuellt uttryck.
 - När en sekundär knapp blir synlig återgår huvudknappen till ordinarie radlayout.
