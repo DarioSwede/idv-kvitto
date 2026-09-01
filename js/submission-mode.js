@@ -83,7 +83,13 @@ export function initSubmissionMode(){
   window.fetch=(input,init)=>{
     const url=typeof input==='string'?input:input?.url||'';
     if(url===apiEndpoint&&init?.body instanceof FormData&&String(init.method||'GET').toUpperCase()==='POST'){
-      init.body.set('submission_mode',getMode());
+      const mode=getMode();
+      init.body.set('submission_mode',mode);
+      if(mode==='travel'){
+        init.body.delete('receipts');
+        init.body.delete('receipt_names');
+        init.body.delete('receipt_amounts');
+      }
     }
     return nativeFetch(input,init);
   };
