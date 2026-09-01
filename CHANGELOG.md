@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.01.3
+- Toppmenyn får en mjukare, sammanhållen progressdesign med tydliga steg och bättre mobil läsbarhet.
+- Knappen "Nästa: dina uppgifter" centreras när inget kvitto ännu lagts till i läget Endast kvitton.
+- Knappen återgår till normal layout när ett kvitto läggs till eller när Endast reseräkning väljs.
+
 ## 2026.09.01.2
 - Inskick delas upp i tre tydliga lägen: endast kvitton, endast reseräkning eller båda.
 - Endast reseräkning kan skickas utan kvittofiler, medan övriga lägen kräver kvitton.
