@@ -74,10 +74,26 @@ test('reseersättning kan ändras och stängas av utan kvarvarande belopp',async
   expect(travel).toEqual({enabled:false,valid:true,approved:false,km:null,description:'',amount:0,calculation:''});
 });
 
-test('integritetssidan är nåbar från formuläret',async({page})=>{
+test('integritetslänken ligger under uppladdningen och bevarar uppladdat kvitto',async({page})=>{
   await page.goto('/');
-  await page.getByRole('link',{name:/personuppgifter/i}).click();
-  await expect(page).toHaveURL(/privacy\.html$/);
-  await expect(page.getByRole('heading',{name:'Så hanterar vi dina personuppgifter'})).toBeVisible();
-  await expect(page.getByText(/HTTPS\/TLS/)).toBeVisible();
+  await page.evaluate(()=>{
+    const state=window.__idvReceiptState;
+    const canvas=document.createElement('canvas');
+    canvas.width=20;canvas.height=20;
+    state.photos.push({name:'Sparat kvitto',amount:'50',amountSource:'manual',ocrState:'manual',ocrMessage:'Test',canvas,masks:[],done:true,pdf:false,processing:false});
+    state.render();
+  });
+  await expect(page.locator('.receipt-item')).toHaveCount(1);
+  const privacyLink=page.getByRole('link',{name:/personuppgifter/i});
+  await expect(privacyLink).toBeVisible();
+  await expect(page.locator('.dropzone + .privacy-link-row')).toContainText('Så hanterar vi dina personuppgifter');
+  const popupPromise=page.waitForEvent('popup');
+  await privacyLink.click();
+  const popup=await popupPromise;
+  await popup.waitForLoadState();
+  await expect(popup).toHaveURL(/privacy\.html$/);
+  await expect(popup.getByRole('heading',{name:'Så hanterar vi dina personuppgifter'})).toBeVisible();
+  await expect(page.locator('.receipt-item')).toHaveCount(1);
+  await expect(page.locator('.receipt-name')).toHaveValue('Sparat kvitto');
+  await popup.close();
 });
