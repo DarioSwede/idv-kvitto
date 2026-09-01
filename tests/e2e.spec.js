@@ -50,7 +50,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.locator('#summary')).toContainText('210,00 kr');
 });
 
-test('endast reseräkning går igenom utan kvittofil och skickar rätt mode',async({page})=>{
+test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitto',async({page})=>{
   let submittedBody='';
   await page.route('**/functions/v1/**',async route=>{
     if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":false}'});
@@ -59,6 +59,14 @@ test('endast reseräkning går igenom utan kvittofil och skickar rätt mode',asy
   });
   await page.goto('/');
   await waitForAppState(page);
+  await page.evaluate(()=>{
+    const state=window.__idvReceiptState;
+    const canvas=document.createElement('canvas');
+    canvas.width=40;canvas.height=40;
+    state.photos.push({name:'Kvitto som inte ska skickas',amount:'75',amountSource:'manual',ocrState:'manual',ocrMessage:'Test',canvas,masks:[],done:true,pdf:false,processing:false});
+    state.render();
+  });
+  await expect(page.locator('.receipt-item')).toHaveCount(1);
   await page.getByLabel(/Endast reseräkning/).check();
   await expect(page.locator('#dropzone')).toBeHidden();
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
@@ -76,6 +84,9 @@ test('endast reseräkning går igenom utan kvittofil och skickar rätt mode',asy
   await expect.poll(()=>submittedBody).toContain('name="submission_mode"');
   expect(submittedBody).toContain('travel');
   expect(submittedBody).not.toContain('name="receipts"');
+  expect(submittedBody).not.toContain('name="receipt_names"');
+  expect(submittedBody).not.toContain('name="receipt_amounts"');
+  expect(submittedBody).not.toContain('Kvitto som inte ska skickas');
 });
 
 test('byte till endast kvitton nollställer reseuppgifter',async({page})=>{
