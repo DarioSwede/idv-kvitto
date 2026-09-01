@@ -9,6 +9,7 @@ export function initSubmissionMode(){
   const fileInput=document.getElementById('file');
   const receiptPanel=document.getElementById('uploadThumbHome');
   const continueBtn=document.getElementById('continue');
+  const receiptActions=document.querySelector('#upload .receipt-actions');
   const travelCard=document.querySelector('.travel-card');
   const travelEnabled=document.getElementById('travelEnabled');
   const travelOption=document.querySelector('.travel-option');
@@ -50,6 +51,7 @@ export function initSubmissionMode(){
 
   function sync(){
     const mode=getMode();
+    const receiptsPresent=hasReceipts();
     const needsReceipts=mode!=='travel';
     const needsTravel=mode!=='receipts';
     [dropzone,fileInput,receiptPanel].forEach(el=>{if(el)el.hidden=!needsReceipts});
@@ -67,7 +69,10 @@ export function initSubmissionMode(){
     continueBtn.textContent='Nästa: dina uppgifter';
     continueBtn.title=canContinue?'':'Lägg till minst ett kvitto och fyll i belopp på alla kvitton';
     if(subtitle)subtitle.textContent=mode==='travel'?'Du behöver inte bifoga något kvitto. Fyll i resan i nästa steg.':needsReceipts?'Lägg till kvitton och fyll i belopp innan du går vidare.':'';
+    const centerContinue=mode==='receipts'&&!receiptsPresent;
+    receiptActions?.classList.toggle('continue-centered',centerContinue);
     document.body.dataset.submissionMode=mode;
+    document.body.dataset.hasReceipts=String(receiptsPresent);
   }
 
   window.__idvSubmissionMode={

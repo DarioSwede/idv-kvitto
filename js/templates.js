@@ -5,9 +5,9 @@ export function applyTemplates(html,versionMeta={}){
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
   const timelineEnd=html.indexOf('</div>',timelineStart)+6;
   const timeline=`<div class="timeline" aria-label="Steg i formuläret">
-<button class="seg active" type="button" data-step="0" title="Gå till kvitton">1. Bifoga kvitton</button>
-<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled>2. Dina uppgifter</button>
-<button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled>3. Kontrollera &amp; skicka</button>
+<button class="seg active" type="button" data-step="0" title="Gå till kvitton"><span class="seg-index">1</span><span class="seg-label">Kvitton</span></button>
+<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled><span class="seg-index">2</span><span class="seg-label">Dina uppgifter</span></button>
+<button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled><span class="seg-index">3</span><span class="seg-label">Kontroll &amp; skicka</span></button>
 </div>`;
   if(timelineStart>-1)html=html.slice(0,timelineStart)+timeline+html.slice(timelineEnd);
 
