@@ -40,7 +40,8 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await page.getByLabel('Kontonummer').fill('1234567890');
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
   await page.getByLabel('Clearingnummer').fill('5000');
-  await page.getByLabel('Kontonummer').fill('1234567890');
+  await page.getByLabel('Kontonummer').fill('1234-5678-9012');
+  await expect(page.getByLabel('Kontonummer')).toHaveValue('123456789012');
   await expect(page.locator('#bankAccountStatus')).toContainText('Clearingnumret finns');
   await expect(page.locator('#cc')).toBeEnabled();
   await expect(page.locator('#cc')).toBeChecked();

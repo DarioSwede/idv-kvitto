@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.06.4
+- Formaterade kontonummer normaliseras innan längdvalidering, så mellanslag och bindestreck inte kan kapa det inskickade numret.
+
 ## 2026.09.06.3
 - Inskickaren anger clearing- och kontonummer för utbetalningen.
 - Clearingnumret kontrolleras mot aktuella svenska clearingserier och kontonumret längdkontrolleras.
