@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.06.2
+- OCR-förslag avrundas enligt vanlig standard till närmaste hela krona, till exempel 21,78 kr till 22 kr.
+- Ett nytt OCR-förslag pulserar diskret tills användaren godkänner eller ändrar beloppet.
+
 ## 2026.09.06.1
 - Ett tomt totalbelopp orsakar inte längre ett otydligt serverfel.
 - Underlaget mejlas med sammanställning och färdig PDF till `kvitton@idrottsveteranerna.se`.

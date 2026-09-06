@@ -128,3 +128,21 @@ test('integritetslänken ligger under uppladdningen och bevarar uppladdat kvitto
   await expect(page.locator('.receipt-item')).toHaveCount(1);
   await popup.close();
 });
+
+test('avrundat OCR-förslag pulserar tills det används',async({page})=>{
+  await page.goto('/');
+  await waitForAppState(page);
+  await page.evaluate(()=>{
+    const state=window.__idvReceiptState;
+    const canvas=document.createElement('canvas');
+    canvas.width=20;canvas.height=20;
+    state.photos.push({name:'Avrundningstest',amount:'',amountSource:'',ocrSuggestion:'22',ocrState:'suggested',ocrMessage:'OCR-förslag – kontrollera beloppet',canvas,masks:[],done:true,pdf:false,processing:false});
+    state.render();
+  });
+  const suggestion=page.locator('.receipt-hint[data-state="suggested"]');
+  await expect(suggestion).toContainText('22 kr (avrundat till hel krona)');
+  expect(await suggestion.evaluate(element=>getComputedStyle(element).animationName)).toBe('ocr-suggestion-pulse');
+  await suggestion.click();
+  await expect(page.getByLabel('Belopp för kvitto 1')).toHaveValue('22');
+  await expect(page.locator('.receipt-hint[data-state="suggested"]')).toHaveCount(0);
+});
