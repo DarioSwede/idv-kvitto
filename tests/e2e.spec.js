@@ -9,7 +9,7 @@ async function waitForAppState(page){
 
 test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await page.route('**/functions/v1/**',async route=>{
-    if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":false}'});
+    if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true}'});
     return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true,"reference":"E2E"}'});
   });
 
@@ -17,7 +17,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
   await expect(page.getByText('Vad vill du skicka in?')).toBeVisible();
   await page.getByLabel(/Kvitton \+ reseräkning/).check();
-  await expect(page.locator('#deliveryNote')).toContainText('betala@idrottsveteranerna.se');
+  await expect(page.locator('#deliveryNote')).toContainText('kvitton@idrottsveteranerna.se');
   await expect(page.locator('.build-meta')).toContainText(`Version ${version}`);
   await waitForAppState(page);
 
@@ -36,6 +36,9 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
+  await expect(page.locator('#cc')).toBeEnabled();
+  await expect(page.locator('#cc')).toBeChecked();
+  await expect(page.locator('.copy-option small')).toContainText('samma sammanställning och PDF');
   await expect(page.locator('#travelFields')).toBeVisible();
   await page.getByLabel('Antal kilometer').fill('34');
   await page.getByLabel('Beskriv resan').fill('Hemmet till samlingen och tillbaka');

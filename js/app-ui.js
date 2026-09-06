@@ -28,7 +28,7 @@ async function initEmailCopy(){
     const result=await response.json();
     checkbox.disabled=!result.email_configured;
     checkbox.checked=!!result.email_configured;
-    help.textContent=result.email_configured?'Kopian innehåller sammanställningen och den färdiga PDF-filen.':'E-postkopian är inte aktiverad ännu.';
+    help.textContent=result.email_configured?'Du får samma sammanställning och PDF som skickas till kvitton@idrottsveteranerna.se.':'E-postkopian är inte aktiverad ännu.';
   }catch{
     checkbox.checked=false;
     help.textContent='E-postkopian kan inte användas just nu.';

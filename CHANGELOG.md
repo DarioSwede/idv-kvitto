@@ -1,5 +1,11 @@
 # Versionshistorik
 
+## 2026.09.06.1
+- Ett tomt totalbelopp orsakar inte längre ett otydligt serverfel.
+- Underlaget mejlas med sammanställning och färdig PDF till `kvitton@idrottsveteranerna.se`.
+- Användaren kan välja en egen e-postkopia med exakt samma sammanställning och PDF.
+- En PDF som inte kan läsas ger ett begripligt fel med filnamn och förslag på åtgärd.
+
 ## 2026.09.01.5
 - "Nästa: dina uppgifter" ligger fullbredd och på samma plats i alla tre inskickslägen.
 - Avbryt-knappen tas bort från första steget.
