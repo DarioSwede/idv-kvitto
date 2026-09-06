@@ -36,6 +36,13 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
+  await page.getByLabel('Clearingnummer').fill('9999');
+  await page.getByLabel('Kontonummer').fill('1234567890');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
+  await page.getByLabel('Clearingnummer').fill('5000');
+  await page.getByLabel('Kontonummer').fill('1234-5678-7890');
+  await expect(page.getByLabel('Kontonummer')).toHaveValue('123456787890');
+  await expect(page.locator('#bankAccountStatus')).toContainText('Clearingnumret finns');
   await expect(page.locator('#cc')).toBeEnabled();
   await expect(page.locator('#cc')).toBeChecked();
   await expect(page.locator('.copy-option small')).toContainText('samma sammanställning och PDF');
@@ -51,6 +58,8 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.locator('#summary')).toContainText('125');
   await expect(page.locator('#summary')).toContainText('85,00 kr');
   await expect(page.locator('#summary')).toContainText('210,00 kr');
+  await expect(page.locator('#summary')).toContainText('Clearing 5000 · •••• 7890');
+  await expect(page.locator('#summary')).not.toContainText('1234567890');
 });
 
 test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitto',async({page})=>{
@@ -76,6 +85,8 @@ test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitt
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
   await page.getByLabel('Ditt namn').fill('Resenär');
   await page.getByLabel('Din e-postadress').fill('resa@example.se');
+  await page.getByLabel('Clearingnummer').fill('6000');
+  await page.getByLabel('Kontonummer').fill('7654321');
   await page.getByLabel('Antal kilometer').fill('40');
   await page.getByLabel('Beskriv resan').fill('Tur och retur');
   await page.getByLabel(/Jag godkänner det föreslagna/).check();
@@ -86,6 +97,8 @@ test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitt
   await page.getByRole('button',{name:'Skicka in kvitton'}).click();
   await expect.poll(()=>submittedBody).toContain('name="submission_mode"');
   expect(submittedBody).toContain('travel');
+  expect(submittedBody).toContain('name="clearing_number"');
+  expect(submittedBody).toContain('name="account_number"');
   expect(submittedBody).not.toContain('name="receipts"');
   expect(submittedBody).not.toContain('name="receipt_names"');
   expect(submittedBody).not.toContain('name="receipt_amounts"');

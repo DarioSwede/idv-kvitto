@@ -54,6 +54,8 @@ test('ensamma huvudknappar centreras i senare steg',async({page})=>{
 
   await page.getByLabel('Ditt namn').fill('Layouttest');
   await page.getByLabel('Din e-postadress').fill('layout@example.se');
+  await page.getByLabel('Clearingnummer').fill('5000');
+  await page.getByLabel('Kontonummer').fill('1234567890');
   await page.getByLabel('Antal kilometer').fill('10');
   await page.getByLabel('Beskriv resan').fill('Tur och retur');
   await page.getByLabel(/Jag godkänner det föreslagna/).check();

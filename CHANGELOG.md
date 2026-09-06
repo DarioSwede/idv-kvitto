@@ -1,5 +1,14 @@
 # Versionshistorik
 
+## 2026.09.06.4
+- Formaterade kontonummer normaliseras innan längdvalidering, så mellanslag och bindestreck inte kan kapa det inskickade numret.
+
+## 2026.09.06.3
+- Inskickaren anger clearing- och kontonummer för utbetalningen.
+- Clearingnumret kontrolleras mot aktuella svenska clearingserier och kontonumret längdkontrolleras.
+- Kontonumret visas maskerat i kontrollsteget och i avsändarens e-postkopia.
+- Fullständiga kontouppgifter skickas endast till kvittohanteringen och lagras i den RLS-skyddade inskickstabellen.
+
 ## 2026.09.06.2
 - OCR-förslag avrundas enligt vanlig standard till närmaste hela krona, till exempel 21,78 kr till 22 kr.
 - Ett nytt OCR-förslag pulserar diskret tills användaren godkänner eller ändrar beloppet.

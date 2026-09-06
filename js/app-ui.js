@@ -5,11 +5,13 @@ import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
 import {initTravelReimbursement} from './travel-reimbursement.js';
 import {initSubmissionMode} from './submission-mode.js';
+import {initBankAccount,maskAccountNumber} from './bank-account.js';
 
 initUploadUi();
 initMaskMode();
 initDonePage();
 initReceiptOcr();
+initBankAccount();
 initContactValidation();
 initTravelReimbursement();
 initSubmissionMode();
@@ -188,6 +190,17 @@ function initReceiptManager(){
         label.textContent='Kopia till dig';
         const value=document.createElement('b');
         value.textContent=cc.checked?`Ja – ${email}`:'Nej';
+        row.append(label,value);
+        summary.append(row);
+      }
+      const bank=window.__idvBankAccount?.getData?.();
+      if(summary&&bank?.valid){
+        const row=document.createElement('div');
+        row.className='row bank-summary';
+        const label=document.createElement('span');
+        label.textContent='Konto för utbetalning';
+        const value=document.createElement('b');
+        value.textContent=`Clearing ${bank.clearingNumber} · ${maskAccountNumber(bank.accountNumber)}`;
         row.append(label,value);
         summary.append(row);
       }
