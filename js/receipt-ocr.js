@@ -77,6 +77,11 @@ export function findTotalAmount(text){
   return extractTotalCandidate(text).amount;
 }
 
+export function roundAmountToWholeKrona(value){
+  const amount=Number(value);
+  return Number.isFinite(amount)&&amount>0?Math.round(amount):null;
+}
+
 export function calculateOcrScale(width,height){
   const maxWidth=1900;
   const maxHeight=2600;
@@ -197,10 +202,10 @@ async function processReceipt(detail){
 
     const result=await Promise.race([ocrJob,watchdog.promise]);
     if(!active||!result)return;
-    const amount=result.amount;
+    const amount=roundAmountToWholeKrona(result.amount);
     const amountApplied=amount!==null&&!getAmount();
     if(amountApplied){
-      setSuggestion(amount.toFixed(2));
+      setSuggestion(String(amount));
     }
     setOcrState?.(amountApplied?'suggested':'none',amountApplied?'OCR-förslag – kontrollera beloppet':'OCR hittade inget tillräckligt säkert belopp – fyll i själv');
   }catch(error){
