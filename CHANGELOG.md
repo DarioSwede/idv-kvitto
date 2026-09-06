@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.06.5
+- I läget Endast reseersättning döljs panelen för kvittonamn och kvittofiler.
+
 ## 2026.09.06.4
 - Formaterade kontonummer normaliseras innan längdvalidering, så mellanslag och bindestreck inte kan kapa det inskickade numret.
 

@@ -81,6 +81,7 @@ test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitt
   await expect(page.locator('.receipt-item')).toHaveCount(1);
   await page.getByLabel(/Endast reseräkning/).check();
   await expect(page.locator('#dropzone')).toBeHidden();
+  await expect(page.locator('.missing-receipt')).toBeHidden();
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
   await page.getByLabel('Ditt namn').fill('Resenär');

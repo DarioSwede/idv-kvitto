@@ -55,6 +55,7 @@ export function initSubmissionMode(){
     const needsReceipts=mode!=='travel';
     const needsTravel=mode!=='receipts';
     [dropzone,fileInput,receiptPanel].forEach(el=>{if(el)el.hidden=!needsReceipts});
+    if(addMore)addMore.hidden=!needsReceipts;
     if(travelCard)travelCard.hidden=!needsTravel;
     if(addMore)addMore.hidden=!needsReceipts;
     if(travelOption)travelOption.hidden=true;
