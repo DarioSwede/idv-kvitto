@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.06.5
+- Namn och e-post visas kompakt på samma rad på större skärmar.
+- Reseersättningen visar kilometer och beräkning tillsammans och tänder beskrivning samt godkännande stegvis.
+- Den dubbla fordonsfrågan lämnas dold när reseersättning redan valts på första sidan.
+
 ## 2026.09.06.4
 - Formaterade kontonummer normaliseras innan längdvalidering, så mellanslag och bindestreck inte kan kapa det inskickade numret.
 

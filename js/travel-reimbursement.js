@@ -20,6 +20,7 @@ export function initTravelReimbursement(){
   const km=document.getElementById('travelKm');
   const description=document.getElementById('travelDescription');
   const calculation=document.getElementById('travelCalculation');
+  const descriptionField=document.getElementById('travelDescriptionField');
   const approve=document.getElementById('travelApprove');
   const approval=document.getElementById('travelApproval');
   const error=document.getElementById('travelError');
@@ -29,11 +30,11 @@ export function initTravelReimbursement(){
   function sync(){
     fields.hidden=!enabled.checked;
     enabled.setAttribute('aria-expanded',String(enabled.checked));
-    if(!enabled.checked){km.value='';description.value='';calculation.textContent='';error.textContent='';resetApproval();return}
+    if(!enabled.checked){km.value='';description.value='';calculation.textContent='';error.textContent='';if(descriptionField)descriptionField.hidden=true;resetApproval();return}
     const raw=km.value.trim(),amount=calculateTravelAmount(raw);
-    if(!raw){calculation.textContent='Ange antal kilometer för att se ersättningen.';error.textContent='';resetApproval();return}
-    if(amount===null){calculation.textContent='';error.textContent=`Ange ett positivt antal kilometer, högst ${MAX_TRAVEL_KM.toLocaleString('sv-SE')}.`;resetApproval();return}
-    error.textContent='';calculation.textContent=formatTravelCalculation(raw);approval.hidden=false;
+    if(!raw){calculation.textContent='Ange antal kilometer för att se ersättningen.';error.textContent='';if(descriptionField)descriptionField.hidden=true;resetApproval();return}
+    if(amount===null){calculation.textContent='';error.textContent=`Ange ett positivt antal kilometer, högst ${MAX_TRAVEL_KM.toLocaleString('sv-SE')}.`;if(descriptionField)descriptionField.hidden=true;resetApproval();return}
+    error.textContent='';calculation.textContent=formatTravelCalculation(raw);if(descriptionField)descriptionField.hidden=false;approval.hidden=description.value.trim().length===0;
     document.getElementById('travelSuggestedAmount').textContent=amount.toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr';
   }
   function getData(){
@@ -44,7 +45,7 @@ export function initTravelReimbursement(){
   }
   enabled.addEventListener('change',sync);
   km.addEventListener('input',()=>{resetApproval();sync()});
-  description.addEventListener('input',()=>{if(description.value.length>500)description.value=description.value.slice(0,500)});
+  description.addEventListener('input',()=>{if(description.value.length>500)description.value=description.value.slice(0,500);sync()});
   window.__idvTravel={getData};
   sync();
 }
