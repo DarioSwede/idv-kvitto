@@ -38,3 +38,11 @@ Playwright körs på port `43921` för att inte återanvända en annan lokal fö
 - Ändra inte `main`, mergea inte och publicera inte utan användarens uttryckliga godkännande.
 - Rapportera alltid lokalt verifierat, pushat, mergeat och live som separata tillstånd.
 - Lämna inte testfiler, `node_modules` eller `test-results` i commits.
+
+## Smart och modulärt byggande
+
+- Dela funktioner i små moduler med ett tydligt ansvar och stabila gränssnitt.
+- Håll UI, ren affärslogik, nätverksanrop och lagring separerade när det är praktiskt.
+- Återanvänd befintliga komponenter och hjälpfunktioner innan ny kod skapas.
+- Versionshantera varje sammanhållen förändring med små, begripliga commits och tydliga versionsnummer eller changelog när användarbeteendet ändras.
+- Gör förändringar reversibla och undvik stora blandade refaktorer utan egen testning.
