@@ -116,10 +116,12 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <p class="subtitle">Fyll i vem som skickar in kvittona. Fält med stjärna (*) måste fyllas i.</p>
 <div id="formError" aria-live="polite">
 </div>
-<input id="name" autocomplete="name" aria-label="Ditt namn" placeholder="Ditt namn *">
+<div class="contact-grid">
+<label class="field-label">Namn<input id="name" autocomplete="name" aria-label="Ditt namn" placeholder="Ditt namn *"></label>
 <div class="email-copy-field">
 <input id="email" type="email" autocomplete="email" aria-label="Din e-postadress" placeholder="Din e-postadress *">
 <label class="copy-option"><input id="cc" type="checkbox"><span><strong>Skicka en kopia till mig</strong><small>Kopia till adressen ovan.</small></span></label>
+</div>
 </div>
 <fieldset class="bank-account-card">
 <legend>Konto för utbetalning *</legend>
@@ -137,11 +139,15 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <section class="travel-card" aria-labelledby="travelQuestion">
 <label class="travel-option"><input id="travelEnabled" type="checkbox" aria-controls="travelFields" aria-expanded="false"><span id="travelQuestion"><strong>Har du rest med eget fordon och ska ha reseersättning?</strong></span></label>
 <div id="travelFields" hidden>
+<div class="travel-km-row">
 <label for="travelKm">Antal kilometer</label>
+<p class="travel-calculation" id="travelCalculation" aria-live="polite">Ange antal kilometer för att se ersättningen.</p>
+</div>
 <input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" placeholder="Till exempel 34">
+<div id="travelDescriptionField" class="progressive-field" hidden>
 <label for="travelDescription">Beskriv resan</label>
 <textarea id="travelDescription" maxlength="500" placeholder="Till exempel: Hemmet till samlingen och tillbaka"></textarea>
-<p class="travel-calculation" id="travelCalculation" aria-live="polite"></p>
+</div>
 <p class="travel-error" id="travelError" aria-live="polite"></p>
 <label class="travel-approval" id="travelApproval" hidden><input id="travelApprove" type="checkbox"><span>Jag godkänner det föreslagna reseersättningsbeloppet <strong id="travelSuggestedAmount"></strong>.</span></label>
 </div>

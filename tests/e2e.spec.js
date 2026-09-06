@@ -81,14 +81,18 @@ test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitt
   await expect(page.locator('.receipt-item')).toHaveCount(1);
   await page.getByLabel(/Endast reseräkning/).check();
   await expect(page.locator('#dropzone')).toBeHidden();
+  await expect(page.locator('.missing-receipt')).toBeHidden();
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
   await page.getByLabel('Ditt namn').fill('Resenär');
   await page.getByLabel('Din e-postadress').fill('resa@example.se');
   await page.getByLabel('Clearingnummer').fill('6000');
   await page.getByLabel('Kontonummer').fill('7654321');
+  await expect(page.locator('#travelDescriptionField')).toBeHidden();
   await page.getByLabel('Antal kilometer').fill('40');
+  await expect(page.locator('#travelDescriptionField')).toBeVisible();
   await page.getByLabel('Beskriv resan').fill('Tur och retur');
+  await expect(page.locator('#travelApproval')).toBeVisible();
   await page.getByLabel(/Jag godkänner det föreslagna/).check();
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
   await expect(page.locator('#summary')).toContainText('Endast reseräkning');
