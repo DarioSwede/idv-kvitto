@@ -3,12 +3,18 @@ import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
+import {initTravelReimbursement} from './travel-reimbursement.js';
+import {initSubmissionMode} from './submission-mode.js';
+import {initBankAccount,maskAccountNumber} from './bank-account.js';
 
 initUploadUi();
 initMaskMode();
 initDonePage();
 initReceiptOcr();
+initBankAccount();
 initContactValidation();
+initTravelReimbursement();
+initSubmissionMode();
 initReceiptManager();
 initEmailCopy();
 
@@ -24,7 +30,7 @@ async function initEmailCopy(){
     const result=await response.json();
     checkbox.disabled=!result.email_configured;
     checkbox.checked=!!result.email_configured;
-    help.textContent=result.email_configured?'Kopian innehåller sammanställningen och den färdiga PDF-filen.':'E-postkopian är inte aktiverad ännu.';
+    help.textContent=result.email_configured?'Du får samma sammanställning och PDF som skickas till kvitton@idrottsveteranerna.se.':'E-postkopian är inte aktiverad ännu.';
   }catch{
     checkbox.checked=false;
     help.textContent='E-postkopian kan inte användas just nu.';
@@ -162,7 +168,8 @@ function initReceiptManager(){
   }
 
   if(continueBtn)continueBtn.onclick=()=>{
-    if(!state.photos.length||!window.__idvCanLeaveReceipts?.())return state.show('upload');
+    const modes=window.__idvSubmissionMode;
+    if(!modes?.hasRequiredReceipts?.()||!window.__idvCanLeaveReceipts?.())return state.show('upload');
     applyMasks();
     state.render();
     state.show('form');
@@ -183,6 +190,17 @@ function initReceiptManager(){
         label.textContent='Kopia till dig';
         const value=document.createElement('b');
         value.textContent=cc.checked?`Ja – ${email}`:'Nej';
+        row.append(label,value);
+        summary.append(row);
+      }
+      const bank=window.__idvBankAccount?.getData?.();
+      if(summary&&bank?.valid){
+        const row=document.createElement('div');
+        row.className='row bank-summary';
+        const label=document.createElement('span');
+        label.textContent='Konto för utbetalning';
+        const value=document.createElement('b');
+        value.textContent=`Clearing ${bank.clearingNumber} · ${maskAccountNumber(bank.accountNumber)}`;
         row.append(label,value);
         summary.append(row);
       }
