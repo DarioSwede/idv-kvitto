@@ -14,15 +14,16 @@ export function initContactValidation(){
   if(!name||!email||!next)return;
 
   function canContinue(){
-    return hasValidContactDetails(name.value,email.value);
+    return hasValidContactDetails(name.value,email.value)&&Boolean(window.__idvBankAccount?.getData?.().valid);
   }
 
   function sync(showErrors=false){
     const validName=String(name.value).trim().length>0;
     const validEmail=isValidEmailAddress(email.value);
     const hasEmail=String(email.value).trim().length>0;
-    next.disabled=!(validName&&validEmail);
-    next.title=next.disabled?'Fyll i namn och en giltig e-postadress för att gå vidare':'';
+    const validBank=Boolean(window.__idvBankAccount?.getData?.().valid);
+    next.disabled=!(validName&&validEmail&&validBank);
+    next.title=next.disabled?'Fyll i namn, e-post och giltiga kontouppgifter för att gå vidare':'';
     name.setAttribute('aria-invalid',String(!validName&&String(name.value).length>0));
     email.setAttribute('aria-invalid',String(hasEmail&&!validEmail));
     if(!error)return;
@@ -36,5 +37,6 @@ export function initContactValidation(){
   email.addEventListener('input',()=>sync(false));
   name.addEventListener('blur',()=>sync(true));
   email.addEventListener('blur',()=>sync(true));
+  document.addEventListener('bank-account-change',()=>sync(false));
   sync(false);
 }

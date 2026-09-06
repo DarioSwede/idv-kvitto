@@ -46,6 +46,10 @@ jobs:
         run: |
           node --input-type=module -e "const m=await import('./js/contact-validation.js'); const valid=[['Tor','tor@example.se'],[' Tor ','tor+idv@example.co.uk']]; const invalid=[['','tor@example.se'],['Tor',''],['Tor','tor@localhost'],['Tor','tor example.se'],['Tor','tor@example.c']]; for(const value of valid){if(!m.hasValidContactDetails(...value))throw new Error('Ska vara giltig: '+value)} for(const value of invalid){if(m.hasValidContactDetails(...value))throw new Error('Ska vara ogiltig: '+value)} console.log('Contact validation: 7/7')"
 
+      - name: Test Swedish bank account validation
+        run: |
+          node --input-type=module -e "const m=await import('./js/bank-account.js'); const valid=[['5000','1234567'],['8327','1234567890'],['9960','123456789012']]; for(const [clearing,account] of valid){if(!m.validateBankAccount(clearing,account).valid)throw new Error('Ska vara giltigt: '+clearing)} const invalid=[['9999','1234567'],['500','1234567'],['5000','123']]; for(const [clearing,account] of invalid){if(m.validateBankAccount(clearing,account).valid)throw new Error('Ska vara ogiltigt: '+clearing)} if(m.maskAccountNumber('1234567890')!=='•••• 7890')throw new Error('Fel maskering'); console.log('Bank account validation: 7/7')"
+
       - name: Test travel reimbursement calculation
         run: |
           node --input-type=module -e "const m=await import('./js/travel-reimbursement.js'); const cases=[[34,85],['1.25',3.13],[0,null],[0.004,null],[1.234,null],[-1,null],['abc',null],[10001,null]]; for(const [km,want] of cases){const got=m.calculateTravelAmount(km);if(got!==want)throw new Error(km+': '+got)} if(m.formatTravelCalculation(34)!=='34 km ÷ 10 × 25 kr = 85,00 kr')throw new Error('Fel beräkningstext'); console.log('Travel calculation: 9/9')"
