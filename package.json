@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:e2e": "playwright test"
+    "test": "playwright test --workers=1",
+    "test:e2e": "playwright test --workers=1"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0"
