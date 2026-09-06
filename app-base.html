@@ -260,7 +260,7 @@ $('send').disabled=true;$('send').textContent='Skickar …';let res=await fetch(
 }
 catch{j={}
 }
-if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));let doneText=$('doneText');doneText.textContent=j.copy_requested?(j.copy_sent?'En kopia med sammanställningen och PDF-filen har skickats till din e-postadress.':(j.copy_error||'Kvittona är inskickade, men kopian kunde inte skickas.')):'Kvittot och den färdiga PDF-filen har sparats säkert.';doneText.dataset.state=j.copy_requested&&!j.copy_sent?'warning':'success';show('done')}
+if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));let doneText=$('doneText'),messages=[];messages.push(j.delivery_sent?'Underlaget har skickats till kvitton@idrottsveteranerna.se.':(j.delivery_error||'Underlaget har sparats säkert.'));if(j.copy_requested)messages.push(j.copy_sent?'En kopia med samma sammanställning och PDF har skickats till din e-postadress.':(j.copy_error||'Kopian kunde inte skickas.'));doneText.textContent=messages.join(' ');doneText.dataset.state=(!j.delivery_sent||(j.copy_requested&&!j.copy_sent))?'warning':'success';show('done')}
 catch(e){$('sendError').innerHTML=`<div class="error">${e.message}
 </div>`;$('send').disabled=false;$('send').textContent='Skicka in kvitton'}
 }
