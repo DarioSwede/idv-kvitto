@@ -117,10 +117,9 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <div id="formError" aria-live="polite">
 </div>
 <div class="contact-grid">
-<label class="field-label">Namn<input id="name" autocomplete="name" aria-label="Ditt namn" placeholder="Ditt namn *"></label>
+<div class="name-field"><input id="name" autocomplete="name" aria-label="Ditt namn" placeholder="Ditt namn *"></div>
 <div class="email-copy-field">
 <input id="email" type="email" autocomplete="email" aria-label="Din e-postadress" placeholder="Din e-postadress *">
-<label class="copy-option"><input id="cc" type="checkbox"><span><strong>Skicka en kopia till mig</strong><small>Kopia till adressen ovan.</small></span></label>
 </div>
 </div>
 <fieldset class="bank-account-card">
@@ -136,20 +135,16 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 </fieldset>
 <input id="event" aria-label="Vilket tillfälle gäller det?" placeholder="Tillfälle (valfritt), t.ex. Fyradagarsmarschen 2026">
 <textarea id="other" rows="1" aria-label="Övrig information" placeholder="Övrig information (valfritt)"></textarea>
-<section class="travel-card" aria-labelledby="travelQuestion">
-<label class="travel-option"><input id="travelEnabled" type="checkbox" aria-controls="travelFields" aria-expanded="false"><span id="travelQuestion"><strong>Har du rest med eget fordon och ska ha reseersättning?</strong></span></label>
+<section class="travel-card">
+<input id="travelEnabled" type="checkbox" hidden aria-controls="travelFields" aria-expanded="false">
 <div id="travelFields" hidden>
 <div class="travel-km-row">
-<label for="travelKm">Antal kilometer</label>
-<p class="travel-calculation" id="travelCalculation" aria-live="polite">Ange antal kilometer för att se ersättningen.</p>
-</div>
-<input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" placeholder="Till exempel 34">
-<div id="travelDescriptionField" class="progressive-field" hidden>
-<label for="travelDescription">Beskriv resan</label>
-<textarea id="travelDescription" maxlength="500" placeholder="Till exempel: Hemmet till samlingen och tillbaka"></textarea>
+<label id="travelKmLabel" for="travelKm"><span id="travelKmLabelText">Ange antal kilometer</span></label>
+<input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" placeholder="Ange antal kilometer för att se ersättningen.">
+<button class="travel-calculation" id="travelCalculation" type="button" disabled aria-pressed="false">Ersättning: 25 kr per mil.</button>
 </div>
 <p class="travel-error" id="travelError" aria-live="polite"></p>
-<label class="travel-approval" id="travelApproval" hidden><input id="travelApprove" type="checkbox"><span>Jag godkänner det föreslagna reseersättningsbeloppet <strong id="travelSuggestedAmount"></strong>.</span></label>
+<input id="travelApprove" type="checkbox" hidden>
 </div>
 </section>
 <div class="info missing-receipt"><span><strong>Saknas ett kvittonamn eller belopp?</strong><small>Det du fyllt i här sparas.</small></span><button type="button" id="addMoreReceipts">+ Lägg till fler kvitton</button></div>
@@ -173,8 +168,9 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 </div>
 <div class="card" id="summary">
 </div>
-<label>
-<input id="confirm" type="checkbox" style="width:auto"> Ja, uppgifterna stämmer och kvittona är klara att skickas.</label>
+<label class="copy-option review-copy-option"><input id="cc" type="checkbox" checked><span><strong>Skicka en kopia till mig</strong><small>Kopia till adressen ovan.</small></span></label>
+<label class="confirm-option">
+<input id="confirm" type="checkbox"><span><strong>Ja, uppgifterna stämmer och kvittona är klara att skickas.</strong></span></label>
 <div id="sendError" aria-live="polite">
 </div>
 <button class="btn" id="send" disabled>Skicka in kvitton</button>
@@ -191,7 +187,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <button class="lightbox-close" id="lightboxClose" aria-label="Stäng förhandsvisning">✕</button>
 <img id="lightboxImage" alt="Förhandsvisning av kvitto"><div id="lightboxPdf" class="pdf-preview"></div>
 </div>
-<script>(()=>{const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt',ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',MAX=1600,$=id=>document.getElementById(id);let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];window.__idvReceiptApi={endpoint:ENDPOINT,key:ANON_KEY};function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));maxReached=Math.max(maxReached,n);document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'');x.disabled=i>maxReached;x.setAttribute('aria-current',i===n?'step':'false')}
+<script>(()=>{const localSubmit = new URLSearchParams(window.location.search).has('local-submit');const ENDPOINT=window.__idvSubmitEndpoint || (localSubmit ? '/api/test-submit' : 'https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt');const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9od2FseHF3dHh0bGxkYWxzY2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0ODUxODIsImV4cCI6MjEwMDA2MTE4Mn0._aZwAbT_RUrcYZlG57l5_4ubgHRjbIObbVMjdgWWQ-o',$=id=>document.getElementById(id),media=()=>window.__idvReceiptMedia;let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];window.__idvReceiptApi={endpoint:ENDPOINT,key:ANON_KEY};function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');let n=Math.max(0,screens.indexOf(id));maxReached=Math.max(maxReached,n);document.querySelectorAll('.seg').forEach((x,i)=>{x.className='seg'+(i<n?' done':i===n?' active':'');x.disabled=i>maxReached;x.setAttribute('aria-current',i===n?'step':'false')}
 );scrollTo(0,0)}
 function goToStep(n){if(n>maxReached)return;if(n===0)return show('upload');if(n===1){idx=photos.findIndex(p=>!p.pdf&&!p.raw);show('mask');if(idx<0)showPdfReview();else{showImageMask();load()}return}if(n===3)renderReview();show(screens[n])}
 document.querySelectorAll('.seg').forEach(button=>button.onclick=()=>goToStep(Number(button.dataset.step)));
@@ -201,85 +197,30 @@ const dropzone=$('dropzone');dropzone.onclick=()=>$('file').click();dropzone.onk
 ;['dragenter','dragover'].forEach(type=>dropzone.addEventListener(type,e=>{e.preventDefault();dropzone.classList.add('dragover')}
 ));['dragleave','drop'].forEach(type=>dropzone.addEventListener(type,e=>{e.preventDefault();dropzone.classList.remove('dragover')}
 ));dropzone.ondrop=e=>addFiles(e.dataTransfer.files);$('file').onchange=e=>{addFiles(e.target.files);e.target.value=''}
-;function addFiles(fileList){[...fileList].forEach(async f=>{if(f.type==='application/pdf'){let p={pdf:true,file:f,done:true,name:fileBaseName(f.name),autoNamePending:false,compressing:f.size>8*1024*1024};photos.push(p);if(p.compressing){processing++;render();$('uploadError').innerHTML='<div class="info">Komprimerar '+f.name+' …</div>';try{p.file=await compressPdf(f);if(p.file.size>10*1024*1024)throw Error('PDF-filen är fortfarande större än 10 MB efter komprimering.');$('uploadError').innerHTML='<div class="info">'+f.name+' komprimerades till '+(p.file.size/1024/1024).toFixed(1)+' MB.</div>'}catch(e){photos=photos.filter(x=>x!==p);showUploadError(e.message||('Det gick inte att komprimera '+f.name+'.'))}finally{processing--;p.compressing=false;render()}}else render();return}
-if(!f.type.startsWith('image/')){showUploadError('Filtypen för '+f.name+' stöds inte.');return}
-let r=new FileReader;r.onload=v=>{let im=new Image;im.onload=()=>{let c=cleanReceiptImage(im),p={canvas:c,file:f,masks:[],done:false,name:fileBaseName(f.name),autoNamePending:false};photos.push(p);render();document.dispatchEvent(new CustomEvent('receipt-ready-for-ocr',{detail:{canvas:p.canvas,getAmount:()=>p.amountSource==='manual'||p.amount,setSuggestion:value=>{if(p.amountSource!=='manual'&&!p.amount){p.ocrSuggestion=value;render()}},setOcrState:(state,message)=>{p.ocrState=state;p.ocrMessage=message;render()}}}))}
-;im.onerror=()=>{photos.push({raw:true,file:f,done:true,name:fileBaseName(f.name),autoNamePending:false}
-);render()}
-;im.src=v.target.result}
-;r.readAsDataURL(f)}
-)}
-function showUploadError(message){$('uploadError').innerHTML='<div class="error">'+message+'</div>'}
-function fileBaseName(name){return name.replace(/\.[^.]+$/,'').slice(0,200)||'Kvitto'}
-function cleanReceiptImage(im){let scale=Math.min(1,MAX/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*scale);c.height=Math.round(im.height*scale);let x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);let data=x.getImageData(0,0,c.width,c.height),p=data.data,w=c.width,h=c.height,lum=i=>.2126*p[i]+.7152*p[i+1]+.0722*p[i+2],border=0,bc=0,center=0,cc=0,step=Math.max(1,Math.floor(Math.min(w,h)/120));for(let y=0;y<h;y+=step)for(let xx=0;xx<w;xx+=step){let l=lum((y*w+xx)*4);if(xx<w*.08||xx>w*.92||y<h*.08||y>h*.92){border+=l;bc++}else if(xx>w*.3&&xx<w*.7&&y>h*.2&&y<h*.8){center+=l;cc++}}border/=bc;center/=cc;if(center-border<35||center<145)return c;let limit=Math.min(185,border+45),seen=new Uint8Array(w*h),q=[],head=0;for(let xx=0;xx<w;xx++){q.push(xx,(h-1)*w+xx)}for(let y=1;y<h-1;y++){q.push(y*w,y*w+w-1)}while(head<q.length){let n=q[head++];if(seen[n])continue;seen[n]=1;if(lum(n*4)>limit)continue;let xx=n%w,y=Math.floor(n/w);p[n*4]=p[n*4+1]=p[n*4+2]=255;if(xx)q.push(n-1);if(xx<w-1)q.push(n+1);if(y)q.push(n-w);if(y<h-1)q.push(n+w)}x.putImageData(data,0,0);let minX=w,minY=h,maxX=0,maxY=0;for(let y=0;y<h;y+=2)for(let xx=0;xx<w;xx+=2)if(!seen[y*w+xx]){minX=Math.min(minX,xx);maxX=Math.max(maxX,xx);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}if(maxX<=minX||maxY<=minY)return c;let m=Math.round(Math.min(w,h)*.01);minX=Math.max(0,minX-m);minY=Math.max(0,minY-m);maxX=Math.min(w-1,maxX+m);maxY=Math.min(h-1,maxY+m);let out=document.createElement('canvas');out.width=maxX-minX+1;out.height=maxY-minY+1;let ox=out.getContext('2d');ox.fillStyle='#fff';ox.fillRect(0,0,out.width,out.height);ox.drawImage(c,minX,minY,out.width,out.height,0,0,out.width,out.height);return out}
-async function compressPdf(file){const pdfjs=await import('https://esm.sh/pdfjs-dist@4.10.38/legacy/build/pdf.mjs'),lib=await import('https://esm.sh/pdf-lib@1.17.1');pdfjs.GlobalWorkerOptions.workerSrc='https://esm.sh/pdfjs-dist@4.10.38/legacy/build/pdf.worker.mjs';let source=await pdfjs.getDocument({data:await file.arrayBuffer()}).promise;async function build(scale,quality){let out=await lib.PDFDocument.create();for(let i=1;i<=source.numPages;i++){let page=await source.getPage(i),view=page.getViewport({scale}),c=document.createElement('canvas');c.width=Math.ceil(view.width);c.height=Math.ceil(view.height);let x=c.getContext('2d',{alpha:false});x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);await page.render({canvasContext:x,viewport:view}).promise;let blob=await new Promise(r=>c.toBlob(r,'image/jpeg',quality)),image=await out.embedJpg(await blob.arrayBuffer()),pdfPage=out.addPage([view.width/scale,view.height/scale]);pdfPage.drawImage(image,{x:0,y:0,width:pdfPage.getWidth(),height:pdfPage.getHeight()})}return new Uint8Array(await out.save({useObjectStreams:true}))}let bytes=await build(1.45,.7);if(bytes.length>9.5*1024*1024)bytes=await build(1.1,.52);return new File([bytes],file.name,{type:'application/pdf',lastModified:file.lastModified})}
-function pdfPreviewUrl(file){return URL.createObjectURL(file)+'#page=1&zoom=page-width&pagemode=none&toolbar=0&navpanes=0&scrollbar=1&view=FitH'}
-function openReceipt(p){if(p.compressing)return;let image=$('lightboxImage'),pdf=$('lightboxPdf');if(p.pdf){image.style.display='none';pdf.style.display='block';pdf.innerHTML='';let obj=document.createElement('object');obj.type='application/pdf';obj.data=pdfPreviewUrl(p.file);obj.setAttribute('aria-label','Förhandsvisning av '+(p.name||'PDF-kvitto'));obj.innerHTML='<p>PDF-filen kan inte visas i webbläsaren.</p>';pdf.append(obj)}else{pdf.style.display='none';pdf.innerHTML='';image.style.display='block';image.src=p.canvas?p.canvas.toDataURL('image/jpeg',.92):URL.createObjectURL(p.file);image.alt=p.name||'Kvitto'}$('lightbox').classList.add('active')}
-function closeLightbox(){$('lightbox').classList.remove('active');$('lightboxImage').removeAttribute('src');$('lightboxPdf').innerHTML=''}
-function syncSummaryTotal(){let receiptTotal=photos.reduce((sum,p)=>sum+(Number(p.amount)||0),0),travelAmount=window.__idvTravel?.getData?.().amount||0,subtotal=$('summary').querySelector('.receipt-total b'),grandTotal=$('summary').querySelector('.grand-total b');if(subtotal)subtotal.textContent=photos.some(p=>p.amount)?receiptTotal.toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr':'—';if(grandTotal)grandTotal.textContent=(receiptTotal+travelAmount).toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr'}
-function renderReview(){$('reviewFiles').innerHTML='';photos.forEach((p,i)=>{let card=document.createElement('article');card.className='review-file';let heading=document.createElement('h2');heading.textContent='Kvitto '+(i+1);let edits=document.createElement('div');edits.className='review-edit-grid';let nameLabel=document.createElement('label');nameLabel.textContent='Kvittonamn';let nameInput=document.createElement('input');nameInput.value=p.name||'';nameInput.placeholder='Namnge kvittot';nameInput.oninput=e=>{p.name=e.target.value;p.autoNamePending=false};nameLabel.append(nameInput);let amountLabel=document.createElement('label');amountLabel.textContent='Belopp';let amountWrap=document.createElement('span');amountWrap.className='review-amount-wrap';let amountInput=document.createElement('input');amountInput.type='number';amountInput.min='0';amountInput.step='.01';amountInput.value=p.amount||'';amountInput.placeholder='Belopp';amountInput.oninput=e=>{p.amount=e.target.value;p.amountSource='manual';syncSummaryTotal()};amountWrap.append(amountInput,document.createTextNode('kr'));amountLabel.append(amountWrap);edits.append(nameLabel,amountLabel);card.append(heading,edits);if(p.pdf){let button=document.createElement('button');button.className='pdf-open';button.textContent='📄 Förhandsgranska '+(p.name||('PDF-kvitto '+(i+1)));button.onclick=()=>openReceipt(p);card.append(button)}
-else{let im=new Image;im.alt=p.name||('Kvitto '+(i+1));im.src=p.canvas?p.canvas.toDataURL('image/jpeg',.92):URL.createObjectURL(p.file);card.append(im)}
-$('reviewFiles').append(card)}
-)}
+;let receiptIngestion;function getReceiptIngestion(){return receiptIngestion||(receiptIngestion=window.__idvReceiptIngestion?.createReceiptIngestion({documentRef:document,getPhotos:()=>photos,addReceipt:receipt=>photos.push(receipt),removeReceipt:receipt=>{photos=photos.filter(item=>item!==receipt)},setProcessing:change=>{processing+=change},render:()=>render(),showError:(message,type)=>showUploadError(message,type),fileBaseName,cleanReceiptImage,compressPdf}))}function addFiles(fileList){getReceiptIngestion()?.addFiles(fileList)}
+function showUploadError(message,type='error'){let notice=document.createElement('div');notice.className=type;notice.textContent=message;$('uploadError').replaceChildren(notice)}
+function showFormError(message){let notice=document.createElement('div');notice.className='error';notice.textContent=message;$('formError').replaceChildren(notice)}
+function showSendError(message){let notice=document.createElement('div');notice.className='error';notice.textContent=message;$('sendError').replaceChildren(notice)}
+function fileBaseName(name){return media().fileBaseName(name)}
+function cleanReceiptImage(im){return media().cleanReceiptImage(im)}
+async function compressPdf(file){return media().compressPdf(file)}
+function pdfPreviewUrl(file){return media().pdfPreviewUrl(file)}
+let receiptPreview;function getReceiptPreview(){return receiptPreview||(receiptPreview=window.__idvReceiptPreview?.createReceiptPreview({documentRef:document,pdfPreviewUrl}))}function openReceipt(p){getReceiptPreview()?.open(p)}
+function closeLightbox(){getReceiptPreview()?.close()}
+function syncSummaryTotal(){window.__idvSubmissionSummary?.updateSubmissionTotals({container:$('summary'),photos,travelAmount:window.__idvTravel?.getData?.().amount||0})}
+function renderReview(){window.__idvReceiptReview?.renderReceiptReview({container:$('reviewFiles'),documentRef:document,photos,openReceipt,onAmountChange:syncSummaryTotal})}
 $('lightboxClose').onclick=closeLightbox;$('lightbox').onclick=e=>{if(e.target===$('lightbox'))closeLightbox()}
 ;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox()}
-);function render(){$('thumbs').innerHTML='';photos.forEach((p,i)=>{let item=document.createElement('div');item.className='receipt-item';let d=document.createElement('div');d.className='thumb';d.setAttribute('role','button');d.tabIndex=0;d.setAttribute('aria-label','Öppna '+(p.name||'kvitto'));if(p.pdf)d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">📄</div>';else if(p.canvas){let im=new Image;im.src=p.canvas.toDataURL('image/jpeg',.7);d.append(im)}
-else d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">🖼️</div>';d.onclick=()=>openReceipt(p);d.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openReceipt(p)}
-}
-;let b=document.createElement('button');b.className='remove';b.textContent='✕';b.setAttribute('aria-label','Ta bort '+(p.name||'kvitto'));b.onclick=e=>{e.stopPropagation();photos.splice(i,1);render()}
-;d.append(b);let hint=document.createElement('button');hint.type='button';hint.disabled=true;hint.className='ocr-status receipt-hint';hint.dataset.state=p.ocrState||'';hint.textContent=p.ocrMessage||'OCR väntar';if(p.ocrState==='working'){let progress=document.createElement('span');progress.className='ocr-progress-bar';progress.setAttribute('aria-hidden','true');hint.append(progress)}let nameRow=document.createElement('div');nameRow.className='receipt-name-row';let input=document.createElement('input');input.className='receipt-name';input.value=p.name||'';input.maxLength=200;input.placeholder='Namnge kvittot';input.setAttribute('aria-label','Vad kvitto '+(i+1)+' gäller');input.oninput=e=>{p.name=e.target.value;p.autoNamePending=false};nameRow.append(input)
-;let amountGroup=document.createElement('label');amountGroup.className='receipt-amount-group';amountGroup.textContent='Belopp';let amountWrap=document.createElement('div');amountWrap.className='receipt-amount-wrap';let amountInput=document.createElement('input');amountInput.className='receipt-amount';amountInput.type='number';amountInput.min='0';amountInput.step='0.01';amountInput.placeholder='0,00';amountInput.value=p.amount||'';amountInput.setAttribute('aria-label','Belopp för kvitto '+(i+1));amountInput.oninput=e=>{p.amount=e.target.value;p.amountSource='manual';p.ocrSuggestion='';p.ocrState='manual';p.ocrMessage='Ditt manuella belopp behålls';hint.disabled=true;hint.dataset.state='manual';hint.textContent=p.ocrMessage};amountWrap.append(amountInput,document.createTextNode('kr'));amountGroup.append(amountWrap);if(p.ocrSuggestion&&p.amountSource!=='manual'){hint.disabled=false;hint.dataset.state='suggested';hint.textContent='OCR-förslag '+Number(p.ocrSuggestion).toLocaleString('sv-SE',{maximumFractionDigits:0})+' kr (avrundat till hel krona). Använd?';hint.onclick=()=>{p.amount=p.ocrSuggestion;p.amountSource='ocr';p.ocrSuggestion='';p.ocrState='accepted';p.ocrMessage='OCR-förslaget används';render()}}item.append(d,hint,nameRow,amountGroup);$('thumbs').append(item)}
-);let success=$('uploadSuccess');if(success){success.hidden=!photos.length;success.textContent=photos.length===1?'✓ 1 kvitto tillagt':'✓ '+photos.length+' kvitton tillagda'}$('continue').disabled=!photos.length||processing>0}
+);function render(){window.__idvReceiptList?.renderReceiptList({container:$('thumbs'),documentRef:document,photos,processing,openReceipt,onRemove:index=>{photos.splice(index,1);render()},onRerender:render,successElement:$('uploadSuccess'),continueButton:$('continue')})}
 $('continue').onclick=()=>{idx=photos.findIndex(p=>!p.pdf&&!p.done);show('mask');if(idx<0)showPdfReview();else{showImageMask();load()}}
-;function showPdfReview(){$('maskTitle').textContent='Kontrollera PDF-filerna';$('maskSubtitle').textContent='Öppna varje PDF och kontrollera att rätt dokument har lagts till.';$('maskInstructions').innerHTML='<strong>PDF-filer kan inte täckas över här.</strong><br>Om något känsligt syns behöver du ta bort filen och redigera den innan du laddar upp den igen.';$('maskCanvasWrap').hidden=true;$('maskToolbar').hidden=true;$('pdfMaskReview').hidden=false;$('pdfMaskReview').innerHTML='';photos.filter(p=>p.pdf).forEach((p,i)=>{let b=document.createElement('button');b.className='pdf-open';b.textContent='📄 Förhandsgranska '+(p.name||('PDF '+(i+1)));b.onclick=()=>openReceipt(p);$('pdfMaskReview').append(b)});$('next').textContent='PDF-filerna är kontrollerade – gå vidare'}
-function showImageMask(){$('maskTitle').textContent='Kontrollera kvittot';$('maskSubtitle').textContent='Se att hela kvittot syns och att bilden är tillräckligt läsbar.';$('maskInstructions').innerHTML='<strong>Kontrollera kvittot.</strong><br>Vill du dölja något? Slå på maskering och dra över uppgiften.';$('maskCanvasWrap').hidden=false;$('maskToolbar').hidden=true;$('pdfMaskReview').hidden=true;$('next').textContent='Kvittot ser bra ut – gå vidare'}
-let cv=$('canvas'),ctx=cv.getContext('2d');function load(){let p=photos[idx];cv.width=p.canvas.width;cv.height=p.canvas.height;$('next').disabled=false;$('next').textContent='Kvittot ser bra ut – gå vidare';draw()}
-function draw(){let p=photos[idx];ctx.drawImage(p.canvas,0,0);ctx.fillStyle='#000';p.masks.forEach(m=>ctx.fillRect(m.x,m.y,m.w,m.h));if(current){ctx.fillStyle='#000a';ctx.fillRect(current.x,current.y,current.w,current.h)}
-}
-function pos(e){let r=cv.getBoundingClientRect(),t=e.touches?.[0]||e;return{x:(t.clientX-r.left)*cv.width/r.width,y:(t.clientY-r.top)*cv.height/r.height}
-}
-function down(e){e.preventDefault();drawing=true;start=pos(e);current={x:start.x,y:start.y,w:0,h:0}
-}
-function move(e){if(!drawing)return;e.preventDefault();let p=pos(e);current={x:Math.min(start.x,p.x),y:Math.min(start.y,p.y),w:Math.abs(p.x-start.x),h:Math.abs(p.y-start.y)}
-;draw()}
-function up(){if(!drawing)return;drawing=false;if(current.w>4&&current.h>4){photos[idx].masks.push(current);document.dispatchEvent(new CustomEvent('receipt-mask-change',{detail:{count:photos[idx].masks.length}}))}current=null;draw()}
-cv.onmousedown=down;cv.onmousemove=move;window.onmouseup=up;cv.ontouchstart=down;cv.ontouchmove=move;cv.ontouchend=up;$('undo').onclick=()=>{photos[idx].masks.pop();document.dispatchEvent(new CustomEvent('receipt-mask-change',{detail:{count:photos[idx].masks.length}}));draw()}
-;$('clear').onclick=()=>{photos[idx].masks=[];document.dispatchEvent(new CustomEvent('receipt-mask-change',{detail:{count:0}}));draw()}
-;$('next').onclick=()=>{if(idx<0)return show('form');let p=photos[idx],c=p.canvas.getContext('2d');c.fillStyle='#000';p.masks.forEach(m=>c.fillRect(m.x,m.y,m.w,m.h));p.done=true;let n=photos.findIndex((x,i)=>i>idx&&!x.pdf&&!x.done);if(n>=0){idx=n;load()}else show('form')}
-;$('formBack').onclick=()=>show('upload');$('previewBtn').onclick=()=>{let name=$('name').value.trim(),email=$('email').value.trim(),bank=window.__idvBankAccount?.getData?.()||{valid:false,message:'Fyll i clearing- och kontonummer.'},travel=window.__idvTravel?.getData?.()||{enabled:false,valid:true,amount:0};$('formError').innerHTML='';if(!name)return $('formError').innerHTML='<div class="error">Fyll i ditt namn.</div>';if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return $('formError').innerHTML='<div class="error">E-postadressen ser inte korrekt ut.</div>';if(!bank.valid)return $('formError').innerHTML='<div class="error">'+bank.message+'</div>';if(!travel.valid)return $('formError').innerHTML='<div class="error">Fyll i resan och godkänn det föreslagna reseersättningsbeloppet.</div>';$('previewThumbs').innerHTML='';photos.forEach(p=>{let d=document.createElement('div');d.className='thumb';if(p.pdf)d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">📄</div>';else if(p.canvas){let im=new Image;im.src=p.canvas.toDataURL('image/jpeg',.8);d.append(im)}
-else d.innerHTML='<div style="display:grid;place-items:center;height:100%;font-size:2rem">🖼️</div>';d.style.cursor='pointer';d.onclick=()=>openReceipt(p);d.title=p.name||'Kvitto';$('previewThumbs').append(d)}
-);$('previewThumbs').dataset.columns=String(Math.min(Math.max(photos.length,1),3)
-);$('summary').innerHTML=`<div class="row">
-<span>Namn</span>
-<b>${name}
-</b>
-</div>
-<div class="row">
-<span>E-post</span>
-<b>${email}
-</b>
-</div>
-<div class="row">
-<span>Tillfälle</span>
-<b>${$('event').value||'—'}
-</b>
-</div>
-<div class="row receipt-total">
-<span>Summa kvitton</span>
-<b>${photos.some(p=>p.amount)?photos.reduce((sum,p)=>sum+(Number(p.amount)||0),0).toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr':'—'}
-</b>
-</div>${travel.enabled?`<div class="row travel-summary"><span>Resa</span><b>${travel.description}</b></div><div class="row travel-summary"><span>Kilometer och beräkning</span><b>${travel.calculation}</b></div><div class="row travel-summary"><span>Godkänd reseersättning</span><b>${travel.amount.toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})} kr</b></div>`:''}<div class="row grand-total"><span>Totalt inklusive reseersättning</span><b>${(photos.reduce((sum,p)=>sum+(Number(p.amount)||0),0)+travel.amount).toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})} kr</b></div>`;renderReview();show('review')}
-;$('reviewNext').onclick=()=>show('preview');$('reviewEdit').onclick=()=>show('form');$('confirm').onchange=e=>$('send').disabled=!e.target.checked;$('back').onclick=()=>show('review');$('send').onclick=async()=>{try{let travel=window.__idvTravel?.getData?.()||{enabled:false,valid:true,approved:false,km:null,description:'',amount:0,calculation:''},bank=window.__idvBankAccount?.getData?.()||{valid:false};if(!bank.valid)throw Error('Kontrollera clearing- och kontonumret innan du skickar.');if(!travel.valid)throw Error('Kontrollera reseersättningen innan du skickar.');let receiptTotal=photos.reduce((sum,p)=>sum+(Number(p.amount)||0),0),fd=new FormData;fd.append('sender_name',$('name').value.trim());fd.append('sender_email',$('email').value.trim().toLowerCase());fd.append('clearing_number',bank.clearingNumber);fd.append('account_number',bank.accountNumber);fd.append('event_tag',$('event').value.trim());fd.append('other_info',$('other').value.trim());fd.append('amount_total',receiptTotal+travel.amount||'');fd.append('travel_enabled',travel.enabled?'true':'false');fd.append('travel_km',travel.km??'');fd.append('travel_description',travel.description);fd.append('travel_amount',travel.amount||'');fd.append('travel_approved',travel.approved?'true':'false');fd.append('cc_self',$('cc').checked?'true':'false');for(let i=0;i<photos.length;i++){let p=photos[i];fd.append('receipt_names',(p.name||('Kvitto '+(i+1))).trim());fd.append('receipt_amounts',p.amount||'');if(p.pdf||p.raw)fd.append('receipts',p.file,p.file.name||`kvitto_${i+1}`);else{let blob=await new Promise(r=>p.canvas.toBlob(r,'image/jpeg',.85));fd.append('receipts',blob,`kvitto_${i+1}.jpg`)}
-}
-$('send').disabled=true;$('send').textContent='Skickar …';let res=await fetch(ENDPOINT,{method:'POST',headers:{apikey:ANON_KEY,Authorization:'Bearer '+ANON_KEY}
-,body:fd}
-),responseText=await res.text(),j;try{j=responseText?JSON.parse(responseText):{}
-}
-catch{j={}
-}
-if(!res.ok)throw Error(j.error||('Inskicket misslyckades ('+res.status+'). Försök igen.'));let doneText=$('doneText'),messages=[];messages.push(j.delivery_sent?'Underlaget har skickats till kvitton@idrottsveteranerna.se.':(j.delivery_error||'Underlaget har sparats säkert.'));if(j.copy_requested)messages.push(j.copy_sent?'En kopia med samma sammanställning och PDF har skickats till din e-postadress.':(j.copy_error||'Kopian kunde inte skickas.'));doneText.textContent=messages.join(' ');doneText.dataset.state=(!j.delivery_sent||(j.copy_requested&&!j.copy_sent))?'warning':'success';let submittedPdf=$('submittedPdf');if(submittedPdf&&j.final_pdf_url){submittedPdf.href=j.final_pdf_url;submittedPdf.hidden=false}show('done')}
-catch(e){$('sendError').innerHTML=`<div class="error">${e.message}
-</div>`;$('send').disabled=false;$('send').textContent='Skicka in kvitton'}
+;let maskEditor;function getMaskEditor(){return maskEditor||(maskEditor=window.__idvReceiptMaskEditor?.createReceiptMaskEditor({documentRef:document,getPhotos:()=>photos,getIndex:()=>idx,setIndex:value=>{idx=value},show,openReceipt}))}function showPdfReview(){getMaskEditor()?.showPdfReview()}
+function showImageMask(){getMaskEditor()?.showImageMask()}
+function load(){getMaskEditor()?.load()}
+function draw(){getMaskEditor()?.draw()}
+;$('formBack').onclick=()=>show('upload');$('previewBtn').onclick=()=>{let name=$('name').value.trim(),email=$('email').value.trim(),bank=window.__idvBankAccount?.getData?.()||{valid:false,message:'Fyll i clearing- och kontonummer.'},travel=window.__idvTravel?.getData?.()||{enabled:false,valid:true,amount:0},submissionMode=window.__idvSubmissionMode?.getMode?.()||'receipts',previewModule=window.__idvSubmissionPreview,result=previewModule?.prepareSubmissionReview({documentRef:document,photos,submissionMode,openReceipt,name,email,eventTag:$('event').value,travel,bank,validate:window.__idvSubmissionValidation?.validateSubmissionDetails,summaryModule:window.__idvSubmissionSummary,renderReview,show})||{valid:false,message:'Förhandsgranskningsmodulen kunde inte laddas. Ladda om sidan.'};$('formError').replaceChildren();if(!result.valid)showFormError(result.message)}
+;$('reviewNext').onclick=()=>show('preview');$('reviewEdit').onclick=()=>show('form');$('confirm').onchange=e=>$('send').disabled=!e.target.checked;$('back').onclick=()=>show('review');$('send').onclick=async()=>{try{let travel=window.__idvTravel?.getData?.()||{enabled:false,valid:true,approved:false,km:null,description:'',amount:0,calculation:''},bank=window.__idvBankAccount?.getData?.()||{valid:false},submissionMode=window.__idvSubmissionMode?.getMode?.()||'receipts',validation=window.__idvSubmissionValidation?.validateSubmissionDetails({name:$('name').value,email:$('email').value,bank,travel,photos,submissionMode})||{valid:false,message:'Valideringsmodulen kunde inte laddas. Ladda om sidan.'};if(!validation.valid)throw Error(validation.message);let flow=window.__idvSubmissionFlow,service=window.__idvSubmissionService;if(!flow||!service)throw Error('Inskickningsmodulen kunde inte laddas. Ladda om sidan.');let fd=await flow.buildSubmissionFormData({submissionMode,name:$('name').value,email:$('email').value,eventTag:$('event').value,otherInfo:$('other').value,copyRequested:$('cc').checked,bank,travel,photos});
+$('send').disabled=true;$('send').textContent='Skickar …';$('sendError').replaceChildren();let result=await service.submitReceipt({endpoint:ENDPOINT,key:ANON_KEY,formData:fd,parseResponse:flow.parseSubmissionResponse,buildResult:flow.buildSubmissionResult}),doneText=$('doneText');doneText.textContent=result.message;doneText.dataset.state=result.warning?'warning':'success';let submittedPdf=$('submittedPdf');if(submittedPdf&&result.pdfUrl){submittedPdf.href=result.pdfUrl;submittedPdf.hidden=false}show('done')}
+catch(e){showSendError(e.message);$('send').disabled=false;$('send').textContent='Skicka in kvitton'}
 }
 }
 )();</script>

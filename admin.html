@@ -1,0 +1,1136 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IDV Admin</title>
+  <style>
+    :root {
+      --bg: #f4f4f0;
+      --panel: #ffffff;
+      --panel-alt: #f8f8f5;
+      --line: #dfe4dd;
+      --text: #1b2d2a;
+      --muted: #5d6e66;
+      --brand: #2f6f5a;
+      --brand-soft: #eaf4ef;
+      --new: #d97706;
+      --new-soft: #fff2e1;
+      --progress: #d4a315;
+      --progress-soft: #fff7d8;
+      --done: #2c8a5e;
+      --done-soft: #ebf8ef;
+      --blue: #245d8d;
+      --warning: #b86f14;
+      --success: #28724a;
+      --danger: #8d2d2d;
+      --shadow: 0 12px 30px rgba(24, 31, 28, 0.08);
+    }
+
+    body.dark-theme {
+      --bg: #20252b;
+      --panel: #2b3138;
+      --panel-alt: #252b31;
+      --line: #46515b;
+      --text: #edf2f0;
+      --muted: #aeb9b5;
+      --brand: #69bd98;
+      --brand-soft: #25483b;
+      --new-soft: #573b24;
+      --progress-soft: #514821;
+      --done-soft: #254b38;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+    body { display: block; }
+    .sidebar {
+      position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 18px; min-height: 68px; padding: 10px max(16px, calc((100vw - 1440px) / 2)); background: rgba(255,255,255,.78); color: var(--text); border-bottom: 1px solid rgba(211,223,215,.7); box-shadow: 0 4px 16px rgba(25, 61, 43, .05); backdrop-filter: blur(14px);
+    }
+    body.is-scrolled .sidebar { background: rgba(255,255,255,.58); box-shadow: 0 3px 12px rgba(25, 61, 43, .035); }
+    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; white-space: nowrap; }
+    .brand-logo { width: 42px; height: 42px; object-fit: contain; }
+    .brand-copy { display: grid; gap: 2px; }
+    .brand-title { font-weight: 750; }
+    .brand-version { color: var(--muted); font-size: 11px; font-weight: 500; }
+    .nav { display: flex; gap: 6px; }
+    .nav-btn {
+      border: 1px solid #4b9278; background: linear-gradient(180deg, #5eb08d, #2f6f5a); color: white; min-width: 42px; min-height: 42px; padding: 9px 12px; border-radius: 999px; text-align: left; font-size: 14px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.48), 0 4px 8px rgba(42,107,94,.2); transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+    }
+    .nav-btn.active { background: linear-gradient(180deg, #69bd98, #347e64); border-color: #2f6f5a; color: white; font-weight: 700; }
+    .nav-btn:hover, .button:hover, .item-action:hover, .view-button:hover, .filter-stat:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .nav-btn:active { transform: scale(.97); box-shadow: none; }
+    .nav-btn:focus-visible,.filter-stat:focus-visible { outline: 3px solid #2f8a62; outline-offset: 2px; }
+    .theme-switch { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 3px 6px 3px 4px; border: 1px solid #c6cdd2; border-radius: 999px; background: linear-gradient(180deg, #f9fafb, #e4e8eb); color: #45515b; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 5px 10px rgba(40,48,56,.16); transition: transform .15s ease, filter .15s ease, background .2s ease; }
+    .theme-switch:hover { filter: brightness(1.04); transform: translateY(-1px); }
+    .theme-switch-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #e7a822; font-size: 19px; box-shadow: 0 2px 5px rgba(40,48,56,.2); }
+    .theme-switch-label { min-width: 42px; font-size: 11px; font-weight: 800; text-align: left; }
+    body.dark-theme .theme-switch { background: linear-gradient(180deg, #3f4650, #242a31); border-color: #697580; color: #f2f4f5; }
+    body.dark-theme .theme-switch-icon { order: 2; background: #20252b; color: #d9e2ea; }
+    body.dark-theme .theme-switch-label { order: 1; text-align: right; }
+    body.dark-theme .sidebar { background: rgba(43,49,56,.88); border-bottom-color: rgba(100,113,123,.55); }
+    body.dark-theme.is-scrolled .sidebar { background: rgba(43,49,56,.68); }
+    body.dark-theme .pdf-preview { background: linear-gradient(180deg, #20262c, #2b3138); }
+    body.dark-theme .pdf-preview iframe, body.dark-theme .setting input, body.dark-theme .setting select, body.dark-theme .connection-grid input, body.dark-theme textarea { background: #1e242a; color: var(--text); }
+    body.dark-theme .item-action, body.dark-theme .layout-switch { background: linear-gradient(180deg, #3a434b, #2b3239); color: var(--text); border-color: #59656e; }
+    body.dark-theme .item-action.status-progress, body.dark-theme .item-action.status-done, body.dark-theme .item-action.status-new { background: #30373e; color: var(--muted); }
+    body.dark-theme .submission-item.active { background: #244438; border-color: #5b9a7c; }
+    body.dark-theme .sidebar .filter-stat[data-status="all"] { color: #bfe8d1; background: linear-gradient(180deg, #315744, #243f33); border-color: #5b9a7c; }
+    body.dark-theme .sidebar .filter-stat[data-status="archived"] { color: #c0c9c6; background: #343b42; border-color: #59636b; }
+    .main {
+      max-width: 1440px; min-width: 0; min-height: calc(100vh - 68px); margin: 0 auto; padding: 12px 20px 20px; display: grid; gap: 12px;
+    }
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    }
+    .header-title h1 { margin: 0; font-size: clamp(1.4rem, 2vw, 2rem); }
+    .header-title p { margin: 6px 0 0; color: var(--muted); }
+    .status-pill {
+      padding: 8px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--brand-soft); color: var(--brand); border: 1px solid rgba(47,111,90,0.2);
+    }
+    .stats { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 18px;
+    }
+    .stat { display: flex; align-items: center; gap: 7px; }
+    .stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .stat-value { font-weight: 800; font-size: 1rem; }
+    .layout {
+      display: grid; grid-template-columns: minmax(320px, 0.85fr) minmax(460px, 1.35fr); gap: 20px; align-items: start; min-height: calc(100vh - 40px);
+    }
+    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .list-header h2, .panel-header h2 { margin: 0; font-size: 1.15rem; }
+    .list-header-actions { display: flex; align-items: center; gap: 8px; }
+    .refresh-button { padding: 7px 11px; font-size: 12px; }
+    .filters { display: none; }
+    .chip {
+      border: 1px solid var(--line); background: var(--panel-alt); color: var(--text); border-radius: 999px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+    }
+    .chip.active { background: var(--brand-soft); border-color: rgba(47,111,90,0.2); color: var(--brand); }
+    .submission-list { display: grid; gap: 12px; }
+    .submission-item {
+      background: var(--panel-alt); border: 1px solid var(--line); border-left-width: 4px; border-radius: 14px; padding: 14px 15px 14px 12px; display: grid; gap: 8px; cursor: pointer;
+    }
+    .submission-item.status-new { border-color: #f4d2b0; border-left-color: var(--new); }
+    .submission-item.status-progress { border-color: #f4e1a2; border-left-color: var(--progress); }
+    .submission-item.status-done { border-color: #c9ebd8; border-left-color: var(--done); }
+    .submission-item.status-archived { border-color: #c7cbd0; border-left-color: #68727b; }
+    .submission-item.status-new.active { border-color: #e8a04d; border-left-color: var(--new); box-shadow: inset 0 0 0 1px rgba(217,119,6,0.18); }
+    .submission-item.status-progress.active { border-color: #d7b63d; border-left-color: var(--progress); box-shadow: inset 0 0 0 1px rgba(212,163,21,0.2); }
+    .submission-item.status-done.active { border-color: #7dbf94; border-left-color: var(--done); box-shadow: inset 0 0 0 1px rgba(44,138,94,0.2); }
+    .submission-item.active { position: relative; background: #edf7f1; border-color: #86bda0; box-shadow: inset 0 0 0 1px rgba(47,111,90,0.12), 0 5px 14px rgba(47,111,90,0.1); }
+    .submission-item.selected { border-color: rgba(44,138,94,0.45); box-shadow: inset 0 0 0 1px rgba(44,138,94,0.12); }
+    .submission-check { width: 18px; height: 18px; accent-color: var(--new); cursor: pointer; }
+    .submission-item.active { border-color: rgba(47,111,90,0.5); box-shadow: inset 0 0 0 1px rgba(47,111,90,0.2); }
+    .item-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .item-action { border: 1px solid #b8cfc2; border-radius: 999px; padding: 7px 12px; background: linear-gradient(180deg, #ffffff, #edf3ef); color: var(--muted); font-size: 12px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 7px rgba(30,44,36,.14); transition: transform .15s ease, filter .15s ease, box-shadow .15s ease; }
+    .item-action.status-progress,
+    .item-action.status-done,
+    .item-action.status-new { border-color: var(--line); color: var(--muted); background: white; }
+    .item-action.status-active.status-new { border-color: #cf3c3c; color: #fff; background: linear-gradient(180deg, #f46b61, #d63e3e); box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 7px rgba(176,44,44,.25); }
+    .item-action.status-active.status-progress { border-color: #d97a15; color: #fff; background: linear-gradient(180deg, #f5a34e, #db7614); box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 7px rgba(172,91,9,.25); }
+    .item-action.status-active.status-done { border-color: #2c9362; color: #fff; background: linear-gradient(180deg, #68bf85, #2f925f); box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 7px rgba(29,117,72,.24); }
+    .submission-item.active { box-shadow: inset 0 0 0 1px rgba(47,111,90,0.12), 0 5px 14px rgba(47,111,90,0.1); }
+    .item-action.status-active { font-weight: 800; box-shadow: inset 0 0 0 1px currentColor; }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .muted { color: var(--muted); }
+    .badge {
+      display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    }
+    .badge.new { background: var(--new-soft); color: var(--new); }
+    .badge.progress { background: var(--progress-soft); color: var(--progress); }
+    .badge.done { background: var(--done-soft); color: var(--done); }
+    #selectedBadge { display: none; }
+    .detail-panel { display: grid; align-content: start; gap: 18px; position: sticky; top: 20px; min-height: calc(100vh - 40px); }
+    .pdf-preview {
+      height: clamp(520px, 76vh, 820px); border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, #edf1ee 0%, #f9faf8 100%); display: grid; place-items: center; position: relative; overflow: hidden;
+    }
+    .pdf-preview iframe { width: 100%; height: 100%; border: 0; background: white; }
+    .pdf-preview-message { color: var(--muted); font-size: 13px; }
+    .pdf-preview:has(iframe:not([hidden]))::before { display: none; }
+    .pdf-preview::before {
+      content: "PDF-preview"; position: absolute; inset: 20px; border: 2px dashed rgba(47,111,90,0.25); border-radius: 14px; display: grid; place-items: center; color: var(--brand); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .actions .button { min-height: 42px; }
+    .button {
+      border: 1px solid transparent; border-radius: 999px; padding: 10px 16px; font-weight: 700; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 4px 9px rgba(30,44,36,.14); transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+    }
+    .button.primary { background: var(--brand); color: white; }
+    .button.secondary { background: var(--panel-alt); border: 1px solid var(--line); color: var(--text); }
+    .button.warning { background: #fff4df; color: var(--warning); border: 1px solid rgba(184,109,20,0.2); }
+    .button.danger { background: #fdecec; color: var(--danger); border: 1px solid rgba(141,45,45,0.2); }
+    textarea {
+      width: 100%; min-height: 100px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--panel-alt); color: var(--text); font: inherit;
+    }
+    .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(200px, 1fr)); gap: 14px; }
+    .setting { border: 1px solid var(--line); border-radius: 12px; background: var(--panel-alt); padding: 12px; }
+    .setting label { display: block; font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.07em; margin-bottom: 8px; }
+    .setting input, .setting select { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: white; font: inherit; }
+    .muted-row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .empty-state { padding: 18px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); background: var(--panel-alt); }
+    .connection-card { display: grid; gap: 14px; }
+    .connection-grid { display: grid; grid-template-columns: 1.4fr 1.4fr 1fr 1fr auto; gap: 10px; align-items: end; }
+    .connection-grid label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+    .connection-grid input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: white; font: inherit; }
+    .connection-status { color: var(--muted); font-size: 13px; }
+    .bulk-actions { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .bulk-actions[hidden] { display: none; }
+    .bulk-label { color: var(--muted); font-size: 13px; }
+    .bulk-progress { flex: 1; min-width: 180px; display: grid; gap: 5px; }
+    .bulk-progress[hidden] { display: none; }
+    .bulk-progress-track { height: 7px; overflow: hidden; border-radius: 999px; background: #f0dede; }
+    .bulk-progress-bar { width: 0; height: 100%; background: var(--danger); transition: width .2s ease; }
+    .bulk-progress-text { color: var(--muted); font-size: 12px; }
+    .sidebar .card { box-shadow: none; }
+    .sidebar .stat { min-height: 40px; padding: 8px 11px; border-color: #cedbd2; background: #fff; color: var(--text); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+    .sidebar .filter-stat[hidden] { display: none; }
+    .sidebar .filter-stat:hover { box-shadow: 0 6px 14px rgba(25, 61, 43, .13); transform: translateY(-2px); }
+    .sidebar .filter-stat:active { transform: translateY(0) scale(.98); box-shadow: none; }
+    .sidebar .filter-stat.active { box-shadow: inset 0 -2px 0 currentColor; }
+    .sidebar .stat-label { color: inherit; }
+    .sidebar .filter-stat[data-status="new"] { color: #fff; background: linear-gradient(180deg, #f46b61, #d63e3e); border-color: #cf3c3c; box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 8px rgba(176,44,44,.24); }
+    .sidebar .filter-stat[data-status="in_progress"] { color: #fff; background: linear-gradient(180deg, #f5a34e, #db7614); border-color: #d97a15; box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 8px rgba(172,91,9,.24); }
+    .sidebar .filter-stat[data-status="done"] { color: #fff; background: linear-gradient(180deg, #68bf85, #2f925f); border-color: #2c9362; box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 8px rgba(29,117,72,.23); }
+    .sidebar .filter-stat[data-status="archived"] { color: #50615a; background: #f0f3f1; border-color: #d3dbd6; }
+    .sidebar .filter-stat[data-status="all"] { color: #245d4a; background: linear-gradient(180deg, #f7fff9, #e4f3e9); border: 1px solid #76a98f; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 7px rgba(47,111,90,.15); }
+    .sidebar .filter-stat[data-status="new"] { border-radius: 999px; }
+    .sidebar .filter-stat[data-status="all"] { border-radius: 999px; }
+    .layout-switch { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; padding: 4px 8px 4px 10px; border: 1px solid #b8cfc2; border-radius: 999px; background: linear-gradient(180deg, #ffffff, #edf3ef); color: var(--muted); font-size: 12px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 7px rgba(30,44,36,.1); }
+    .layout-switch-track { position: relative; width: 34px; height: 19px; border-radius: 999px; background: #8fa197; box-shadow: inset 0 1px 2px rgba(27,45,42,.2); }
+    .layout-switch-thumb { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(27,45,42,.25); transition: transform .18s ease; }
+    .layout-switch[aria-checked="true"] { color: var(--brand); }
+    .layout-switch[aria-checked="true"] .layout-switch-track { background: var(--brand); }
+    .layout-switch[aria-checked="true"] .layout-switch-thumb { transform: translateX(15px); }
+    #settingsPanel { display: none; position: fixed; top: 78px; right: max(16px, calc((100vw - 1440px) / 2)); z-index: 30; width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 94px); overflow: auto; margin: 0; border-radius: 16px; box-shadow: 0 18px 42px rgba(24,31,28,.2); }
+    #settingsPanel.open { display: block; }
+    .settings-backdrop { display: none; }
+    .settings-hint { color: var(--muted); font-size: 12px; }
+    .submission-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .submission-date { color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .compact-summary { display: none; }
+    .submission-email { color: var(--blue); text-decoration: none; }
+    .submission-email:hover { text-decoration: underline; }
+    .submission-list.compact { gap: 7px; }
+    .submission-list.compact .submission-item { display: block; padding: 10px 14px; }
+    .submission-list.compact .submission-meta, .submission-list.compact .submission-item > .row, .submission-list.compact .item-actions { display: none; }
+    .submission-list.compact .compact-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 14px; }
+    .submission-list.compact .compact-summary strong:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .submission-list.compact .compact-summary span { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .submission-list.compact .compact-summary strong:last-child { min-width: 82px; text-align: right; white-space: nowrap; }
+    @media (max-width: 900px) {
+      .sidebar { flex-wrap: wrap; align-items: center; }
+      .stats { order: 3; width: 100%; overflow-x: auto; padding-bottom: 2px; }
+      .main { padding: 16px; }
+      #settingsPanel { top: 126px; right: 16px; width: calc(100vw - 32px); max-height: calc(100vh - 142px); }
+      .layout, .settings-grid, .connection-grid { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .detail-panel { position: static; }
+      .layout { min-height: auto; }
+      .detail-panel { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-logo" src="idv-mark.png" alt="Idrottsveteranerna">
+      <div class="brand-copy">
+        <div class="brand-title">Kvittoadministration</div>
+        <div id="brandVersion" class="brand-version">Laddar version...</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" data-view="inbox">Inkorg</button>
+      <button class="nav-btn" data-view="settings" type="button" aria-label="Inställningar" title="Inställningar">⚙ <span>Inställningar</span></button>
+    </nav>
+    <button id="themeSwitch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Byt till mörkt läge" title="Byt tema">
+      <span class="theme-switch-icon" aria-hidden="true">☀</span>
+      <span class="theme-switch-label">Ljust</span>
+    </button>
+
+    <section class="stats" aria-label="Översikt">
+      <button class="card stat filter-stat active" type="button" data-status="all">
+        <div class="stat-label">Alla</div>
+        <div id="allCount" class="stat-value">0</div>
+      </button>
+      <button class="card stat filter-stat" type="button" data-status="new">
+        <div class="stat-label">Nya</div>
+        <div id="newCount" class="stat-value">0</div>
+      </button>
+      <button class="card stat filter-stat" type="button" data-status="in_progress">
+        <div class="stat-label">Pågår</div>
+        <div id="progressCount" class="stat-value">0</div>
+      </button>
+      <button class="card stat filter-stat" type="button" data-status="done">
+        <div class="stat-label">Klart</div>
+        <div id="doneCount" class="stat-value">0</div>
+      </button>
+      <button class="card stat filter-stat" type="button" data-status="archived">
+        <div class="stat-label">Arkiv</div>
+        <div id="archivedCount" class="stat-value">0</div>
+      </button>
+    </section>
+
+  </aside>
+
+  <main class="main">
+    <section class="layout">
+      <div class="card">
+        <div class="list-header">
+          <h2 id="listTitle">Inkomna underlag</h2>
+          <div class="list-header-actions">
+            <button id="refreshSubmissionsButton" class="button secondary refresh-button" type="button">Uppdatera</button>
+            <button class="layout-switch" type="button" role="switch" aria-checked="false" aria-label="Visningsläge: Översikt">
+              <span class="layout-switch-label">Översikt</span>
+              <span class="layout-switch-track" aria-hidden="true"><span class="layout-switch-thumb"></span></span>
+            </button>
+          </div>
+        </div>
+        <div id="submissionList" class="submission-list"></div>
+      </div>
+
+      <div class="detail-panel card">
+        <div class="panel-header row">
+          <h2>Förhandsvisning</h2>
+        </div>
+
+        <div id="pdfPreview" class="pdf-preview" aria-label="PDF-preview">
+          <div id="pdfPreviewMessage" class="pdf-preview-message">Välj ett underlag för att öppna PDF-preview.</div>
+          <iframe id="pdfFrame" title="PDF-preview" hidden></iframe>
+        </div>
+
+        <div class="actions">
+          <button id="openPdfButton" class="button primary" type="button" disabled>Öppna PDF</button>
+          <button id="printPdfButton" class="button secondary" type="button" disabled>Skriv ut</button>
+          <button id="downloadPdfButton" class="button secondary" type="button" disabled>Ladda ner</button>
+        </div>
+
+        <div>
+          <label class="muted" for="adminNote">Adminnotering</label>
+          <textarea id="adminNote" placeholder="Skriv kort kommentar eller anteckning...">Kvitten ser komplett ut. Bankuppgifter kontrollerade.</textarea>
+        </div>
+      </div>
+    </section>
+
+    <section id="settingsPanel" class="card" aria-hidden="true">
+      <div class="list-header">
+        <h2>Inställningar</h2>
+        <button id="saveSettingsButton" class="button primary">Spara inställningar</button>
+      </div>
+      <p class="settings-hint">Ändra värdena och klicka Spara. Tryck på Inställningar igen eller Esc för att stänga.</p>
+      <div class="settings-grid">
+        <div class="setting" style="grid-column:1/-1;">
+          <label>Drift och åtkomst</label>
+          <div class="connection-status" id="connectionStatus">Lokal demo används tills du ansluter Supabase.</div>
+          <div class="connection-grid" style="margin-top:10px;">
+            <label>Supabase URL<input id="supabaseUrl" type="url" value="https://ohwalxqwtxtlldalsclj.supabase.co" placeholder="https://projekt.supabase.co" autocomplete="url"></label>
+            <label>Anon-nyckel<input id="supabaseAnonKey" type="password" placeholder="eyJ..." autocomplete="off"></label>
+            <label>Admin e-post<input id="adminEmail" type="email" placeholder="admin@foreningen.se" autocomplete="username"></label>
+            <label>Lösenord<input id="adminPassword" type="password" placeholder="Lösenord" autocomplete="current-password"></label>
+            <button id="connectButton" class="button primary" type="button">Anslut</button>
+          </div>
+          <button id="signOutButton" class="button secondary" type="button" hidden style="margin-top:10px;">Logga ut</button>
+        </div>
+        <div class="setting">
+          <label for="deliveryMode">E-post och testläge</label>
+          <select id="deliveryMode">
+            <option value="test">test</option>
+            <option value="production">production</option>
+            <option value="disabled">disabled</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="testRecipient">Testmottagare</label>
+          <input id="testRecipient" value="mail@torbjornzimmerman.se">
+        </div>
+        <div class="setting">
+          <label for="productionRecipient">Produktionsmottagare</label>
+          <input id="productionRecipient" value="betala@idrottsveteranerna.se">
+        </div>
+        <div class="setting">
+          <label for="statusFilter">Användare och aktiv roll</label>
+          <select id="statusFilter">
+            <option value="admin">admin</option>
+            <option value="cashier">cashier</option>
+            <option value="tester">tester</option>
+            <option value="viewer">viewer</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="retentionDays">Behåll arkiverade (dagar)</label>
+          <input id="retentionDays" type="number" min="1" max="3650" value="365">
+        </div>
+        <div class="setting">
+          <label for="travelRatePerMil">Ersättning per mil (kr)</label>
+          <input id="travelRatePerMil" type="number" min="0.01" max="10000" step="0.01" value="25">
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const statusClass = {
+      new: 'new',
+      in_progress: 'progress',
+      done: 'done',
+      archived: 'archived'
+    };
+
+    const statusText = {
+      new: 'Ny',
+      in_progress: 'Pågår',
+      done: 'Klar',
+      archived: 'Arkiverad'
+    };
+
+    const defaultSettings = {
+      emailDeliveryMode: 'test',
+      emailTestRecipient: 'mail@torbjornzimmerman.se',
+      receiptEmailTo: 'betala@idrottsveteranerna.se',
+      retentionDays: 365,
+      travelRatePerMil: 25,
+      role: 'admin'
+    };
+
+    const defaultSubmissions = [
+      { id: 'INV-1042', name: 'Anna Svensson', email: 'anna@example.com', eventTag: 'Tävlingsdag 10', amount: '1 240 kr', status: 'new', createdAt: '2026-09-09T10:15:00+02:00' },
+      { id: 'INV-1041', name: 'Jonas Karlsson', email: 'jonas@example.com', eventTag: 'Träningsläger', amount: '860 kr', status: 'in_progress', createdAt: '2026-09-08T16:40:00+02:00' },
+      { id: 'INV-1040', name: 'Sara Lind', email: 'sara@example.com', eventTag: 'Höstcup', amount: '2 410 kr', status: 'done', createdAt: '2026-09-08T09:05:00+02:00' },
+      { id: 'INV-1039', name: 'Mikael Åberg', email: 'mikael@example.com', eventTag: 'Landslag', amount: '1 090 kr', status: 'new', createdAt: '2026-09-07T14:25:00+02:00' }
+    ];
+
+    let adminApiBase = window.IDV_ADMIN_API_URL || '';
+    let supabaseClient;
+    let authSession;
+    const list = document.getElementById('submissionList');
+    const listTitle = document.getElementById('listTitle');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const selectedBadge = document.getElementById('selectedBadge');
+    const pdfPreviewMessage = document.getElementById('pdfPreviewMessage');
+    const pdfFrame = document.getElementById('pdfFrame');
+    const openPdfButton = document.getElementById('openPdfButton');
+    const printPdfButton = document.getElementById('printPdfButton');
+    const downloadPdfButton = document.getElementById('downloadPdfButton');
+    const deliveryMode = document.getElementById('deliveryMode');
+    const testRecipient = document.getElementById('testRecipient');
+    const productionRecipient = document.getElementById('productionRecipient');
+    const statusFilter = document.getElementById('statusFilter');
+    const retentionDays = document.getElementById('retentionDays');
+    const travelRatePerMil = document.getElementById('travelRatePerMil');
+    const saveSettingsButton = document.getElementById('saveSettingsButton');
+    const supabaseUrlInput = document.getElementById('supabaseUrl');
+    const supabaseAnonKeyInput = document.getElementById('supabaseAnonKey');
+    const adminEmailInput = document.getElementById('adminEmail');
+    const adminPasswordInput = document.getElementById('adminPassword');
+    const connectButton = document.getElementById('connectButton');
+    const signOutButton = document.getElementById('signOutButton');
+    const connectionStatus = document.getElementById('connectionStatus');
+    const brandVersion = document.getElementById('brandVersion');
+    const themeSwitch = document.getElementById('themeSwitch');
+    const refreshSubmissionsButton = document.getElementById('refreshSubmissionsButton');
+    const allCount = document.getElementById('allCount');
+    const newCount = document.getElementById('newCount');
+    const progressCount = document.getElementById('progressCount');
+    const doneCount = document.getElementById('doneCount');
+    const archivedCount = document.getElementById('archivedCount');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectVisible = document.getElementById('selectVisible');
+    const selectedCount = document.getElementById('selectedCount');
+    const bulkDeleteButton = document.getElementById('bulkDeleteButton');
+    const bulkProgress = document.getElementById('bulkProgress');
+    const bulkProgressBar = document.getElementById('bulkProgressBar');
+    const bulkProgressText = document.getElementById('bulkProgressText');
+
+    let submissions = [...defaultSubmissions];
+    let selectedIndex = 0;
+    let activeFilter = 'all';
+    const selectedSubmissionIds = new Set();
+    let selectedPdfUrl = '';
+    let selectedPdfId = '';
+
+    function setPdfState(message, url = '', loading = false) {
+      selectedPdfUrl = url;
+      pdfPreviewMessage.textContent = message;
+      pdfPreviewMessage.hidden = Boolean(url);
+      pdfFrame.hidden = !url;
+      pdfFrame.src = url || 'about:blank';
+      openPdfButton.disabled = !url || loading;
+      printPdfButton.disabled = !url || loading;
+      downloadPdfButton.disabled = !url || loading;
+    }
+
+    async function loadPdfPreview(submission) {
+      selectedPdfId = submission?.id || '';
+      if (!submission?.id) {
+        setPdfState('Välj ett underlag för att öppna PDF-preview.');
+        return;
+      }
+      if (!adminApiBase || !authSession) {
+        setPdfState('Logga in för att öppna PDF-preview.');
+        return;
+      }
+      setPdfState('Hämtar PDF...', '', true);
+      try {
+        const response = await fetch(`${adminApiBase}/pdf?id=${encodeURIComponent(submission.id)}`, {
+          headers: applyConnectionHeaders({ 'Content-Type': 'application/json' })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload.url) throw new Error(payload.error || `PDF kunde inte hämtas (${response.status}).`);
+        setPdfState('', payload.url);
+      } catch (error) {
+        setPdfState(`PDF kunde inte öppnas: ${error.message}`);
+      }
+    }
+
+    function openPdf() {
+      if (selectedPdfUrl) window.open(selectedPdfUrl, '_blank', 'noopener');
+    }
+
+    function printPdf() {
+      if (!selectedPdfUrl) return;
+      const printWindow = window.open(selectedPdfUrl, '_blank');
+      if (printWindow) printWindow.addEventListener('load', () => printWindow.print(), { once: true });
+    }
+
+    async function downloadPdf() {
+      if (!selectedPdfUrl) return;
+      try {
+        const response = await fetch(selectedPdfUrl);
+        if (!response.ok) throw new Error('Nedladdningen misslyckades.');
+        const blobUrl = URL.createObjectURL(await response.blob());
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = `underlag-${shortId(selectedPdfId).replace('...', '-')}.pdf`;
+        link.click();
+        URL.revokeObjectURL(blobUrl);
+      } catch (error) {
+        window.open(selectedPdfUrl, '_blank', 'noopener');
+        setConnectionStatus(`PDF öppnad i ny flik för nedladdning: ${error.message}`);
+      }
+    }
+
+    function setConnectionStatus(message, connected = false) {
+      connectionStatus.textContent = message;
+      connectionStatus.style.color = connected ? 'var(--success)' : 'var(--muted)';
+    }
+
+    async function loadVersion() {
+      try {
+        const response = await fetch('version.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error('version.json kunde inte hämtas');
+        const version = await response.json();
+        brandVersion.textContent = `v${version.version}`;
+      } catch (error) {
+        brandVersion.textContent = 'Lokal version';
+        console.warn('Version kunde inte läsas.', error);
+      }
+    }
+
+    function getStoredConnection() {
+      return JSON.parse(localStorage.getItem('idv-admin-connection') || 'null');
+    }
+
+    function saveSession() {
+      if (authSession) sessionStorage.setItem('idv-admin-session', JSON.stringify(authSession));
+    }
+
+    async function restoreSession() {
+      const storedConnection = getStoredConnection();
+      const storedSession = JSON.parse(sessionStorage.getItem('idv-admin-session') || 'null');
+      if (!storedConnection || !storedSession?.access_token) return false;
+      supabaseClient = { supabaseKey: storedConnection.anonKey };
+      adminApiBase = `${storedConnection.url.replace(/\/$/, '')}/functions/v1/admin-api`;
+      authSession = storedSession;
+      signOutButton.hidden = false;
+      try {
+        await refreshFromApi();
+        setConnectionStatus(`Ansluten som ${storedConnection.email}. Live-data används.`, true);
+        return true;
+      } catch (error) {
+        sessionStorage.removeItem('idv-admin-session');
+        authSession = null;
+        supabaseClient = null;
+        adminApiBase = window.IDV_ADMIN_API_URL || '';
+        signOutButton.hidden = true;
+        setConnectionStatus(`Sessionen gick ut. Logga in igen. (${error.message})`);
+        return false;
+      }
+    }
+
+    function applyConnectionHeaders(headers = {}) {
+      if (authSession?.access_token) headers.Authorization = `Bearer ${authSession.access_token}`;
+      if (supabaseClient) headers.apikey = supabaseClient.supabaseKey;
+      return headers;
+    }
+
+    async function connectToSupabase() {
+      const url = supabaseUrlInput.value.trim().replace(/\/$/, '');
+      const anonKey = supabaseAnonKeyInput.value.trim();
+      const email = adminEmailInput.value.trim();
+      const password = adminPasswordInput.value;
+      if (!url || !anonKey || !email || !password) {
+        setConnectionStatus('Fyll i Supabase URL, anon-nyckel, e-post och lösenord.');
+        return;
+      }
+
+      connectButton.disabled = true;
+      setConnectionStatus('Ansluter och verifierar adminbehörighet...');
+      try {
+        const authResponse = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: anonKey },
+          body: JSON.stringify({ email, password })
+        });
+        const authPayload = await authResponse.json().catch(() => ({}));
+        if (!authResponse.ok) throw new Error(authPayload.error_description || authPayload.msg || 'Inloggningen misslyckades.');
+        authSession = authPayload;
+        supabaseClient = { supabaseKey: anonKey };
+        adminApiBase = `${url}/functions/v1/admin-api`;
+        localStorage.setItem('idv-admin-connection', JSON.stringify({ url, anonKey, email }));
+        saveSession();
+        adminPasswordInput.value = '';
+        signOutButton.hidden = false;
+        await refreshFromApi();
+        setConnectionStatus(`Ansluten som ${email}. Live-data används.`, true);
+      } catch (error) {
+        authSession = null;
+        setConnectionStatus(`Kunde inte ansluta: ${error.message || 'okänt fel'}`);
+      } finally {
+        connectButton.disabled = false;
+      }
+    }
+
+    async function refreshFromApi() {
+      const settingsRes = await fetch(`${adminApiBase}/settings`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
+      if (!settingsRes.ok) throw new Error(`Inställningar kunde inte hämtas (${settingsRes.status}).`);
+      const settingsJson = await settingsRes.json();
+      const normalizedSettings = normalizeSettings(settingsJson.settings || settingsJson || {});
+      deliveryMode.value = normalizedSettings.emailDeliveryMode;
+      testRecipient.value = normalizedSettings.emailTestRecipient;
+      productionRecipient.value = normalizedSettings.receiptEmailTo;
+      retentionDays.value = normalizedSettings.retentionDays;
+      travelRatePerMil.value = normalizedSettings.travelRatePerMil;
+      statusFilter.value = normalizedSettings.role;
+      updateOverview();
+
+      const submissionsRes = await fetch(`${adminApiBase}/submissions`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
+      if (!submissionsRes.ok) throw new Error(`Underlag kunde inte hämtas (${submissionsRes.status}).`);
+      const submissionsJson = await submissionsRes.json();
+      submissions = Array.isArray(submissionsJson.submissions) ? submissionsJson.submissions.map(normalizeSubmission) : [];
+      selectedIndex = 0;
+      savePersistedState();
+      renderList();
+      updateSelection();
+    }
+
+    function normalizeSubmission(item) {
+      return {
+        id: item.id || item.uuid || 'INV-0000',
+        name: item.sender_name || item.name || 'Okänt namn',
+        email: item.sender_email || item.email || '-',
+        eventTag: item.event_tag || item.eventTag || '-',
+        clearingNumber: item.bank_clearing_number || item.clearing_number || '',
+        accountNumber: item.bank_account_number || item.account_number || '',
+        amount: typeof item.amount_total === 'number' ? `${new Intl.NumberFormat('sv-SE').format(item.amount_total)} kr` : (item.amount || '0 kr'),
+        status: item.archived_at ? 'archived' : (item.status || 'new'),
+        previousStatus: item.status || 'new',
+        note: item.admin_note || '',
+        createdAt: item.created_at || ''
+      };
+    }
+
+    function shortId(id) {
+      return id.length > 18 ? `${id.slice(0, 8)}...${id.slice(-4)}` : id;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      })[character]);
+    }
+
+    function receivedAt(submission) {
+      const timestamp = Date.parse(submission.createdAt || '');
+      return Number.isFinite(timestamp)
+        ? new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(timestamp))
+        : 'Tidpunkt saknas';
+    }
+
+    function getVisibleSubmissions() {
+      return submissions
+        .filter((submission) => activeFilter === 'all' ? submission.status !== 'archived' : submission.status === activeFilter)
+        .sort((first, second) => {
+          const newestFirst = (Date.parse(second.createdAt || '') || 0) - (Date.parse(first.createdAt || '') || 0);
+          return newestFirst || String(second.id).localeCompare(String(first.id), 'sv');
+        });
+    }
+
+    function updateOverview() {
+      const counts = {
+        all: submissions.filter((submission) => submission.status !== 'archived').length,
+        new: submissions.filter((submission) => submission.status === 'new').length,
+        in_progress: submissions.filter((submission) => submission.status === 'in_progress').length,
+        done: submissions.filter((submission) => submission.status === 'done').length,
+        archived: submissions.filter((submission) => submission.status === 'archived').length
+      };
+      allCount.textContent = counts.all;
+      newCount.textContent = counts.new;
+      progressCount.textContent = counts.in_progress;
+      doneCount.textContent = counts.done;
+      archivedCount.textContent = counts.archived;
+      document.querySelectorAll('.filter-stat').forEach((button) => {
+        button.hidden = counts[button.dataset.status] === 0;
+      });
+      if (activeFilter !== 'all' && counts[activeFilter] === 0) activeFilter = counts.all ? 'all' : 'archived';
+    }
+
+    function normalizeSettings(settings = {}) {
+      if (Array.isArray(settings)) settings = Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
+      return {
+        emailDeliveryMode: settings.email_delivery_mode || settings.emailDeliveryMode || 'test',
+        emailTestRecipient: settings.email_test_recipient || settings.emailTestRecipient || 'mail@torbjornzimmerman.se',
+        receiptEmailTo: settings.receipt_email_to || settings.receiptEmailTo || 'betala@idrottsveteranerna.se',
+        retentionDays: Number(settings.retention_days || settings.retentionDays || 365),
+        travelRatePerMil: Number(settings.travel_rate_per_km || settings.travelRatePerKm || 2.5) * 10,
+        role: settings.role || 'admin'
+      };
+    }
+
+    function loadPersistedState() {
+      const stored = JSON.parse(localStorage.getItem('idv-admin-state') || 'null');
+      if (stored && stored.settings) Object.assign(defaultSettings, stored.settings);
+      if (stored && Array.isArray(stored.submissions) && stored.submissions.length) submissions = stored.submissions;
+
+      const settings = { ...defaultSettings };
+      deliveryMode.value = settings.emailDeliveryMode;
+      testRecipient.value = settings.emailTestRecipient;
+      productionRecipient.value = settings.receiptEmailTo;
+      retentionDays.value = settings.retentionDays;
+      travelRatePerMil.value = settings.travelRatePerMil;
+      statusFilter.value = settings.role;
+    }
+
+    function savePersistedState() {
+      localStorage.setItem('idv-admin-state', JSON.stringify({
+        settings: {
+          emailDeliveryMode: deliveryMode.value,
+          emailTestRecipient: testRecipient.value,
+          receiptEmailTo: productionRecipient.value,
+          retentionDays: retentionDays.value,
+          travelRatePerMil: travelRatePerMil.value,
+          role: statusFilter.value
+        },
+        submissions
+      }));
+    }
+
+    async function tryLoadFromApi() {
+      if (!adminApiBase) return false;
+      try {
+        const settingsRes = await fetch(`${adminApiBase}/settings`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
+        if (!settingsRes.ok) return false;
+        const settingsJson = await settingsRes.json();
+        const normalizedSettings = normalizeSettings(settingsJson.settings || settingsJson || {});
+        deliveryMode.value = normalizedSettings.emailDeliveryMode;
+        testRecipient.value = normalizedSettings.emailTestRecipient;
+        productionRecipient.value = normalizedSettings.receiptEmailTo;
+        retentionDays.value = normalizedSettings.retentionDays;
+        statusFilter.value = normalizedSettings.role;
+        savePersistedState();
+
+        const submissionsRes = await fetch(`${adminApiBase}/submissions`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
+        if (!submissionsRes.ok) return true;
+        const submissionsJson = await submissionsRes.json();
+        const mapped = Array.isArray(submissionsJson.submissions) ? submissionsJson.submissions.map(normalizeSubmission) : defaultSubmissions;
+        if (mapped.length) {
+          submissions = mapped;
+          selectedIndex = 0;
+        }
+        savePersistedState();
+        return true;
+      } catch (error) {
+        console.warn('Admin API not available, using local state fallback.', error);
+        return false;
+      }
+    }
+
+    function updateSelection() {
+      if (!submissions.length) {
+        list.innerHTML = '<div class="empty-state">Inga inskickade underlag hittades.</div>';
+        selectedBadge.textContent = 'Ingen';
+        selectedBadge.className = 'badge new';
+        setPdfState('Välj ett underlag för att öppna PDF-preview.');
+        return;
+      }
+
+      const selectedSubmission = submissions[selectedIndex] || submissions[0];
+      if (selectedBadge) {
+        selectedBadge.textContent = statusText[selectedSubmission.status] || 'Ny';
+        selectedBadge.className = `badge ${statusClass[selectedSubmission.status] || 'new'}`;
+      }
+
+      list.querySelectorAll('.submission-item').forEach((node, index) => {
+        node.classList.toggle('active', index === selectedIndex);
+      });
+    }
+
+    function renderList() {
+      const visibleSubmissions = getVisibleSubmissions();
+      if (!visibleSubmissions.length) {
+        list.innerHTML = '<div class="empty-state">Inga inskickade underlag hittades.</div>';
+        return;
+      }
+
+      list.innerHTML = visibleSubmissions.map((submission) => {
+        const originalIndex = submissions.indexOf(submission);
+        const safeId = escapeHtml(submission.id);
+        const safeShortId = escapeHtml(shortId(submission.id));
+        const safeName = escapeHtml(submission.name);
+        const safeEmail = escapeHtml(submission.email);
+        const safeAmount = escapeHtml(submission.amount);
+        const safeEventTag = escapeHtml(submission.eventTag);
+        const safeReceivedAt = escapeHtml(receivedAt(submission));
+        const emailHref = `mailto:${encodeURIComponent(submission.email)}?subject=${encodeURIComponent(`Fråga om underlag ${shortId(submission.id)}`)}`;
+        return `
+        <div class="submission-item status-${statusClass[submission.status] || 'new'} ${originalIndex === selectedIndex ? 'active' : ''} ${selectedSubmissionIds.has(submission.id) ? 'selected' : ''}" data-index="${originalIndex}">
+          <div class="submission-meta">
+            <div>
+              <div class="muted" style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase;">Ärende-ID</div>
+              <strong title="${safeId}">${safeShortId}</strong>
+            </div>
+            <div class="submission-date">Inkom<br><strong>${safeReceivedAt}</strong></div>
+          </div>
+          <div class="compact-summary" aria-label="Kompakt sammanfattning">
+            <strong>${safeName}</strong>
+            <span>${safeReceivedAt}</span>
+            <strong>${safeAmount}</strong>
+          </div>
+          <div class="row">
+            <span>${safeName}</span>
+            <span class="muted">${safeAmount}</span>
+          </div>
+          <div class="row muted">
+            <a class="submission-email" href="${emailHref}" aria-label="E-posta ${safeEmail}">${safeEmail}</a>
+            <span>${safeEventTag}</span>
+          </div>
+          <div class="item-actions">
+            <button class="item-action status-submission status-new ${submission.status === 'new' ? 'status-active' : ''}" type="button" data-status="new" data-index="${originalIndex}">Inkommen</button>
+            <button class="item-action status-submission status-progress ${submission.status === 'in_progress' ? 'status-active' : ''}" type="button" data-status="in_progress" data-index="${originalIndex}">Pågår</button>
+            <button class="item-action status-submission status-done ${submission.status === 'done' ? 'status-active' : ''}" type="button" data-status="done" data-index="${originalIndex}">Klar</button>
+            <button class="item-action archive-submission" type="button" data-index="${originalIndex}">${submission.status === 'archived' ? 'Återställ' : 'Arkivera'}</button>
+          </div>
+        </div>
+      `;
+      }).join('');
+      updateOverview();
+
+      list.querySelectorAll('.submission-item').forEach((item) => {
+        item.addEventListener('click', () => {
+          selectedIndex = Number(item.dataset.index);
+          updateSelection();
+          loadPdfPreview(submissions[selectedIndex]);
+        });
+      });
+      list.querySelectorAll('.archive-submission').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          archiveSubmission(Number(button.dataset.index));
+        });
+      });
+      list.querySelectorAll('.status-submission').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          selectedIndex = Number(button.dataset.index);
+          updateStatus(button.dataset.status);
+        });
+      });
+      updateBulkActions(visibleSubmissions);
+    }
+
+    function updateBulkActions(visibleSubmissions = submissions) {
+      if (!bulkActions || !selectVisible || !selectedCount) return;
+      const visibleIds = visibleSubmissions.map((submission) => submission.id);
+      const visibleSelected = visibleIds.filter((id) => selectedSubmissionIds.has(id));
+      bulkActions.hidden = selectedSubmissionIds.size === 0;
+      selectedCount.textContent = `${selectedSubmissionIds.size} valda`;
+      selectVisible.checked = visibleIds.length > 0 && visibleSelected.length === visibleIds.length;
+    }
+
+    async function archiveSubmission(index) {
+      const submission = submissions[index];
+      if (!submission || !window.confirm(`${submission.status === 'archived' ? 'Återställ' : 'Arkivera'} underlaget ${shortId(submission.id)}?`)) return;
+      try {
+        if (adminApiBase && authSession) {
+          const response = await fetch(`${adminApiBase}/archive`, {
+            method: 'PATCH',
+            headers: applyConnectionHeaders({ 'Content-Type': 'application/json' })
+            ,body: JSON.stringify({ id: submission.id, archived: submission.status !== 'archived' })
+          });
+          if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            throw new Error(payload.error || `Arkivering misslyckades (${response.status}).`);
+          }
+        }
+        submissions[index] = { ...submission, status: submission.status === 'archived' ? (submission.previousStatus || 'new') : 'archived' };
+        savePersistedState();
+        renderList();
+        updateSelection();
+      } catch (error) {
+        setConnectionStatus(`Kunde inte arkivera underlaget: ${error.message}`);
+      }
+    }
+
+    async function deleteSelectedSubmissions() {
+      const ids = [...selectedSubmissionIds];
+      if (!ids.length || !window.confirm(`Arkivera ${ids.length} valda underlag?`)) return;
+      const startedAt = performance.now();
+      bulkProgress.hidden = false;
+      bulkDeleteButton.disabled = true;
+      selectVisible.disabled = true;
+      try {
+        for (const [completed, id] of ids.entries()) {
+          if (adminApiBase && authSession) {
+            const response = await fetch(`${adminApiBase}/archive`, {
+              method: 'PATCH',
+              headers: applyConnectionHeaders({ 'Content-Type': 'application/json' })
+              ,body: JSON.stringify({ id, archived: true })
+            });
+            if (!response.ok) {
+              const payload = await response.json().catch(() => ({}));
+              throw new Error(payload.error || `Arkivering misslyckades (${response.status}).`);
+            }
+          }
+          const index = submissions.findIndex((submission) => submission.id === id);
+          if (index >= 0) submissions[index] = { ...submissions[index], status: 'archived' };
+          selectedSubmissionIds.delete(id);
+          const finished = completed + 1;
+          const percent = Math.round((finished / ids.length) * 100);
+          const elapsedSeconds = (performance.now() - startedAt) / 1000;
+          const averageSeconds = elapsedSeconds / finished;
+          const remainingSeconds = Math.max(0, Math.ceil(averageSeconds * (ids.length - finished)));
+          bulkProgressBar.style.width = `${percent}%`;
+          bulkProgressText.textContent = `${finished} av ${ids.length} borttagna (${percent} %) - cirka ${remainingSeconds} sek kvar`;
+          renderList();
+        }
+        selectedIndex = Math.min(selectedIndex, Math.max(submissions.length - 1, 0));
+        savePersistedState();
+        renderList();
+        updateSelection();
+      } catch (error) {
+        setConnectionStatus(`Bulk-radering avbröts: ${error.message}`);
+      } finally {
+        bulkProgress.hidden = true;
+        bulkProgressBar.style.width = '0';
+        bulkDeleteButton.disabled = false;
+        selectVisible.disabled = false;
+      }
+    }
+
+    if (selectVisible) selectVisible.addEventListener('change', () => {
+      const visibleSubmissions = activeFilter === 'all'
+        ? submissions
+        : submissions.filter((submission) => submission.status === activeFilter);
+      visibleSubmissions.forEach((submission) => {
+        if (selectVisible.checked) selectedSubmissionIds.add(submission.id);
+        else selectedSubmissionIds.delete(submission.id);
+      });
+      renderList();
+      updateSelection();
+    });
+
+    if (bulkDeleteButton) bulkDeleteButton.addEventListener('click', deleteSelectedSubmissions);
+    openPdfButton.addEventListener('click', openPdf);
+    printPdfButton.addEventListener('click', printPdf);
+    downloadPdfButton.addEventListener('click', downloadPdf);
+
+    async function applyFilter(status) {
+        activeFilter = status || 'all';
+        listTitle.textContent = activeFilter === 'archived' ? 'Arkiverade ärenden' : 'Inkomna underlag';
+      document.querySelectorAll('.filters .chip').forEach((chip) => chip.classList.toggle('active', chip.dataset.status === activeFilter));
+        document.querySelectorAll('.filter-stat').forEach((stat) => stat.classList.toggle('active', stat.dataset.status === activeFilter));
+        if (adminApiBase && authSession) {
+          const query = activeFilter === 'all' ? '' : `?status=${encodeURIComponent(activeFilter)}`;
+          const response = await fetch(`${adminApiBase}/submissions${query}`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
+          if (response.ok) {
+            const payload = await response.json();
+            submissions = Array.isArray(payload.submissions) ? payload.submissions.map(normalizeSubmission) : [];
+            selectedIndex = 0;
+          }
+        }
+        renderList();
+        updateSelection();
+    }
+
+    document.querySelectorAll('.filters .chip').forEach((button) => {
+      button.addEventListener('click', () => applyFilter(button.dataset.status));
+    });
+    document.querySelectorAll('.filter-stat').forEach((button) => {
+      button.addEventListener('click', () => applyFilter(button.dataset.status));
+    });
+
+    document.querySelectorAll('.nav-btn[data-view]').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn[data-view]').forEach((navButton) => navButton.classList.toggle('active', navButton === button));
+        if (button.dataset.view === 'archive') {
+          document.querySelector('[data-status="archived"]').click();
+          list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (button.dataset.view === 'inbox') {
+          settingsPanel.classList.remove('open');
+          settingsPanel.setAttribute('aria-hidden', 'true');
+          document.querySelector('[data-status="all"]').click();
+          list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (button.dataset.view === 'settings') {
+          const open = settingsPanel.classList.toggle('open');
+          settingsPanel.setAttribute('aria-hidden', String(!open));
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !settingsPanel.classList.contains('open')) return;
+      settingsPanel.classList.remove('open');
+      settingsPanel.setAttribute('aria-hidden', 'true');
+      document.querySelector('.nav-btn[data-view="inbox"]')?.focus();
+    });
+
+    async function updateStatus(status, index = selectedIndex) {
+      if (!submissions[index]) return;
+      selectedIndex = index;
+      const submission = submissions[index];
+      try {
+        if (adminApiBase && authSession && submission.id) {
+          const response = await fetch(`${adminApiBase}/submission`, {
+            method: 'PATCH',
+            headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ id: submission.id, status })
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || `Status kunde inte sparas (${response.status}).`);
+        }
+        submissions[index] = { ...submission, status };
+        savePersistedState();
+        renderList();
+        updateSelection();
+      } catch (error) {
+        setConnectionStatus(`Status ändrades inte: ${error.message}`);
+      }
+    }
+
+    async function bootstrap() {
+      loadPersistedState();
+      renderList();
+      updateSelection();
+      if (await restoreSession()) return;
+      tryLoadFromApi().finally(() => {
+        renderList();
+        updateSelection();
+      });
+    }
+
+    saveSettingsButton.addEventListener('click', async () => {
+      if (adminApiBase && authSession) {
+        const updates = [
+          ['email_delivery_mode', deliveryMode.value],
+          ['email_test_recipient', testRecipient.value.trim()],
+          ['receipt_email_to', productionRecipient.value.trim()],
+          ['retention_days', Number(retentionDays.value)],
+          ['travel_rate_per_km', Number(travelRatePerMil.value) / 10]
+        ];
+        try {
+          for (const [key, value] of updates) {
+            const response = await fetch(`${adminApiBase}/settings`, {
+              method: 'PATCH',
+              headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }),
+              body: JSON.stringify({ key, value })
+            });
+            if (!response.ok) throw new Error(`Inställningen ${key} kunde inte sparas (${response.status}).`);
+          }
+          savePersistedState();
+          window.alert('Inställningarna sparades i Supabase.');
+          return;
+        } catch (error) {
+          setConnectionStatus(error.message);
+        }
+      }
+      savePersistedState();
+      window.alert('Inställningarna sparades lokalt i browsern.');
+    });
+
+    connectButton.addEventListener('click', connectToSupabase);
+    refreshSubmissionsButton.addEventListener('click', async () => {
+      if (!authSession) {
+        setConnectionStatus('Anslut först för att hämta nya underlag.');
+        return;
+      }
+      refreshSubmissionsButton.disabled = true;
+      try {
+        await refreshFromApi();
+        setConnectionStatus('Underlagen är uppdaterade.', true);
+      } catch (error) {
+        setConnectionStatus(`Kunde inte uppdatera underlagen: ${error.message}`);
+      } finally {
+        refreshSubmissionsButton.disabled = false;
+      }
+    });
+    window.setInterval(() => {
+      if (authSession && !refreshSubmissionsButton.disabled) refreshSubmissionsButton.click();
+    }, 30000);
+    signOutButton.addEventListener('click', () => {
+      supabaseClient = null;
+      authSession = null;
+      sessionStorage.removeItem('idv-admin-session');
+      adminApiBase = window.IDV_ADMIN_API_URL || '';
+      signOutButton.hidden = true;
+      setConnectionStatus('Utloggad. Lokal demo används.');
+    });
+
+    const storedConnection = getStoredConnection();
+    if (storedConnection) {
+      supabaseUrlInput.value = storedConnection.url || '';
+      supabaseAnonKeyInput.value = storedConnection.anonKey || '';
+      adminEmailInput.value = storedConnection.email || '';
+    }
+
+    bootstrap();
+    loadVersion();
+
+    function applyTheme(dark) {
+      document.body.classList.toggle('dark-theme', dark);
+      themeSwitch.setAttribute('aria-checked', String(dark));
+      themeSwitch.setAttribute('aria-label', dark ? 'Byt till ljust läge' : 'Byt till mörkt läge');
+      themeSwitch.title = dark ? 'Byt till ljust läge' : 'Byt till mörkt läge';
+      themeSwitch.querySelector('.theme-switch-icon').textContent = dark ? '☾' : '☀';
+      themeSwitch.querySelector('.theme-switch-label').textContent = dark ? 'Mörkt' : 'Ljust';
+    }
+
+    const savedTheme = localStorage.getItem('idv-admin-theme');
+    applyTheme(savedTheme === 'dark');
+    themeSwitch.addEventListener('click', () => {
+      const dark = !document.body.classList.contains('dark-theme');
+      applyTheme(dark);
+      localStorage.setItem('idv-admin-theme', dark ? 'dark' : 'light');
+    });
+
+    const layoutSwitch = document.querySelector('.layout-switch');
+    layoutSwitch?.addEventListener('click', () => {
+      const compact = layoutSwitch.getAttribute('aria-checked') !== 'true';
+      layoutSwitch.setAttribute('aria-checked', String(compact));
+      layoutSwitch.setAttribute('aria-label', `Visningsläge: ${compact ? 'Kompakt' : 'Översikt'}`);
+      layoutSwitch.querySelector('.layout-switch-label').textContent = compact ? 'Kompakt' : 'Översikt';
+      list.classList.toggle('compact', compact);
+    });
+
+    window.addEventListener('scroll', () => {
+      document.body.classList.toggle('is-scrolled', window.scrollY > 8);
+    }, { passive: true });
+
+    const selectedStatus = submissions[selectedIndex]?.status || 'new';
+    if (selectedBadge) {
+      selectedBadge.textContent = statusText[selectedStatus] || 'Ny';
+      selectedBadge.className = `badge ${statusClass[selectedStatus] || 'new'}`;
+    }
+  </script>
+</body>
+</html>

@@ -1,16 +1,26 @@
 import {test,expect} from '@playwright/test';
 
 async function waitForAppState(page){
+  if(await page.locator('input[name="submissionMode"]:checked').count()===0){
+    await page.getByLabel(/Endast kvitton/).check();
+  }
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
 }
 
-test('toppmenyn visar tre sammanhållna steg',async({page})=>{
+test('toppmenyn visar bara lägesvalen',async({page})=>{
   await page.goto('/');
+  await expect(page.locator('.timeline')).toBeVisible();
   await expect(page.locator('.timeline .seg')).toHaveCount(3);
-  await expect(page.locator('.timeline .seg-index')).toHaveCount(3);
-  await expect(page.locator('.timeline')).toContainText('Kvitton');
-  await expect(page.locator('.timeline')).toContainText('Dina uppgifter');
-  await expect(page.locator('.timeline')).toContainText('Kontroll & skicka');
+  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Kvitton');
+  await expect(page.getByText('Vad vill du göra?')).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
+  await expect(page.getByLabel(/Endast kvitton/)).toBeChecked();
+  await expect(page.locator('.submission-information-card')).toHaveCount(0);
+  await expect(page.getByLabel(/Endast kvitton/)).toBeVisible();
+  await expect(page.getByLabel(/Endast reseräkning/)).toBeVisible();
+  await expect(page.getByLabel(/Kvitton \+ reseräkning/)).toBeVisible();
+  await page.getByLabel(/Endast reseräkning/).check();
+  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Reseersättning');
 });
 
 test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{
@@ -43,6 +53,9 @@ test('ensamma huvudknappar centreras i senare steg',async({page})=>{
   await page.goto('/');
   await waitForAppState(page);
   await page.getByLabel(/Endast reseräkning/).check();
+  await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Tur och retur till samlingen');
+  await page.getByLabel('Antal kilometer').fill('10');
+  await page.locator('#travelCalculation').click();
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
 
   const formButton=page.locator('#form #previewBtn');
@@ -56,9 +69,6 @@ test('ensamma huvudknappar centreras i senare steg',async({page})=>{
   await page.getByLabel('Din e-postadress').fill('layout@example.se');
   await page.getByLabel('Clearingnummer').fill('5000');
   await page.getByLabel('Kontonummer').fill('1234567890');
-  await page.getByLabel('Antal kilometer').fill('10');
-  await page.getByLabel('Beskriv resan').fill('Tur och retur');
-  await page.getByLabel(/Jag godkänner det föreslagna/).check();
   await formButton.click();
 
   const sendButton=page.locator('#preview #send');

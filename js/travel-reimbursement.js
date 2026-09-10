@@ -1,6 +1,13 @@
-export const TRAVEL_RATE_PER_KM=2.5;
-export const TRAVEL_RATE_PER_MIL=25;
-export const MAX_TRAVEL_KM=10000;
+export let TRAVEL_RATE_PER_KM=2.5;
+export let TRAVEL_RATE_PER_MIL=25;
+export let MAX_TRAVEL_KM=10000;
+
+export function configureTravelReimbursement(settings={}){
+  const rate=Number(settings.travel_rate_per_km),max=Number(settings.max_travel_km);
+  if(Number.isFinite(rate)&&rate>0){TRAVEL_RATE_PER_KM=rate;TRAVEL_RATE_PER_MIL=rate*10}
+  if(Number.isFinite(max)&&max>0)MAX_TRAVEL_KM=max;
+  document.getElementById('travelKm')?.dispatchEvent(new Event('travel-rate-update',{bubbles:true}));
+}
 
 export function calculateTravelAmount(km){
   const value=Number(km);
@@ -18,34 +25,37 @@ export function initTravelReimbursement(){
   const enabled=document.getElementById('travelEnabled');
   const fields=document.getElementById('travelFields');
   const km=document.getElementById('travelKm');
-  const description=document.getElementById('travelDescription');
   const calculation=document.getElementById('travelCalculation');
-  const descriptionField=document.getElementById('travelDescriptionField');
   const approve=document.getElementById('travelApprove');
-  const approval=document.getElementById('travelApproval');
   const error=document.getElementById('travelError');
-  if(!enabled||!fields||!km||!description||!calculation||!approve||!approval)return;
+  if(!enabled||!fields||!km||!calculation||!approve)return;
 
-  function resetApproval(){approve.checked=false;approval.hidden=true}
+  function announce(){
+    document.dispatchEvent(new CustomEvent('travel-state-change',{detail:{approved:approve.checked,amountValid:calculateTravelAmount(km.value)!==null}}));
+  }
+  function rateHelp(){return `Ersättning: ${TRAVEL_RATE_PER_MIL.toLocaleString('sv-SE',{maximumFractionDigits:2})} kr per mil.`}
+  function resetApproval(){approve.checked=false;calculation.disabled=true;calculation.setAttribute('aria-pressed','false')}
   function sync(){
     fields.hidden=!enabled.checked;
     enabled.setAttribute('aria-expanded',String(enabled.checked));
-    if(!enabled.checked){km.value='';description.value='';calculation.textContent='';error.textContent='';if(descriptionField)descriptionField.hidden=true;resetApproval();return}
+    if(!enabled.checked){km.value='';calculation.textContent=rateHelp();error.textContent='';resetApproval();announce();return}
     const raw=km.value.trim(),amount=calculateTravelAmount(raw);
-    if(!raw){calculation.textContent='Ange antal kilometer för att se ersättningen.';error.textContent='';if(descriptionField)descriptionField.hidden=true;resetApproval();return}
-    if(amount===null){calculation.textContent='';error.textContent=`Ange ett positivt antal kilometer, högst ${MAX_TRAVEL_KM.toLocaleString('sv-SE')}.`;if(descriptionField)descriptionField.hidden=true;resetApproval();return}
-    error.textContent='';calculation.textContent=formatTravelCalculation(raw);if(descriptionField)descriptionField.hidden=false;approval.hidden=description.value.trim().length===0;
-    document.getElementById('travelSuggestedAmount').textContent=amount.toLocaleString('sv-SE',{minimumFractionDigits:2,maximumFractionDigits:2})+' kr';
+    if(!raw){calculation.textContent=rateHelp();error.textContent='';resetApproval();announce();return}
+    if(amount===null){calculation.textContent=rateHelp();error.textContent=`Ange ett positivt antal kilometer, högst ${MAX_TRAVEL_KM.toLocaleString('sv-SE')}.`;resetApproval();announce();return}
+    error.textContent='';calculation.textContent=formatTravelCalculation(raw);calculation.disabled=false;
+    calculation.setAttribute('aria-pressed',String(approve.checked));
+    announce();
   }
   function getData(){
     if(!enabled.checked)return {enabled:false,valid:true,approved:false,km:null,description:'',amount:0,calculation:''};
     const amount=calculateTravelAmount(km.value);
-    const valid=amount!==null&&description.value.trim().length>0&&description.value.trim().length<=500&&approve.checked;
-    return {enabled:true,valid,approved:approve.checked,km:amount===null?null:Number(km.value),description:description.value.trim(),amount:amount??0,calculation:formatTravelCalculation(km.value)};
+    const valid=amount!==null&&approve.checked;
+    return {enabled:true,valid,approved:approve.checked,km:amount===null?null:Number(km.value),description:'',amount:amount??0,calculation:formatTravelCalculation(km.value)};
   }
   enabled.addEventListener('change',sync);
   km.addEventListener('input',()=>{resetApproval();sync()});
-  description.addEventListener('input',()=>{if(description.value.length>500)description.value=description.value.slice(0,500);sync()});
+  km.addEventListener('travel-rate-update',sync);
+  calculation.addEventListener('click',()=>{approve.checked=true;sync()});
   window.__idvTravel={getData};
   sync();
 }

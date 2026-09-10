@@ -3,9 +3,35 @@ import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
-import {initTravelReimbursement} from './travel-reimbursement.js';
-import {initSubmissionMode} from './submission-mode.js';
-import {initBankAccount,maskAccountNumber} from './bank-account.js';
+import {initTravelReimbursement,configureTravelReimbursement} from './travel-reimbursement.js?v=20260908-2';
+import {initSubmissionMode} from './submission-mode.js?v=20260908-2';
+import {initBankAccount} from './bank-account.js';
+import {appendSummaryRow} from './review-summary.js';
+import {buildSubmissionFormData} from './submission-flow.js';
+import {parseSubmissionResponse,buildSubmissionResult} from './submission-result.js';
+import {fileBaseName,cleanReceiptImage,compressPdf,pdfPreviewUrl} from './receipt-media.js';
+import {validateSubmissionDetails} from './submission-validation.js';
+import {renderSubmissionSummary,updateSubmissionTotals} from './submission-summary.js';
+import {renderReceiptReview} from './receipt-review.js';
+import {renderReceiptList} from './receipt-list.js';
+import {createReceiptPreview} from './receipt-preview.js';
+import {createReceiptMaskEditor} from './receipt-mask-editor.js';
+import {createReceiptIngestion} from './receipt-ingestion.js';
+import {renderReceiptPreviews,prepareSubmissionReview} from './submission-preview.js';
+import {submitReceipt} from './submission-service.js';
+
+window.__idvSubmissionFlow={buildSubmissionFormData,parseSubmissionResponse,buildSubmissionResult};
+window.__idvReceiptMedia={fileBaseName,cleanReceiptImage,compressPdf,pdfPreviewUrl};
+window.__idvSubmissionValidation={validateSubmissionDetails};
+window.__idvSubmissionSummary={renderSubmissionSummary,updateSubmissionTotals};
+window.__idvReceiptReview={renderReceiptReview};
+window.__idvReceiptList={renderReceiptList};
+window.__idvReceiptPreview={createReceiptPreview};
+window.__idvReceiptMaskEditor={createReceiptMaskEditor};
+window.__idvReceiptIngestion={createReceiptIngestion};
+window.__idvSubmissionPreview={renderReceiptPreviews,prepareSubmissionReview};
+window.__idvSubmissionService={submitReceipt};
+window.__idvModulesReady=true;
 
 initUploadUi();
 initMaskMode();
@@ -28,11 +54,15 @@ async function initEmailCopy(){
   try{
     const response=await fetch(api.endpoint,{headers:{apikey:api.key,Authorization:'Bearer '+api.key}});
     const result=await response.json();
-    checkbox.disabled=!result.email_configured;
-    checkbox.checked=!!result.email_configured;
-    help.textContent=result.email_configured?'Du får samma sammanställning och PDF som skickas till kvitton@idrottsveteranerna.se.':'E-postkopian är inte aktiverad ännu.';
+    window.__idvRuntimeSettings=result.settings||{};
+    configureTravelReimbursement(result.settings);
+    checkbox.disabled=false;
+    checkbox.checked=true;
+    const recipient=result.settings?.receipt_email_to||'mail@torbjornzimmerman.se';
+    help.textContent=result.email_configured?`Du får samma sammanställning och PDF som skickas till ${recipient}.`:'E-postkopian är inte aktiverad ännu.';
   }catch{
-    checkbox.checked=false;
+    checkbox.disabled=false;
+    checkbox.checked=true;
     help.textContent='E-postkopian kan inte användas just nu.';
   }
 }
@@ -172,6 +202,7 @@ function initReceiptManager(){
     if(!modes?.hasRequiredReceipts?.()||!window.__idvCanLeaveReceipts?.())return state.show('upload');
     applyMasks();
     state.render();
+    window.__idvRestoreTravelCard?.();
     state.show('form');
   };
 
@@ -184,25 +215,11 @@ function initReceiptManager(){
       const cc=document.getElementById('cc');
       const email=document.getElementById('email')?.value.trim().toLowerCase();
       if(summary&&cc){
-        const row=document.createElement('div');
-        row.className='row copy-summary';
-        const label=document.createElement('span');
-        label.textContent='Kopia till dig';
-        const value=document.createElement('b');
-        value.textContent=cc.checked?`Ja – ${email}`:'Nej';
-        row.append(label,value);
-        summary.append(row);
-      }
-      const bank=window.__idvBankAccount?.getData?.();
-      if(summary&&bank?.valid){
-        const row=document.createElement('div');
-        row.className='row bank-summary';
-        const label=document.createElement('span');
-        label.textContent='Konto för utbetalning';
-        const value=document.createElement('b');
-        value.textContent=`Clearing ${bank.clearingNumber} · ${maskAccountNumber(bank.accountNumber)}`;
-        row.append(label,value);
-        summary.append(row);
+        const copyRow=appendSummaryRow(summary,document,'Kopia till dig',cc.checked?`Ja – ${email}`:'Nej','copy-summary');
+        cc.onchange=()=>{
+          const value=copyRow?.querySelector('b');
+          if(value)value.textContent=cc.checked?`Ja – ${email}`:'Nej';
+        };
       }
       if(document.getElementById('review')?.classList.contains('active'))reviewNext?.click();
     };
