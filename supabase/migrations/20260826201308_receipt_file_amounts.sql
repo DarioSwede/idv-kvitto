@@ -1,0 +1,1 @@
+alter table public.receipt_files add column if not exists display_amount numeric(12,2); alter table public.receipt_files drop constraint if exists receipt_files_display_amount_check; alter table public.receipt_files add constraint receipt_files_display_amount_check check (display_amount is null or display_amount >= 0);;
