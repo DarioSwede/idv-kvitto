@@ -47,6 +47,7 @@ initEmailCopy();
 async function initEmailCopy(){
   const checkbox=document.getElementById('cc');
   const help=document.querySelector('.copy-option small');
+  const deliveryNote=document.getElementById('deliveryNote');
   const api=window.__idvReceiptApi;
   if(!checkbox||!help||!api)return;
   checkbox.disabled=true;
@@ -58,7 +59,9 @@ async function initEmailCopy(){
     configureTravelReimbursement(result.settings);
     checkbox.disabled=false;
     checkbox.checked=true;
-    const recipient=result.settings?.receipt_email_to||'mail@torbjornzimmerman.se';
+    const recipient=result.settings?.receipt_email_to||'betala@idrottsveteranerna.se';
+    const deliveryRecipient=deliveryNote?.querySelector('strong');
+    if(deliveryRecipient)deliveryRecipient.textContent=recipient;
     help.textContent=result.email_configured?`Du får samma sammanställning och PDF som skickas till ${recipient}.`:'E-postkopian är inte aktiverad ännu.';
   }catch{
     checkbox.disabled=false;

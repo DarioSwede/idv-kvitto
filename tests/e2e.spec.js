@@ -25,7 +25,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await page.getByLabel('Antal kilometer').fill('34');
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
   await page.locator('#travelCalculation').click();
-  await expect(page.locator('#deliveryNote')).toContainText('mail@torbjornzimmerman.se');
+  await expect(page.locator('#deliveryNote')).toContainText('betala@idrottsveteranerna.se');
   await expect(page.locator('.build-meta')).toContainText(`Version ${version}`);
   await waitForAppState(page);
 
