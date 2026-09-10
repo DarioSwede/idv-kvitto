@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.10.2
+- Versionsnummer bumpat av versionshanteraren.
+
 ## 2026.09.10.1
 - Samlar det nya modulära kvitto- och reseräkningsflödet i en verifierad releasekandidat.
 - Lägger till den skyddade adminhanteringen, konfigurerbar leverans, arkivering och hastighetsbegränsning.
