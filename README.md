@@ -13,6 +13,9 @@ Mobilanpassat webbformulär för att skicka kvitton till Idrottsveteranerna. Den
 - `CHANGELOG.md` – versionshistorik.
 - `privacy.html` – information om personuppgiftshantering.
 - `tests/` – webbläsarbaserade smoke-/flödestester.
+- `admin.html` – lokal kvittoadministration med översikts- och kompaktvy.
+- `scripts/control-center-server.mjs` – lokalt kontrollcenter på port 43920 och previewserver på port 43922.
+- `docs/admin-ui.md` och `docs/restart.md` – adminens funktioner och återstart efter omstart/strömavbrott.
 
 ## Versionering
 
@@ -46,6 +49,12 @@ npm install
 npx playwright install chromium
 npm run test:e2e
 ```
+
+## Lokal adminstart
+
+Dubbelklicka på `Starta admin.command` på Mac. Den startar kontrollcentret, startar previewservern och öppnar `http://localhost:43922/admin.html`. Fullständig återstartsdokumentation finns i `docs/restart.md`.
+
+Adminvyn hålls modulär i `admin.html`; serverstart och lokal test-API ligger i `scripts/control-center-server.mjs`. Ändra i första hand bara den modul som äger beteendet.
 
 ## Publicering
 

@@ -15,7 +15,8 @@
 }
 
 html,body{background:var(--paper);color:var(--ink)}
-.header{background:rgba(247,245,239,.98);border-bottom-color:#c7cec8}
+.header{background:#fff;border-bottom-color:#c7cec8;text-align:left}
+.header .logo{margin-left:0;margin-right:auto}
 
 /* Stegindikator – tydligt vad som är klart, aktivt och ej tillgängligt */
 .seg{border-top-color:#d8ddd9;color:#7d8983;opacity:1}
@@ -51,8 +52,8 @@ h1{color:#102820}
 /* Kort, formulär och fält */
 .receipt-item,.card,.review-file,.email-copy-field{background:#fff;border-color:#cbd3cd;box-shadow:0 4px 14px rgba(26,46,42,.05)}
 .travel-card{margin:16px 0;padding:16px;border:1px solid #cbd3cd;border-radius:14px;background:#fff;box-shadow:0 4px 14px rgba(26,46,42,.05)}
-.travel-option,.travel-approval{display:flex;align-items:flex-start;gap:10px;margin:0}.travel-option input,.travel-approval input{width:auto;margin-top:3px;accent-color:var(--action)}
-#travelFields{margin-top:14px;padding-top:4px;border-top:1px solid #e0e5e1}.travel-calculation{margin:12px 0 0;padding:12px;border-radius:10px;background:var(--action-soft);color:var(--action-dark);font-weight:800}.travel-error{color:var(--danger);font-weight:700}.travel-error:empty{display:none}.travel-approval{margin-top:10px;padding:12px;border:1px solid #8fc2a4;border-radius:10px;background:#e2f3e8}.travel-summary b{max-width:62%;text-align:right}.grand-total{margin-top:6px;padding-top:12px;font-weight:900}
+.travel-option{display:flex;align-items:flex-start;gap:10px;margin:0}.travel-option input{width:auto;margin-top:3px;accent-color:var(--action)}
+#travelFields{margin-top:14px;padding-top:4px;border-top:1px solid #e0e5e1}.travel-km-row{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:10px;align-items:end}.travel-km-row label{grid-column:1/-1;margin:0}.travel-km-row input{min-width:0;height:46px;padding:9px 12px}.travel-calculation{min-width:0;height:46px;border:1px solid #a7cfb7;border-radius:10px;padding:9px 12px;background:var(--action-soft);color:var(--action-dark);font:inherit;font-weight:800;cursor:pointer}.travel-calculation:hover:not(:disabled),.travel-calculation:focus-visible{border-color:var(--action);box-shadow:0 0 0 3px rgba(23,107,74,.12);outline:none}.travel-calculation[aria-pressed="true"]{background:var(--action);border-color:var(--action);color:#fff}.travel-calculation:disabled{cursor:default;opacity:1}.travel-error{color:var(--danger);font-weight:700}.travel-error:empty{display:none}.travel-summary b{max-width:62%;text-align:right}.grand-total{margin-top:6px;padding-top:12px;font-weight:900}@media(max-width:520px){.travel-km-row{grid-template-columns:120px minmax(0,1fr)}.travel-calculation{font-size:.8rem;padding:8px}}
 input,textarea{border-color:#b9c4bd;color:var(--ink);background:#fff}
 input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(23,107,74,.12);outline:none}
 .receipt-amount-wrap .receipt-amount{border-color:#6f9f87!important}
@@ -82,6 +83,13 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
 .build-meta{display:block;margin-top:14px;padding-top:0;border-top:0;font-size:.72rem;line-height:1.5;color:#78847e}
 .privacy-link{display:inline-block;margin-top:10px;color:#5d6c65;font-size:.74rem;font-weight:700;text-underline-offset:2px}
 .privacy-link:hover,.privacy-link:focus-visible{color:var(--action-dark)}
+
+.summary-sheet{position:relative;isolation:isolate;overflow:hidden;background:#fff;border:1px solid #cbd3cd;border-radius:14px;box-shadow:0 4px 14px rgba(26,46,42,.05);padding:18px}
+.summary-sheet::before{content:"";position:absolute;inset:50% auto auto 50%;width:220px;height:220px;transform:translate(-50%,-50%);background:url('../idv-mark.png') center/contain no-repeat;opacity:.055;z-index:-1;pointer-events:none}
+.summary-sheet .row{position:relative;background:rgba(255,255,255,.82)}
+.summary-sheet .case-id b{color:var(--action-dark);letter-spacing:.04em}
+.summary-sheet .bank-summary{margin-top:6px;padding-top:10px;border-top:1px solid #dfe6e1}
+.summary-sheet .grand-total{margin-top:10px;border-top:2px solid #9bb6a7;font-size:1.05rem}
 
 @media(max-width:520px){
   .bar{background:linear-gradient(to bottom,rgba(247,245,239,0),var(--paper) 20%)}

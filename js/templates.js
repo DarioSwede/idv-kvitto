@@ -1,5 +1,6 @@
 export function applyTemplates(html,versionMeta={}){
   const appVersion=versionMeta.version||'dev';
+  html=html.replace("const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'","const ENDPOINT=window.__idvSubmitEndpoint||'https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'");
   html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','');
 
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
@@ -19,7 +20,7 @@ export function applyTemplates(html,versionMeta={}){
 <div id="uploadError" aria-live="polite"></div>
 <div id="uploadSuccess" class="upload-success" aria-live="polite" hidden></div>
 <input type="file" id="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp,.avif,image/*,application/pdf" multiple>
-<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Välj kvittofiler genom att klicka eller dra och släppa" aria-describedby="deliveryNote"><strong id="dropzoneTitle">Välj kvittofiler</strong><span class="dropzone-action">Klicka eller dra och släpp här</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span><span class="dropzone-delivery" id="deliveryNote">✉ Skickas till <strong>kvitton@idrottsveteranerna.se</strong></span></div>
+<div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Välj kvittofiler genom att klicka eller dra och släppa" aria-describedby="deliveryNote"><strong id="dropzoneTitle">Välj kvittofiler</strong><span class="dropzone-action">Klicka eller dra och släpp här</span><span class="platform-help" id="platformHelp"></span><span class="formats">PDF · JPG/JPEG · PNG · HEIC/HEIF · WebP · AVIF &nbsp;•&nbsp; Högst 10 MB per fil</span><span class="dropzone-delivery" id="deliveryNote">✉ Skickas till <strong>mail@torbjornzimmerman.se</strong></span></div>
 <div class="receipts-panel" id="uploadThumbHome"><h2 id="receiptListTitle" hidden>Dina kvitton</h2><p id="receiptListHelp" hidden>Byt namn, fyll i belopp eller tryck på bilden för maskering.</p><div class="thumbs" id="thumbs"></div></div>
 <div class="bar receipt-actions"><button class="btn secondary" id="restart" type="button">Avbryt</button><button class="btn" id="continue" disabled>Nästa: dina uppgifter</button></div>
 </section>`;
@@ -56,7 +57,7 @@ export function applyTemplates(html,versionMeta={}){
   html=html.replace(oldLightbox,lightbox);
 
   const stateNeedle="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];";
-  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','form','preview'];window.__idvReceiptState={get photos(){return photos},get processing(){return processing},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
+  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','form','preview'];window.__idvReceiptState={get photos(){return window.__idvModulesReady?photos:undefined},get processing(){return processing},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
   html=html.replace(stateNeedle,stateReplacement);
 
   const goToStepStart=html.indexOf('function goToStep(n){');
@@ -76,6 +77,6 @@ export function applyTemplates(html,versionMeta={}){
     const done=`<section class="screen" id="done"><div class="done-panel"><div class="done-kicker">Idrottsveteranerna</div><h1>Tack! Vi har tagit emot ditt kvitto.</h1><p class="done-message">Tack för att du skickade in ditt underlag till IDV. Ditt kvitto är mottaget och kommer att hanteras vidare enligt vår ersättningsrutin.</p><p class="copy-result" id="doneText" aria-live="polite"></p><a class="btn submitted-pdf" id="submittedPdf" target="_blank" rel="noopener" hidden>Visa inskickat underlag (PDF)</a><div class="payout-note"><strong>Om utbetalningen</strong><span>Information om handläggningstid, utbetalningssätt och vilka bankuppgifter som behövs kommer att uppdateras här när IDV:s rutin är fastställd.</span></div><p class="done-question">Vill du skicka in fler kvitton?</p><button class="btn" id="restartDone" type="button">Skicka in ett till kvitto</button></div></section>`;
     html=html.slice(0,doneStart)+done+html.slice(doneEnd);
   }
-  html=html.replace('</main>',`</main><footer class="security-note"><strong>Säker överföring</strong><span>Dina uppgifter och kvitton skickas krypterat med HTTPS (TLS).</span><small class="build-meta">Version ${appVersion} · Byggd av Zimmerman<br>© 2026 Idrottsveteranerna</small></footer>`);
+  html=html.replace('</main>',`</main><footer class="security-note"><strong>Säker överföring</strong><span>Dina uppgifter och kvitton skickas krypterat med HTTPS (TLS).</span><a class="privacy-link" href="privacy.html" target="_blank" rel="noopener">Så hanterar vi dina personuppgifter</a><small class="build-meta">Version ${appVersion} · Byggd av Zimmerman<br>© 2026 Idrottsveteranerna</small></footer>`);
   return html;
 }

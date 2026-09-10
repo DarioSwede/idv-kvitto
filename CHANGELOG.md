@@ -1,5 +1,101 @@
 # Versionshistorik
 
+## 2026.09.10.1
+- Samlar det nya modulära kvitto- och reseräkningsflödet i en verifierad releasekandidat.
+- Lägger till den skyddade adminhanteringen, konfigurerbar leverans, arkivering och hastighetsbegränsning.
+- Säkerställer att kombinationsläget kräver både giltigt kvitto och godkänd reseersättning.
+
+## 2026.09.06.31
+- Den lokala testinskickningen visar nu ett riktigt testunderlag som PDF i resultatlänken.
+
+## 2026.09.06.30
+- Lägger till opt-in lokal testinskickning som simulerar leverans till `betala@idrottsveteranerna.se`.
+
+## 2026.09.06.29
+- Tillåter lokal utvecklingsorigin i inskickningsfunktionens CORS-hantering.
+
+## 2026.09.06.28
+- Låser båda checkboxarna till exakt samma storlek.
+
+## 2026.09.06.27
+- Matchar textstorlek, typografi och intern layout för kopia- och bekräftelserutorna.
+
+## 2026.09.06.26
+- Kör OCR-jobb sekventiellt igen för att undvika att flera Tesseract-workers hänger samtidigt.
+- Köade kvitton visar tydligt att de väntar på sin tur.
+
+## 2026.09.06.25
+- Gör OCR-jobb oberoende så ett hängande kvitto inte blockerar övriga kvitton.
+- Avslutar varje OCR-worker vid timeout, fel eller färdig körning.
+
+## 2026.09.06.24
+- Visar tydligt när kvitton väntar i OCR-kön i stället för att se ut att ha hängt sig.
+
+## 2026.09.06.23
+- Byter plats på kopia-valet och bekräftelsen.
+- Ger båda kontrollrutorna exakt samma visuella kortstil.
+
+## 2026.09.06.22
+- Gör bekräftelserutan dynamisk med samma gröna aktiva stil som kopia-valet.
+- Uppdaterar kopia-sammanfattningen direkt när valet ändras.
+- Centrerar bifogade kvitton i kontrollsteget.
+
+## 2026.09.06.21
+- Tillfällig mottagaradress är `mail@torbjornzimmerman.se`.
+
+## 2026.09.06.20
+- Flyttar kopia-valet till kontrollsteget och väljer kopia automatiskt från början.
+
+## 2026.09.06.19
+- Visar “Totalt kvitton” när endast kvitton har valts.
+- Gör kopia-checkboxen valbar igen efter e-postkontrollen, även vid tillbaka-navigering.
+
+## 2026.09.06.18
+- Matchar namnfältets utseende med e-postfältet.
+- Döljer “Tillfälle” och “Övrig information” i kvittots formulärsteg.
+
+## 2026.09.06.17
+- Håller knappen “Nästa” synkroniserad med godkännandet av reseersättningen.
+
+## 2026.09.06.16
+- Reseersättning kan gå vidare först efter att kilometerbeloppet har godkänts.
+- Reseuppgifter och bankkonto aktiveras stegvis efter godkännandet.
+
+## 2026.09.06.15
+- Endast reseräkning visar en stegvis kedja: kilometer, godkännande, reseuppgifter och bankuppgifter.
+- Kvittofältet för saknade namn eller belopp döljs i reseräkningsläget.
+
+## 2026.09.06.14
+- Flyttar kilometerhjälpen till fältets placeholder och visar beräkningen först efter inmatning.
+
+## 2026.09.06.13
+- Återinför stegindikatorn och anpassar första steget efter valt inskicksläge.
+- Lägger samma hover-effekt på lägesknapparna som på kvittofältet.
+
+## 2026.09.06.12
+- Flyttar integritetslänken till säkerhetsfotnoten under informationen om krypterad överföring.
+
+## 2026.09.06.11
+- Tar bort den dubbla synliga resefrågan; reseersättning väljs endast i lägesväljaren.
+
+## 2026.09.06.10
+- Återställer lägesväljaren till första stegets tidigare logik med kvittoläge förvalt.
+- Reseersättning visar kilometerfältet direkt när reseräkning eller kombination väljs.
+- Samma kortlayout och typografi används för alla tre lägesval.
+
+## 2026.09.06.9
+- Informationsrutan använder samma storlek och placering som uppladdningsrutan för kvittofiler.
+
+## 2026.09.06.8
+- Informationsrutan försvinner när användaren väljer något av de tre inskickslägena.
+
+## 2026.09.06.7
+- Startsidan visar information om underlag, handläggningstid och bankuppgifter innan användaren väljer läge.
+
+## 2026.09.06.6
+- Startsidan visar endast frågan "Vad vill du göra?" och de tre lägesvalen.
+- Kvittoformuläret visas först när användaren väljer "Endast kvitton för utlägg".
+
 ## 2026.09.06.5
 - Namn och e-post visas kompakt på samma rad på större skärmar.
 - Reseersättningen visar kilometer och beräkning tillsammans och tänder beskrivning samt godkännande stegvis.

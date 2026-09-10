@@ -3,6 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "control-center": "node scripts/control-center-server.mjs",
+    "version:show": "node scripts/version.mjs show",
+    "version:bump": "node scripts/version.mjs bump",
+    "test:unit": "node --test tests/*.test.js",
     "test": "playwright test --workers=1",
     "test:e2e": "playwright test --workers=1"
   },

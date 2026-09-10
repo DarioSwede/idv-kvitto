@@ -1,7 +1,5 @@
 const TESSERACT_URL='https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js';
-let workerPromise;
 let tesseractPromise;
-let workerLogger;
 
 const OCR_TIMEOUT_MS=45000;
 
@@ -138,18 +136,13 @@ function loadTesseract(){
 }
 
 async function getWorker(logger){
-  workerLogger=logger;
-  if(!workerPromise){
-    workerPromise=loadTesseract().then(async({createWorker})=>{
-      const worker=await createWorker('swe',1,{logger:message=>workerLogger?.(message)});
-      await worker.setParameters({
-        user_defined_dpi:'300',
-        preserve_interword_spaces:'1'
-      });
-      return worker;
-    }).catch(error=>{workerPromise=null;throw error});
-  }
-  return workerPromise;
+  const {createWorker}=await loadTesseract();
+  const worker=await createWorker('swe',1,{logger});
+  await worker.setParameters({
+    user_defined_dpi:'300',
+    preserve_interword_spaces:'1'
+  });
+  return worker;
 }
 
 async function recognize(worker,canvas){
@@ -212,13 +205,12 @@ async function processReceipt(detail){
     console.warn('OCR misslyckades utan att blockera formuläret:',error);
     setOcrState?.('error','OCR kunde inte läsa kvittot – fyll i själv');
     if(error.message==='OCR tog för lång tid.'){
-      workerPromise=null;
       void worker?.terminate().catch(()=>{});
     }
   }finally{
     active=false;
-    workerLogger=null;
     watchdog.cancel();
+    void worker?.terminate().catch(()=>{});
   }
 }
 
@@ -238,6 +230,9 @@ export function initReceiptOcr(){
         }
       }
     };
-    queue=queue.catch(()=>{}).then(run);
+    queue=queue.catch(()=>{}).then(run).catch(error=>{
+      console.warn('OCR-kön kunde inte starta kvittot:',error);
+      detail.setOcrState?.('error','OCR kunde inte läsa kvittot – fyll i själv');
+    });
   });
 }

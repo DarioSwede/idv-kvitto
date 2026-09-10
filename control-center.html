@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kontrollcenter — IDV Kvitto</title>
+  <link rel="stylesheet" href="styles/control-center.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <p class="eyebrow">IDV Kvitto · lokal utveckling</p>
+      <h1>Kontrollcenter</h1>
+      <p class="lede">Starta, kontrollera och testa det vi arbetar med.</p>
+    </header>
+    <section class="panel" aria-labelledby="status-heading">
+      <div class="section-heading"><div><p class="eyebrow">Översikt</p><h2 id="status-heading">Tjänster</h2></div><button class="button" id="refreshStatus">Uppdatera</button></div>
+      <div class="service-list" id="serviceList"></div>
+    </section>
+    <details class="panel compact-panel" id="resultPanel">
+      <summary><span><span class="eyebrow">Resultat</span><strong id="outputHeading">Senaste körningen</strong></span></summary>
+      <div class="detail-content"><pre class="output" id="commandOutput">Ingen körning ännu.</pre><button class="button small-button" id="clearOutput">Rensa resultat</button></div>
+    </details>
+    <details class="panel compact-panel">
+      <summary><span><span class="eyebrow">Arbetsyta</span><strong>Kod eller anteckning</strong></span></summary>
+      <div class="detail-content"><textarea id="codeNote" rows="6" placeholder="Klistra in kod, felmeddelande eller en uppgift …"></textarea><div class="actions"><button class="button button-primary" id="saveNote">Spara</button><button class="button" id="clearNote">Rensa</button><span class="save-state" id="saveState" role="status"></span></div></div>
+    </details>
+    <footer><span id="versionLabel">Version läses in …</span><a href="README.md">Projektinstruktioner</a></footer>
+  </main>
+  <script type="module" src="js/control-center.js"></script>
+</body>
+</html>

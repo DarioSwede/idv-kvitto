@@ -98,7 +98,9 @@ alter table public.receipt_submissions
   add column if not exists receipt_total numeric(14,2),
   add column if not exists travel_km numeric(10,2),
   add column if not exists travel_description text,
-  add column if not exists travel_amount numeric(14,2);
+  add column if not exists travel_amount numeric(14,2),
+  add column if not exists archived_at timestamptz,
+  add column if not exists archived_by uuid references auth.users(id);
 
 alter table public.receipt_submissions enable row level security;
 alter table public.receipt_files enable row level security;
@@ -127,3 +129,6 @@ on public.receipt_submissions(status, created_at desc);
 
 create index if not exists receipt_submissions_created_idx
 on public.receipt_submissions(created_at desc);
+
+create index if not exists receipt_submissions_archived_idx
+on public.receipt_submissions(archived_at, created_at desc);
