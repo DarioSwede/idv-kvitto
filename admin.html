@@ -645,6 +645,12 @@
       return id.length > 18 ? `${id.slice(0, 8)}...${id.slice(-4)}` : id;
     }
 
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      })[character]);
+    }
+
     function receivedAt(submission) {
       const timestamp = Date.parse(submission.createdAt || '');
       return Number.isFinite(timestamp)
@@ -779,27 +785,35 @@
 
       list.innerHTML = visibleSubmissions.map((submission) => {
         const originalIndex = submissions.indexOf(submission);
+        const safeId = escapeHtml(submission.id);
+        const safeShortId = escapeHtml(shortId(submission.id));
+        const safeName = escapeHtml(submission.name);
+        const safeEmail = escapeHtml(submission.email);
+        const safeAmount = escapeHtml(submission.amount);
+        const safeEventTag = escapeHtml(submission.eventTag);
+        const safeReceivedAt = escapeHtml(receivedAt(submission));
+        const emailHref = `mailto:${encodeURIComponent(submission.email)}?subject=${encodeURIComponent(`Fråga om underlag ${shortId(submission.id)}`)}`;
         return `
         <div class="submission-item status-${statusClass[submission.status] || 'new'} ${originalIndex === selectedIndex ? 'active' : ''} ${selectedSubmissionIds.has(submission.id) ? 'selected' : ''}" data-index="${originalIndex}">
           <div class="submission-meta">
             <div>
               <div class="muted" style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase;">Ärende-ID</div>
-              <strong title="${submission.id}">${shortId(submission.id)}</strong>
+              <strong title="${safeId}">${safeShortId}</strong>
             </div>
-            <div class="submission-date">Inkom<br><strong>${receivedAt(submission)}</strong></div>
+            <div class="submission-date">Inkom<br><strong>${safeReceivedAt}</strong></div>
           </div>
           <div class="compact-summary" aria-label="Kompakt sammanfattning">
-            <strong>${submission.name}</strong>
-            <span>${receivedAt(submission)}</span>
-            <strong>${submission.amount}</strong>
+            <strong>${safeName}</strong>
+            <span>${safeReceivedAt}</span>
+            <strong>${safeAmount}</strong>
           </div>
           <div class="row">
-            <span>${submission.name}</span>
-            <span class="muted">${submission.amount}</span>
+            <span>${safeName}</span>
+            <span class="muted">${safeAmount}</span>
           </div>
           <div class="row muted">
-            <a class="submission-email" href="mailto:${submission.email}?subject=Fråga om underlag ${encodeURIComponent(shortId(submission.id))}" aria-label="E-posta ${submission.email}">${submission.email}</a>
-            <span>${submission.eventTag}</span>
+            <a class="submission-email" href="${emailHref}" aria-label="E-posta ${safeEmail}">${safeEmail}</a>
+            <span>${safeEventTag}</span>
           </div>
           <div class="item-actions">
             <button class="item-action status-submission status-new ${submission.status === 'new' ? 'status-active' : ''}" type="button" data-status="new" data-index="${originalIndex}">Inkommen</button>
@@ -981,19 +995,26 @@
       document.querySelector('.nav-btn[data-view="inbox"]')?.focus();
     });
 
-    function updateStatus(status, index = selectedIndex) {
+    async function updateStatus(status, index = selectedIndex) {
       if (!submissions[index]) return;
       selectedIndex = index;
-      submissions[index] = { ...submissions[index], status };
-      savePersistedState();
-      renderList();
-      updateSelection();
-      if (adminApiBase && authSession && submissions[selectedIndex]?.id) {
-        fetch(`${adminApiBase}/submission`, {
-          method: 'PATCH',
-          headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ id: submissions[selectedIndex].id, status })
-        }).catch((error) => setConnectionStatus(`Status sparades lokalt men inte i backend: ${error.message}`));
+      const submission = submissions[index];
+      try {
+        if (adminApiBase && authSession && submission.id) {
+          const response = await fetch(`${adminApiBase}/submission`, {
+            method: 'PATCH',
+            headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ id: submission.id, status })
+          });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || `Status kunde inte sparas (${response.status}).`);
+        }
+        submissions[index] = { ...submission, status };
+        savePersistedState();
+        renderList();
+        updateSelection();
+      } catch (error) {
+        setConnectionStatus(`Status ändrades inte: ${error.message}`);
       }
     }
 

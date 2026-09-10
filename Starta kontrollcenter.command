@@ -1,5 +1,6 @@
 #!/bin/zsh
-cd "/Users/torbjornzimmerman/Documents/Codex/2026-08-26/referenced-chatgpt-conversation-this-is-an/work/idv-kvitto-live" || exit 1
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$PROJECT_DIR" || exit 1
 npm run control-center &
 control_pid=$!
 sleep 1

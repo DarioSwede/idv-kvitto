@@ -23,6 +23,8 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.getByRole('heading',{name:'Kvitton och reseräkning'})).toBeVisible();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Resa till samlingen');
   await page.getByLabel('Antal kilometer').fill('34');
+  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
+  await page.locator('#travelCalculation').click();
   await expect(page.locator('#deliveryNote')).toContainText('mail@torbjornzimmerman.se');
   await expect(page.locator('.build-meta')).toContainText(`Version ${version}`);
   await waitForAppState(page);
@@ -39,6 +41,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   });
 
   await expect(page.locator('.receipt-item')).toHaveCount(1);
+  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
@@ -54,6 +57,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.locator('.copy-option small')).toContainText('samma sammanställning och PDF');
   await expect(page.locator('#travelFields')).toBeVisible();
   await expect(page.locator('#travelCalculation')).toHaveText('34 km ÷ 10 × 25 kr = 85,00 kr');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
 
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();

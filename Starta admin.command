@@ -1,7 +1,7 @@
 #!/bin/zsh
 set -u
 
-PROJECT_DIR="/Users/torbjornzimmerman/Documents/Codex/2026-08-26/referenced-chatgpt-conversation-this-is-an/work/idv-kvitto-live"
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONTROL_URL="http://127.0.0.1:43920"
 ADMIN_URL="http://localhost:43922/admin.html"
 LOG_FILE="/tmp/idv-kvitto-control-center.log"

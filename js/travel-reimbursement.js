@@ -42,7 +42,6 @@ export function initTravelReimbursement(){
     const raw=km.value.trim(),amount=calculateTravelAmount(raw);
     if(!raw){calculation.textContent=rateHelp();error.textContent='';resetApproval();announce();return}
     if(amount===null){calculation.textContent=rateHelp();error.textContent=`Ange ett positivt antal kilometer, högst ${MAX_TRAVEL_KM.toLocaleString('sv-SE')}.`;resetApproval();announce();return}
-    approve.checked=true;
     error.textContent='';calculation.textContent=formatTravelCalculation(raw);calculation.disabled=false;
     calculation.setAttribute('aria-pressed',String(approve.checked));
     announce();

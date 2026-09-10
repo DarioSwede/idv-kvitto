@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {requireStaff} from './auth.ts';
 import {listSettings,updateSetting,SettingValidationError} from './settings.ts';
-import {listSubmissions,getSubmission,updateSubmissionStatus,archiveSubmission,createPdfLink,SubmissionValidationError} from './submissions.ts';
+import {listSubmissions,getSubmission,updateSubmissionStatus,archiveSubmission,createPdfLink,purgeExpiredSubmissions,SubmissionValidationError} from './submissions.ts';
 
 const cors={
   'Access-Control-Allow-Origin':'*',
@@ -31,7 +31,10 @@ Deno.serve(async(req:Request)=>{
       if(role !== 'admin' && role !== 'tester' && role !== 'cashier')return reply({error:'Behörighet krävs för att ändra inställningar.'},403);
       return reply({setting:await updateSetting(client,user.id,String(body.key),body.value,role)});
     }
-    if(req.method==='GET'&&resource==='submissions')return reply({submissions:await listSubmissions(client,url.searchParams.get('status'))});
+    if(req.method==='GET'&&resource==='submissions'){
+      const retention=await purgeExpiredSubmissions(client);
+      return reply({submissions:await listSubmissions(client,url.searchParams.get('status')),retention});
+    }
     if(req.method==='GET'&&resource==='submission'){
       const id=url.searchParams.get('id');
       if(!id)return reply({error:'Id saknas.'},400);

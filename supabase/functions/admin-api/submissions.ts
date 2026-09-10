@@ -11,7 +11,7 @@ export async function listSubmissions(client:any,status?:string|null){
     const cutoff=new Date(Date.now()-Math.max(1,Number.isFinite(retentionDays)?retentionDays:365)*86400000).toISOString();
     query=query.gte('archived_at',cutoff);
   }
-  else query=query.is('archived_at',null);
+  else if(status)query=query.is('archived_at',null);
   if(status&&status!=='archived'&&ALLOWED_STATUS.has(status))query=query.eq('status',status);
   const {data,error}=await query;
   if(error)throw error;
@@ -65,4 +65,16 @@ export async function deleteSubmission(client:any,id:string){
   const {error:deleteError}=await client.from('receipt_submissions').delete().eq('id',id);
   if(deleteError)throw deleteError;
   return {id,deleted:true};
+}
+
+export async function purgeExpiredSubmissions(client:any){
+  const {data:retentionSetting,error:settingError}=await client.from('app_settings').select('value').eq('key','retention_days').maybeSingle();
+  if(settingError)throw settingError;
+  const configuredDays=Number(retentionSetting?.value||365);
+  const retentionDays=Math.max(1,Number.isFinite(configuredDays)?configuredDays:365);
+  const cutoff=new Date(Date.now()-retentionDays*86400000).toISOString();
+  const {data,error}=await client.from('receipt_submissions').select('id').not('archived_at','is',null).lt('archived_at',cutoff).limit(100);
+  if(error)throw error;
+  for(const submission of data||[])await deleteSubmission(client,String(submission.id));
+  return {deleted:(data||[]).length,cutoff};
 }
