@@ -1,5 +1,11 @@
 # Versionshistorik
 
+## 2026.09.12.1
+- Gör de tre valen för underlag till tydliga knappar och stramar upp sidans kanter.
+- Kräver ett uttryckligt godkännande av reseersättningen innan användaren går vidare.
+- Säkerställer korrekta inskickningsdata för kvitto, reseräkning och kombinerat underlag.
+- Ger den inskickade PDF-sammanställningen en kompaktare styrelselik layout med fullständigt ärende-ID och vita, streckade informationsrutor.
+
 ## 2026.09.10.2
 - Versionsnummer bumpat av versionshanteraren.
 

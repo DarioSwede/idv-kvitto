@@ -2,11 +2,11 @@
 body{max-width:720px;padding:12px 18px 38px;position:relative;overflow-x:hidden}
 body::before{content:"";position:fixed;inset:92px 0 0;z-index:0;pointer-events:none;background:url('../idv-mark.png') center 95px/430px auto no-repeat;opacity:.075}
 .header,main,.security-note{position:relative;z-index:1}
-.header{top:0;padding:6px 0 10px;background:rgba(250,248,243,.97);backdrop-filter:blur(12px);box-shadow:0 5px 16px rgba(26,46,42,.06)}
+.header{top:0;padding:0;background:transparent;backdrop-filter:none;box-shadow:none}
 .header{position:sticky;z-index:5}
 .logo{display:none!important}
 .restart{top:5px;right:0;padding:10px 13px;border-radius:12px;background:rgba(255,255,255,.8);font-size:.82rem}
-.timeline{max-width:none;margin:0;gap:7px;align-items:start;border-top:1px solid var(--line);padding-top:7px}
+.timeline{max-width:none;margin:0;gap:0;align-items:start;padding:0}
 .seg{min-height:34px;height:auto;padding:5px 3px;border:0;border-top:0;font-size:.7rem;line-height:1.25;white-space:normal;opacity:.48;transition:.18s ease}
 .seg:not(:disabled){opacity:1;cursor:pointer}
 .seg:not(:disabled):hover,.seg:not(:disabled):focus-visible{background:#e2f0e7;border-color:#2d6a4f;color:#1f5c42;border-radius:0 0 10px 10px;box-shadow:0 5px 12px rgba(45,106,79,.12);outline:2px solid transparent}

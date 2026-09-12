@@ -15,7 +15,7 @@
 }
 
 html,body{background:var(--paper);color:var(--ink)}
-.header{background:#fff;border-bottom-color:#c7cec8;text-align:left}
+.header{background:transparent;border-bottom-color:transparent;text-align:left}
 .header .logo{margin-left:0;margin-right:auto}
 
 /* Stegindikator – tydligt vad som är klart, aktivt och ej tillgängligt */
@@ -99,8 +99,8 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
 
 /* 2026-09-01: sammanhållen progressmeny */
 .header{
-  margin:0 -6px 14px;
-  padding:8px 6px 10px;
+  margin:0 0 14px;
+  padding:0;
   border-bottom:0;
   box-shadow:none;
 }
@@ -109,9 +109,9 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:4px;
-  max-width:620px;
+  max-width:none;
   margin:0 auto;
-  padding:8px;
+  padding:0;
   border:1px solid rgba(23,107,74,.14);
   border-radius:18px;
   background:rgba(255,255,255,.82);
@@ -181,8 +181,8 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
 }
 
 @media(max-width:520px){
-  .header{margin-left:-10px;margin-right:-10px;padding-left:0;padding-right:0}
-  .timeline{border-radius:16px;padding:7px 5px;gap:1px}
+  .header{margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .timeline{border-radius:16px;padding:0;gap:1px}
   .timeline::before{left:16%;right:16%;top:23px}
   .seg{min-height:52px;padding:2px 2px 5px;font-size:.68rem}
   .seg-index{width:28px;height:28px}
