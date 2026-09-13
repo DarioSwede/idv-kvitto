@@ -20,7 +20,8 @@ test('toppmenyn visar bara lägesvalen',async({page})=>{
   await expect(page.getByLabel(/Endast reseräkning/)).toBeVisible();
   await expect(page.getByLabel(/Kvitton \+ reseräkning/)).toBeVisible();
   await page.getByLabel(/Endast reseräkning/).check();
-  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Reseersättning');
+  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Fyll i reseräkningen');
+  await expect(page.locator('.timeline .seg').first()).toHaveAttribute('title','Fyll i reseräkningen');
 });
 
 test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{

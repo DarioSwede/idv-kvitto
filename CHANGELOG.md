@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.13.2
+- Matchar reseräkningens tvåstegsrubrik mot sidans innehåll och tar bort den missvisande hänvisningen till kvitton.
+
 ## 2026.09.13.1
 - Samlar reseräkningens personuppgifter, reseuppgifter och utbetalningskonto på en sida.
 - Visar reseräkningsläget som ett tydligt tvåstegsflöde: fyll i och kontrollera.

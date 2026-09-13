@@ -1,7 +1,7 @@
 export const SUBMISSION_MODES=new Set(['receipts','travel','combined']);
 
 const MODE_LABELS={receipts:'Endast kvitton för utlägg',travel:'Endast reseräkning/kilometerersättning',combined:'Kvitton + kilometerersättning'};
-const STEP_LABELS={receipts:'Kvitton',travel:'Reseersättning',combined:'Kvitton + resa'};
+const STEP_LABELS={receipts:'Kvitton',travel:'Fyll i reseräkningen',combined:'Kvitton + resa'};
 
 export function initSubmissionMode(){
   const upload=document.getElementById('upload');
@@ -106,6 +106,7 @@ export function initSubmissionMode(){
     if(stepLabels[1])stepLabels[1].textContent='Dina uppgifter';
     if(stepLabels[2])stepLabels[2].textContent='Kontroll & skicka';
     if(segments[1])segments[1].hidden=travelOnly;
+    if(segments[0])segments[0].title=travelOnly?'Fyll i reseräkningen':'Gå till kvitton';
     const finalStepIndex=segments[2]?.querySelector('.seg-index');
     if(finalStepIndex)finalStepIndex.textContent=travelOnly?'2':'3';
     const receiptsPresent=hasReceipts();
