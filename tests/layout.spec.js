@@ -22,6 +22,13 @@ test('toppmenyn visar bara lägesvalen',async({page})=>{
   await page.getByLabel(/Endast reseräkning/).check();
   await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Fyll i reseräkningen');
   await expect(page.locator('.timeline .seg').first()).toHaveAttribute('title','Fyll i reseräkningen');
+  const travelTimelineWidths=await page.locator('.timeline').evaluate(timeline=>({
+    timeline:timeline.getBoundingClientRect().width,
+    steps:[...timeline.querySelectorAll('.seg:not([hidden])')].map(step=>step.getBoundingClientRect().width)
+  }));
+  expect(travelTimelineWidths.steps).toHaveLength(2);
+  expect(Math.abs(travelTimelineWidths.steps[0]-travelTimelineWidths.steps[1])).toBeLessThan(2);
+  expect(travelTimelineWidths.steps[0]+travelTimelineWidths.steps[1]).toBeGreaterThan(travelTimelineWidths.timeline-10);
 });
 
 test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{

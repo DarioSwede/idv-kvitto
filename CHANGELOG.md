@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.13.3
+- Låter reseräkningens två steg dela hela flödesheaderns bredd jämnt.
+
 ## 2026.09.13.2
 - Matchar reseräkningens tvåstegsrubrik mot sidans innehåll och tar bort den missvisande hänvisningen till kvitton.
 
