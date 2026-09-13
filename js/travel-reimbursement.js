@@ -33,8 +33,8 @@ export function initTravelReimbursement(){
   function announce(){
     document.dispatchEvent(new CustomEvent('travel-state-change',{detail:{approved:approve.checked,amountValid:calculateTravelAmount(km.value)!==null}}));
   }
-  function rateHelp(){return `Ersättning: ${TRAVEL_RATE_PER_MIL.toLocaleString('sv-SE',{maximumFractionDigits:2})} kr per mil.`}
-  function resetApproval(){approve.checked=false;calculation.disabled=true;calculation.setAttribute('aria-pressed','false')}
+  function rateHelp(){return `Milersättning: ${TRAVEL_RATE_PER_MIL.toLocaleString('sv-SE',{maximumFractionDigits:2})} kr per mil.`}
+  function resetApproval(){approve.checked=false;calculation.disabled=true;calculation.setAttribute('aria-pressed','false');calculation.classList.remove('needs-approval')}
   function sync(){
     fields.hidden=!enabled.checked;
     enabled.setAttribute('aria-expanded',String(enabled.checked));
@@ -44,9 +44,10 @@ export function initTravelReimbursement(){
     if(amount===null){calculation.textContent=rateHelp();error.textContent=`Ange ett positivt antal kilometer, högst ${MAX_TRAVEL_KM.toLocaleString('sv-SE')}.`;resetApproval();announce();return}
     error.textContent='';
     const formattedCalculation=formatTravelCalculation(raw);
-    calculation.textContent=approve.checked?`Godkänd: ${formattedCalculation}`:`Godkänner du uträkningen? ${formattedCalculation}`;
+    calculation.textContent=approve.checked?`✓ Godkänd: ${formattedCalculation}`:`➜ Klicka här för att godkänna: ${formattedCalculation}`;
     calculation.disabled=false;
     calculation.setAttribute('aria-pressed',String(approve.checked));
+    calculation.classList.toggle('needs-approval',!approve.checked);
     announce();
   }
   function getData(){

@@ -1,49 +1,41 @@
 import {test,expect} from '@playwright/test';
 
-async function waitForAppState(page){
-  if(await page.locator('input[name="submissionMode"]:checked').count()===0){
-    await page.getByLabel(/Endast kvitton/).check();
-  }
-  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
-}
-
-async function expectFullWidth(page){
-  const actions=page.locator('#upload .receipt-actions');
-  const button=page.locator('#upload #continue');
-  const actionsBox=await actions.boundingBox();
-  const buttonBox=await button.boundingBox();
-  expect(actionsBox&&buttonBox).toBeTruthy();
-  expect(Math.abs(buttonBox.x-actionsBox.x)).toBeLessThan(2);
-  expect(Math.abs(buttonBox.width-actionsBox.width)).toBeLessThan(2);
-}
-
-test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold',async({page})=>{
+async function openCompensationStep(page){
   await page.goto('/');
-  await waitForAppState(page);
-  await expect(page.locator('#upload #restart')).toBeHidden();
-  await expectFullWidth(page);
-  await expect(page.locator('#continue')).toBeDisabled();
-
-  await page.getByLabel(/Endast reseräkning/).check();
-  await expectFullWidth(page);
-  await expect(page.locator('#continue')).toBeDisabled();
-  await expect(page.locator('#travelFields')).toBeVisible();
-  await expect(page.getByLabel('Antal kilometer')).toBeVisible();
-  await expect(page.getByLabel('Antal kilometer')).toHaveAttribute('placeholder','Ange antal kilometer för att se ersättningen.');
-  await expect(page.getByText('Har du rest med eget fordon och ska ha reseersättning?',{exact:true})).toHaveCount(0);
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
-  await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
-  await page.getByLabel('Antal kilometer').fill('10');
   await page.getByLabel('Clearingnummer').fill('5000');
   await page.getByLabel('Kontonummer').fill('1234567');
-  await expect(page.locator('#travelCalculation')).toContainText('Godkänner du uträkningen?');
+  await page.getByRole('button',{name:'Nästa: välj ersättning'}).click();
+}
+
+test('milersättningen kräver ett tydligt aktivt godkännande',async({page})=>{
+  await openCompensationStep(page);
+  await expect(page.locator('#continue')).toBeDisabled();
+  await page.getByLabel(/^Milersättning/).check();
+  await expect(page.locator('#travelFields')).toBeVisible();
+  await expect(page.getByRole('spinbutton',{name:'Antal kilometer'})).toHaveAttribute('placeholder','Ange antal kilometer');
+  await expect(page.locator('#travelCalculation')).toHaveText('Milersättning: 25 kr per mil.');
+  await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
+  await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('10');
+  await expect(page.locator('.travel-km-input')).toContainText('kilometer');
+  await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
+  await expect(page.locator('#travelCalculation')).toHaveClass(/needs-approval/);
+  await expect(page.locator('#continue')).toBeDisabled();
   await page.locator('#travelCalculation').click();
   await expect(page.locator('#travelCalculation')).toContainText('Godkänd:');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
+  await expect(page.locator('#travelCalculation')).not.toHaveClass(/needs-approval/);
   await expect(page.locator('#continue')).toBeEnabled();
-  await expect(page.locator('#continue')).toHaveText('Nästa: kontrollera och skicka');
+});
 
-  await page.getByLabel(/Kvitton \+ reseräkning/).check();
-  await expectFullWidth(page);
+test('ingen ersättningstyp kan skickas vidare utan innehåll',async({page})=>{
+  await openCompensationStep(page);
+  await expect(page.locator('#continue')).toBeDisabled();
+  await page.getByLabel(/Kvitton för utlägg/).check();
+  await expect(page.locator('#continue')).toBeDisabled();
+  await page.getByLabel(/Kvitton för utlägg/).uncheck();
   await expect(page.locator('#continue')).toBeDisabled();
 });

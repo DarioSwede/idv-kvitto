@@ -32,9 +32,9 @@ export function renderSubmissionSummary({container,documentRef=document,submissi
   if(travel.enabled){
     appendSummaryRow(container,documentRef,'Resa',travel.description||'—','travel-summary');
     appendSummaryRow(container,documentRef,'Kilometer och beräkning',travel.calculation||'—','travel-summary');
-    appendSummaryRow(container,documentRef,'Godkänd reseersättning',formatSek(travel.amount),'travel-summary');
+    appendSummaryRow(container,documentRef,'Godkänd milersättning',formatSek(travel.amount),'travel-summary');
   }
-  const totalLabel=submissionMode==='receipts'?'Totalt kvitton':'Totalt inklusive reseersättning';
+  const totalLabel=submissionMode==='receipts'?'Totalt kvitton':'Totalt inklusive milersättning';
   appendSummaryRow(container,documentRef,totalLabel,formatSek(totals.grandTotal),'grand-total');
   return totals;
 }

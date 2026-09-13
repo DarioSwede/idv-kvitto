@@ -1,82 +1,74 @@
 import {test,expect} from '@playwright/test';
 
-async function waitForAppState(page){
-  if(await page.locator('input[name="submissionMode"]:checked').count()===0){
-    await page.getByLabel(/Endast kvitton/).check();
-  }
+async function openCompensationStep(page){
+  await page.goto('/');
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
+  await page.getByLabel('Ditt namn').fill('Layouttest');
+  await page.getByLabel('Din e-postadress').fill('layout@example.se');
+  await page.getByLabel('Clearingnummer').fill('5000');
+  await page.getByLabel('Kontonummer').fill('1234567');
+  await page.getByRole('button',{name:'Nästa: välj ersättning'}).click();
 }
 
-test('toppmenyn visar bara lägesvalen',async({page})=>{
+test('toppmenyn visar det gemensamma trestegsflödet',async({page})=>{
   await page.goto('/');
-  await expect(page.locator('.timeline')).toBeVisible();
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await expect(page.getByRole('heading',{name:'Ansök om ersättning'})).toBeVisible();
+  await expect(page.getByText('Här skickar du in kvitton för utlägg')).toBeVisible();
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
   await expect(page.locator('.timeline .seg')).toHaveCount(3);
-  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Kvitton');
-  await expect(page.getByText('Vad vill du göra?')).toBeVisible();
-  await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
-  await expect(page.getByLabel(/Endast kvitton/)).toBeChecked();
-  await expect(page.locator('.submission-information-card')).toHaveCount(0);
-  await expect(page.getByLabel(/Endast kvitton/)).toBeVisible();
-  await expect(page.getByLabel(/Endast reseräkning/)).toBeVisible();
-  await expect(page.getByLabel(/Kvitton \+ reseräkning/)).toBeVisible();
-  await page.getByLabel(/Endast reseräkning/).check();
-  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Reseersättning');
+  await expect(page.locator('.timeline .seg-label')).toHaveText(['Dina uppgifter','Välj ersättning','Kontroll & skicka']);
+  await expect(page.getByRole('heading',{name:'Dina uppgifter'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Nästa: välj ersättning'})).toBeDisabled();
 });
 
-test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{
-  await page.goto('/');
-  await waitForAppState(page);
-  const actions=page.locator('#upload .receipt-actions');
-  await expect(actions).toHaveClass(/continue-centered/);
-  await expect(page.locator('body')).toHaveAttribute('data-has-receipts','false');
-
-  await page.evaluate(()=>{
-    const state=window.__idvReceiptState;
-    const canvas=document.createElement('canvas');
-    canvas.width=20;canvas.height=20;
-    state.photos.push({name:'Layouttest',amount:'50',amountSource:'manual',ocrState:'manual',ocrMessage:'Test',canvas,masks:[],done:true,pdf:false,processing:false});
-    state.render();
-  });
-  await expect(page.locator('body')).toHaveAttribute('data-has-receipts','true');
-  await expect(actions).not.toHaveClass(/continue-centered/);
-
-  await page.evaluate(()=>{
-    window.__idvReceiptState.photos.splice(0);
-    window.__idvReceiptState.render();
-  });
-  await expect(actions).toHaveClass(/continue-centered/);
-  await page.getByLabel(/Endast reseräkning/).check();
-  await expect(actions).not.toHaveClass(/continue-centered/);
+test('ersättningstyperna kan väljas oberoende och öppnar rätt fält',async({page})=>{
+  await openCompensationStep(page);
+  await expect(page.getByText('Vad söker du ersättning för?')).toBeVisible();
+  await expect(page.getByLabel(/Kvitton för utlägg/)).not.toBeChecked();
+  await expect(page.getByLabel(/^Milersättning/)).not.toBeChecked();
+  await page.getByLabel(/Kvitton för utlägg/).check();
+  await expect(page.locator('.compensation-section').first()).toBeVisible();
+  await expect(page.locator('.compensation-section').nth(1)).toBeHidden();
+  await page.getByLabel(/^Milersättning/).check();
+  await expect(page.locator('.compensation-section').nth(1)).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Resan'})).toBeVisible();
 });
 
-test('ensamma huvudknappar centreras i senare steg',async({page})=>{
-  await page.goto('/');
-  await waitForAppState(page);
-  await page.evaluate(()=>{
-    const state=window.__idvReceiptState,canvas=document.createElement('canvas');
-    canvas.width=20;canvas.height=20;
-    state.photos.push({name:'Layouttest',amount:'50',amountSource:'manual',ocrState:'manual',ocrMessage:'Test',canvas,masks:[],done:true,pdf:false,processing:false});
-    state.render();
-  });
-  await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
+test('steg två skapar kombinationsläget automatiskt när båda valen är aktiva',async({page})=>{
+  await openCompensationStep(page);
+  await page.getByLabel(/Kvitton för utlägg/).check();
+  await page.getByLabel(/^Milersättning/).check();
+  await expect(page.locator('body')).toHaveAttribute('data-submission-mode','combined');
+  await expect(page.locator('#event')).toBeVisible();
+  await expect(page.locator('.travel-card')).toBeVisible();
+  await expect(page.locator('#dropzone')).toBeVisible();
+});
 
+test('huvudknappen på första steget är centrerad',async({page})=>{
+  await page.goto('/');
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
   const formButton=page.locator('#form #previewBtn');
   const formBox=await page.locator('#form').boundingBox();
   const formButtonBox=await formButton.boundingBox();
   expect(formBox&&formButtonBox).toBeTruthy();
   expect(Math.abs((formButtonBox.x+formButtonBox.width/2)-(formBox.x+formBox.width/2))).toBeLessThan(2);
   expect(formButtonBox.width).toBeLessThanOrEqual(360.5);
+});
 
-  await page.getByLabel('Ditt namn').fill('Layouttest');
-  await page.getByLabel('Din e-postadress').fill('layout@example.se');
-  await page.getByLabel('Clearingnummer').fill('5000');
-  await page.getByLabel('Kontonummer').fill('1234567890');
-  await formButton.click();
-
-  const sendButton=page.locator('#preview #send');
-  const previewBox=await page.locator('#preview').boundingBox();
-  const sendBox=await sendButton.boundingBox();
-  expect(previewBox&&sendBox).toBeTruthy();
-  expect(Math.abs((sendBox.x+sendBox.width/2)-(previewBox.x+previewBox.width/2))).toBeLessThan(2);
-  expect(sendBox.width).toBeLessThanOrEqual(360.5);
+test('namn och e-post har hela jämna fokusramar',async({page})=>{
+  await page.goto('/');
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
+  const name=page.getByLabel('Ditt namn'),email=page.getByLabel('Din e-postadress');
+  await name.focus();
+  const nameStyle=await name.evaluate(element=>({border:getComputedStyle(element).borderWidth,radius:getComputedStyle(element).borderRadius,outline:getComputedStyle(element).outlineStyle,shadow:getComputedStyle(element).boxShadow}));
+  await email.focus();
+  const emailStyle=await email.evaluate(element=>({border:getComputedStyle(element).borderWidth,radius:getComputedStyle(element).borderRadius,outline:getComputedStyle(element).outlineStyle,shadow:getComputedStyle(element).boxShadow}));
+  expect(nameStyle).toEqual(emailStyle);
+  expect(nameStyle.border).toBe('2px');
+  expect(nameStyle.radius).toBe('10px');
+  expect(nameStyle.shadow).not.toBe('none');
 });

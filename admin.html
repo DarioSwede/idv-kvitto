@@ -366,6 +366,17 @@
           <label for="travelRatePerMil">Ersättning per mil (kr)</label>
           <input id="travelRatePerMil" type="number" min="0.01" max="10000" step="0.01" value="25">
         </div>
+        <div class="setting">
+          <label for="pdfWatermarkEnabled">Bakgrundslogotyp i PDF</label>
+          <select id="pdfWatermarkEnabled">
+            <option value="true">På</option>
+            <option value="false">Av</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="pdfWatermarkOpacity">Bakgrundslogotypens styrka (%)</label>
+          <input id="pdfWatermarkOpacity" type="number" min="1" max="15" step="1" value="4">
+        </div>
       </div>
     </section>
   </main>
@@ -391,6 +402,8 @@
       receiptEmailTo: 'betala@idrottsveteranerna.se',
       retentionDays: 365,
       travelRatePerMil: 25,
+      pdfWatermarkEnabled: true,
+      pdfWatermarkOpacity: 4,
       role: 'admin'
     };
 
@@ -419,6 +432,8 @@
     const statusFilter = document.getElementById('statusFilter');
     const retentionDays = document.getElementById('retentionDays');
     const travelRatePerMil = document.getElementById('travelRatePerMil');
+    const pdfWatermarkEnabled = document.getElementById('pdfWatermarkEnabled');
+    const pdfWatermarkOpacity = document.getElementById('pdfWatermarkOpacity');
     const saveSettingsButton = document.getElementById('saveSettingsButton');
     const supabaseUrlInput = document.getElementById('supabaseUrl');
     const supabaseAnonKeyInput = document.getElementById('supabaseAnonKey');
@@ -612,6 +627,8 @@
       productionRecipient.value = normalizedSettings.receiptEmailTo;
       retentionDays.value = normalizedSettings.retentionDays;
       travelRatePerMil.value = normalizedSettings.travelRatePerMil;
+      pdfWatermarkEnabled.value = String(normalizedSettings.pdfWatermarkEnabled);
+      pdfWatermarkOpacity.value = normalizedSettings.pdfWatermarkOpacity;
       statusFilter.value = normalizedSettings.role;
       updateOverview();
 
@@ -694,6 +711,8 @@
         receiptEmailTo: settings.receipt_email_to || settings.receiptEmailTo || 'betala@idrottsveteranerna.se',
         retentionDays: Number(settings.retention_days || settings.retentionDays || 365),
         travelRatePerMil: Number(settings.travel_rate_per_km || settings.travelRatePerKm || 2.5) * 10,
+        pdfWatermarkEnabled: typeof settings.pdf_watermark_enabled === 'boolean' ? settings.pdf_watermark_enabled : settings.pdfWatermarkEnabled !== false,
+        pdfWatermarkOpacity: Number(settings.pdf_watermark_opacity ?? settings.pdfWatermarkOpacity ?? 0.04) * 100,
         role: settings.role || 'admin'
       };
     }
@@ -709,6 +728,8 @@
       productionRecipient.value = settings.receiptEmailTo;
       retentionDays.value = settings.retentionDays;
       travelRatePerMil.value = settings.travelRatePerMil;
+      pdfWatermarkEnabled.value = String(settings.pdfWatermarkEnabled);
+      pdfWatermarkOpacity.value = settings.pdfWatermarkOpacity;
       statusFilter.value = settings.role;
     }
 
@@ -720,6 +741,8 @@
           receiptEmailTo: productionRecipient.value,
           retentionDays: retentionDays.value,
           travelRatePerMil: travelRatePerMil.value,
+          pdfWatermarkEnabled: pdfWatermarkEnabled.value === 'true',
+          pdfWatermarkOpacity: pdfWatermarkOpacity.value,
           role: statusFilter.value
         },
         submissions
@@ -1036,7 +1059,9 @@
           ['email_test_recipient', testRecipient.value.trim()],
           ['receipt_email_to', productionRecipient.value.trim()],
           ['retention_days', Number(retentionDays.value)],
-          ['travel_rate_per_km', Number(travelRatePerMil.value) / 10]
+          ['travel_rate_per_km', Number(travelRatePerMil.value) / 10],
+          ['pdf_watermark_enabled', pdfWatermarkEnabled.value === 'true'],
+          ['pdf_watermark_opacity', Number(pdfWatermarkOpacity.value) / 100]
         ];
         try {
           for (const [key, value] of updates) {

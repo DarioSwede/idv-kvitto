@@ -12,6 +12,6 @@ export function validateSubmissionDetails({name='',email='',eventTag='',bank={},
   if(!isValidEmailAddress(email))return{valid:false,message:'E-postadressen ser inte korrekt ut.'};
   if(submissionMode!=='receipts'&&!String(resolvedEventTag).trim())return{valid:false,message:'Beskriv kort vad resan avsåg.'};
   if(!bank.valid)return{valid:false,message:bank.message||'Fyll i clearing- och kontonummer.'};
-  if(!travel.valid)return{valid:false,message:'Fyll i antalet kilometer och godkänn det föreslagna reseersättningsbeloppet.'};
+  if(!travel.valid)return{valid:false,message:'Fyll i antalet kilometer och godkänn den föreslagna milersättningen.'};
   return{valid:true,message:''};
 }

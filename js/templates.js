@@ -2,12 +2,27 @@ export function applyTemplates(html,versionMeta={}){
   const appVersion=versionMeta.version||'dev';
   html=html.replace("const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'","const ENDPOINT=window.__idvSubmitEndpoint||'https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'");
   html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','');
+  const welcome=`<section class="welcome" id="welcome" aria-labelledby="welcomeTitle">
+<img class="welcome-logo" src="idv-mark.png" alt="Idrottsveteranerna">
+<div class="welcome-kicker">Idrottsveteranerna</div>
+<h1 id="welcomeTitle">Ansök om ersättning</h1>
+<p class="welcome-lead">Här skickar du in kvitton för utlägg, ansöker om milersättning eller kombinerar båda i samma underlag.</p>
+<div class="welcome-steps" aria-label="Så fungerar ansökan">
+  <div class="welcome-step"><span>1</span><div><strong>Dina uppgifter</strong><small>Fyll i namn, e-postadress och konto för utbetalning.</small></div></div>
+  <div class="welcome-step"><span>2</span><div><strong>Välj ersättning</strong><small>Välj kvitton, milersättning eller båda. Rätt fält öppnas automatiskt.</small></div></div>
+  <div class="welcome-step"><span>3</span><div><strong>Kontrollera och skicka</strong><small>Granska allt, välj om du vill ha en kopia och skicka in underlaget.</small></div></div>
+</div>
+<p class="welcome-ready"><strong>Bra att ha redo:</strong> bankuppgifter och eventuella kvittofiler.</p>
+<button class="btn welcome-start" id="startApplication" type="button">Starta ansökan</button>
+<p class="welcome-security">🔒 Dina uppgifter skickas krypterat.</p>
+</section>`;
+  html=html.replace('<body>','<body class="welcome-mode">'+welcome);
 
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
   const timelineEnd=html.indexOf('</div>',timelineStart)+6;
   const timeline=`<div class="timeline" aria-label="Steg i formuläret">
-<button class="seg active" type="button" data-step="0" title="Gå till kvitton"><span class="seg-index">1</span><span class="seg-label">Kvitton</span></button>
-<button class="seg" type="button" data-step="1" title="Gå till uppgifter" disabled><span class="seg-index">2</span><span class="seg-label">Dina uppgifter</span></button>
+<button class="seg active" type="button" data-step="0" title="Gå till dina uppgifter"><span class="seg-index">1</span><span class="seg-label">Dina uppgifter</span></button>
+<button class="seg" type="button" data-step="1" title="Gå till val av ersättning" disabled><span class="seg-index">2</span><span class="seg-label">Välj ersättning</span></button>
 <button class="seg" type="button" data-step="2" title="Gå till kontroll och skicka" disabled><span class="seg-index">3</span><span class="seg-label">Kontroll &amp; skicka</span></button>
 </div>`;
   if(timelineStart>-1)html=html.slice(0,timelineStart)+timeline+html.slice(timelineEnd);
@@ -57,24 +72,27 @@ export function applyTemplates(html,versionMeta={}){
   html=html.replace(oldLightbox,lightbox);
 
   const stateNeedle="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','mask','form','review','preview'];";
-  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['upload','form','preview'];window.__idvReceiptState={get photos(){return window.__idvModulesReady?photos:undefined},get processing(){return processing},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
+  const stateReplacement="let photos=[],idx=0,drawing=false,start=null,current=null,processing=0,maxReached=0;const screens=['form','upload','preview'];window.__idvReceiptState={get photos(){return window.__idvModulesReady?photos:undefined},get processing(){return processing},get idx(){return idx},set idx(value){idx=value},show:id=>show(id),render:()=>render(),load:()=>load(),draw:()=>draw(),openReceipt:p=>openReceipt(p),closeLightbox:()=>closeLightbox()};";
   html=html.replace(stateNeedle,stateReplacement);
 
   const goToStepStart=html.indexOf('function goToStep(n){');
   const goToStepEnd=html.indexOf("document.querySelectorAll('.seg')",goToStepStart);
   if(goToStepStart>-1&&goToStepEnd>-1){
-    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached||(n>0&&window.__idvCanLeaveReceipts&&!window.__idvCanLeaveReceipts())||(n>1&&window.__idvCanLeaveContact&&!window.__idvCanLeaveContact()))return;show(screens[n]||'upload')}\n"+html.slice(goToStepEnd);
+    html=html.slice(0,goToStepStart)+"function goToStep(n){if(n>maxReached||(n>0&&window.__idvCanLeaveContact&&!window.__idvCanLeaveContact())||(n>1&&window.__idvCanLeaveReceipts&&!window.__idvCanLeaveReceipts()))return;show(screens[n]||'form')}\n"+html.slice(goToStepEnd);
   }
+
+  html=html.replace('<section class="screen active" id="upload">','<section class="screen" id="upload">');
+  html=html.replace('<section class="screen" id="form">','<section class="screen active" id="form">');
 
   html=html.replace('<div class="step">Steg 3 av 5 — Fyll i uppgifter</div>','');
   html=html.replace('<div class="step">Steg 5 av 5 — Kontrollera och skicka</div>','');
   html=html.replace('Nästa: kontrollera kvittona','Nästa: kontrollera och skicka');
   html=html.replace('<button class="btn secondary" id="formBack">Tillbaka till kvittona</button>','<button class="btn secondary" id="formBack" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka till kvittona</button>');
-  html=html.replace('<button class="btn secondary" id="back">Tillbaka och ändra</button>','<button class="btn secondary" id="back" type="button" hidden aria-hidden="true" tabindex="-1">Tillbaka och ändra</button>');
+  html=html.replace('<button class="btn secondary" id="back">Tillbaka och ändra</button>','<button class="btn secondary" id="back" type="button">Tillbaka och ändra</button>');
   const doneStart=html.indexOf('<section class="screen" id="done">');
   const doneEnd=html.indexOf('</section>',doneStart)+10;
   if(doneStart>-1){
-    const done=`<section class="screen" id="done"><div class="done-panel"><div class="done-kicker">Idrottsveteranerna</div><h1>Tack! Vi har tagit emot ditt kvitto.</h1><p class="done-message">Tack för att du skickade in ditt underlag till IDV. Ditt kvitto är mottaget och kommer att hanteras vidare enligt vår ersättningsrutin.</p><p class="copy-result" id="doneText" aria-live="polite"></p><a class="btn submitted-pdf" id="submittedPdf" target="_blank" rel="noopener" hidden>Visa inskickat underlag (PDF)</a><div class="payout-note"><strong>Om utbetalningen</strong><span>Information om handläggningstid, utbetalningssätt och vilka bankuppgifter som behövs kommer att uppdateras här när IDV:s rutin är fastställd.</span></div><p class="done-question">Vill du skicka in fler kvitton?</p><button class="btn" id="restartDone" type="button">Skicka in ett till kvitto</button></div></section>`;
+    const done=`<section class="screen" id="done"><div class="done-panel"><div class="done-kicker">Idrottsveteranerna</div><h1>Tack! Vi har tagit emot ditt underlag.</h1><p class="done-message">Tack för att du skickade in ditt underlag till IDV. Underlaget är mottaget och kommer att hanteras vidare enligt vår ersättningsrutin.</p><p class="copy-result" id="doneText" aria-live="polite"></p><a class="btn submitted-pdf" id="submittedPdf" target="_blank" rel="noopener" hidden>Visa inskickat underlag (PDF)</a><div class="payout-note"><strong>Om utbetalningen</strong><span>Information om handläggningstid, utbetalningssätt och vilka bankuppgifter som behövs kommer att uppdateras här när IDV:s rutin är fastställd.</span></div><p class="done-question">Vill du skicka in ett till underlag?</p><button class="btn" id="restartDone" type="button">Skicka in ett till underlag</button></div></section>`;
     html=html.slice(0,doneStart)+done+html.slice(doneEnd);
   }
   html=html.replace('</main>',`</main><footer class="security-note"><strong>Säker överföring</strong><span>Dina uppgifter och kvitton skickas krypterat med HTTPS (TLS).</span><a class="privacy-link" href="privacy.html" target="_blank" rel="noopener">Så hanterar vi dina personuppgifter</a><small class="build-meta">Version ${appVersion} · Byggd av Zimmerman<br>© 2026 Idrottsveteranerna</small></footer>`);

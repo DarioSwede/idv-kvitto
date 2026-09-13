@@ -1,5 +1,57 @@
 # Versionshistorik
 
+## 2026.09.13.13
+- Visar kontrollreferens, datum, fullständigt ärende-ID och sidnummer på samtliga PDF-sidor.
+- Skriver sidnumret som Sid X av Y så att hela den inskickade sammanställningen kan kontrolleras.
+- Placerar fullständigt clearingnummer och kontonummer under rubriken Konto för utbetalning utan maskering.
+
+## 2026.09.13.12
+- Ger namn- och e-postfälten samma obrutna, jämnt rundade kant.
+- Visar fokusmarkeringen runt hela fältet utan att den klipps av behållaren.
+
+## 2026.09.13.11
+- Lägger till en välkomstsida med IDV-logga och en kort beskrivning av sidans syfte.
+- Förklarar de tre stegen och vad användaren behöver ha redo innan ansökan startas.
+- Öppnar formulärets första steg via den tydliga knappen Starta ansökan.
+
+## 2026.09.13.10
+- Aktiverar Nästa direkt efter ett enda klick på godkännandet av milersättningen.
+- Behåller godkänd milersättning tills kilometerantalet ändras och visar en tydlig klar-bock.
+- Visar enheten kilometer direkt efter det ifyllda värdet.
+- Ger även ett använt OCR-förslag en tydlig klar-bock.
+
+## 2026.09.13.9
+- Förenklar ansökan till tre gemensamma steg: Dina uppgifter, Välj ersättning samt Kontroll och skicka.
+- Låter användaren välja kvitton, milersättning eller båda med två tydliga val som öppnar rätt fält automatiskt.
+- Samlar kontakt- och utbetalningsuppgifter först och använder neutrala texter som fungerar för alla tre underlagstyper.
+- Behåller uttryckligt godkännande av milersättningen och kontrollerar att varje kvitto har både namn och belopp.
+
+## 2026.09.13.8
+- Gör godkännandet av milersättningen övertydligt med pil, direkt uppmaning och en mjuk puls som upphör efter godkännande.
+- Visar en tydlig bock i det godkända läget och respekterar användarens inställning för minskade animationer.
+
+## 2026.09.13.7
+- Visar clearing- och kontonummer i klartext i den inskickade PDF-filen och placerar dem under rubriken Konto för utbetalning.
+- Lägger kontrollreferens, datum och fullständigt ärende-ID på samtliga PDF-sidor.
+- Gör PDF-filens svaga bakgrundslogotyp valbar och justerbar mellan 1 och 15 procent i admininställningarna.
+- Samlar resefälten i kombinationsläget i samma Resan-kort som endast milersättning och ger kilometerfältet bättre plats.
+
+## 2026.09.13.6
+- Byter konsekvent till begreppet milersättning i val, rubriker, hjälptexter, sammanställningar, PDF och e-postunderlag.
+
+## 2026.09.13.5
+- Använder reseersättning konsekvent i de delar av båda reseflödena som beskriver ersättningen.
+- Flyttar kilometerinstruktionen till inmatningsfältet och gör beräkningsknappen vit tills en uträkning finns att godkänna.
+
+## 2026.09.13.4
+- Ger endast-kvitton-läget samma tydliga kortindelning för personuppgifter, beskrivning och utbetalningskonto som reseräkningen.
+
+## 2026.09.13.3
+- Låter reseräkningens två steg dela hela flödesheaderns bredd jämnt.
+
+## 2026.09.13.2
+- Matchar reseräkningens tvåstegsrubrik mot sidans innehåll och tar bort den missvisande hänvisningen till kvitton.
+
 ## 2026.09.13.1
 - Samlar reseräkningens personuppgifter, reseuppgifter och utbetalningskonto på en sida.
 - Visar reseräkningsläget som ett tydligt tvåstegsflöde: fyll i och kontrollera.

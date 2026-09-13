@@ -35,8 +35,9 @@ export function initUploadUi(){
   function canLeaveReceipts(){
     const n=thumbs?thumbs.children.length:0;
     const amounts=thumbs?[...thumbs.querySelectorAll('.receipt-amount')].map(input=>input.value):[];
+    const names=thumbs?[...thumbs.querySelectorAll('.receipt-name')].map(input=>input.value.trim()):[];
     const processing=window.__idvReceiptState?.processing||0;
-    return canContinueReceiptStep(amounts,n,processing);
+    return canContinueReceiptStep(amounts,n,processing)&&names.length===n&&names.every(Boolean);
   }
   window.__idvCanLeaveReceipts=canLeaveReceipts;
 
@@ -45,10 +46,11 @@ export function initUploadUi(){
     const hasReceipts=n>0;
     const canContinue=canLeaveReceipts();
     const onFirstStep=!!upload?.classList.contains('active');
+    const guidedFlow=Boolean(document.querySelector('.compensation-picker'));
 
     if(thumbs)thumbs.dataset.columns=String(Math.min(Math.max(n,1),3));
     if(dropzoneTitle)dropzoneTitle.textContent=hasReceipts?'Välj fler kvittofiler':'Välj kvittofiler';
-    if(uploadInstructions)uploadInstructions.textContent=hasReceipts?'Välj filer, ändra namn, välj identifierat totalbelopp eller skriv in eget.':'Välj filer från dator eller telefon.';
+    if(uploadInstructions&&!guidedFlow)uploadInstructions.textContent=hasReceipts?'Välj filer, ändra namn, välj identifierat totalbelopp eller skriv in eget.':'Välj filer från dator eller telefon.';
 
     if(badge){
       badge.textContent=String(n);
@@ -62,10 +64,11 @@ export function initUploadUi(){
     if(listHelp)listHelp.hidden=!hasReceipts;
 
     if(continueBtn){
-      continueBtn.disabled=!canContinue;
-      continueBtn.hidden=!hasReceipts;
-      continueBtn.style.display=hasReceipts?'':'none';
-      continueBtn.title=canContinue?'':'Fyll i belopp på alla kvitton och vänta tills filerna är klara';
+      const guidedCanContinue=window.__idvSubmissionMode?.canLeaveReceipts?.();
+      continueBtn.disabled=guidedFlow?!guidedCanContinue:!canContinue;
+      continueBtn.hidden=guidedFlow?false:!hasReceipts;
+      continueBtn.style.display=guidedFlow||hasReceipts?'':'none';
+      continueBtn.title=guidedFlow?(guidedCanContinue?'':'Fyll i de valda ersättningarna innan du går vidare.'):(canContinue?'':'Fyll i belopp på alla kvitton och vänta tills filerna är klara');
     }
 
     if(restartBtn){

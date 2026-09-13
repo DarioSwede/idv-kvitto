@@ -140,8 +140,8 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <div id="travelFields" hidden>
 <div class="travel-km-row">
 <label id="travelKmLabel" for="travelKm"><span id="travelKmLabelText">Ange antal kilometer</span></label>
-<input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" placeholder="Ange antal kilometer för att se ersättningen.">
-<button class="travel-calculation" id="travelCalculation" type="button" disabled aria-pressed="false">Ersättning: 25 kr per mil.</button>
+<div class="travel-km-input"><input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" aria-label="Antal kilometer" placeholder="Ange antal kilometer"><span aria-hidden="true">kilometer</span></div>
+<button class="travel-calculation" id="travelCalculation" type="button" disabled aria-pressed="false">Milersättning: 25 kr per mil.</button>
 </div>
 <p class="travel-error" id="travelError" aria-live="polite"></p>
 <input id="travelApprove" type="checkbox" hidden>
@@ -163,7 +163,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <section class="screen" id="preview">
 <div class="step">Steg 5 av 5 — Kontrollera och skicka</div>
 <h1>Stämmer allt?</h1>
-<div class="info">1. Kontrollera att alla kvitton är med.<br>2. Kryssa i rutan att uppgifterna stämmer.<br>3. Tryck på ”Skicka in kvitton”.</div>
+<div class="info">1. Kontrollera att uppgifterna och underlagen stämmer.<br>2. Välj om du vill ha en kopia.<br>3. Godkänn och skicka in.</div>
 <div class="thumbs" id="previewThumbs">
 </div>
 <div class="card" id="summary">
@@ -173,7 +173,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <input id="confirm" type="checkbox"><span><strong>Ja, uppgifterna stämmer och kvittona är klara att skickas.</strong></span></label>
 <div id="sendError" aria-live="polite">
 </div>
-<button class="btn" id="send" disabled>Skicka in kvitton</button>
+<button class="btn" id="send" disabled>Skicka in underlaget</button>
 <button class="btn secondary" id="back">Tillbaka och ändra</button>
 </section>
 <section class="screen" id="done">
@@ -220,7 +220,7 @@ function draw(){getMaskEditor()?.draw()}
 ;$('formBack').onclick=()=>show('upload');$('previewBtn').onclick=()=>{let name=$('name').value.trim(),email=$('email').value.trim(),bank=window.__idvBankAccount?.getData?.()||{valid:false,message:'Fyll i clearing- och kontonummer.'},travel=window.__idvTravel?.getData?.()||{enabled:false,valid:true,amount:0},submissionMode=window.__idvSubmissionMode?.getMode?.()||'receipts',previewModule=window.__idvSubmissionPreview,result=previewModule?.prepareSubmissionReview({documentRef:document,photos,submissionMode,openReceipt,name,email,eventTag:$('event').value,travel,bank,validate:window.__idvSubmissionValidation?.validateSubmissionDetails,summaryModule:window.__idvSubmissionSummary,renderReview,show})||{valid:false,message:'Förhandsgranskningsmodulen kunde inte laddas. Ladda om sidan.'};$('formError').replaceChildren();if(!result.valid)showFormError(result.message)}
 ;$('reviewNext').onclick=()=>show('preview');$('reviewEdit').onclick=()=>show('form');$('confirm').onchange=e=>$('send').disabled=!e.target.checked;$('back').onclick=()=>show('review');$('send').onclick=async()=>{try{let travel=window.__idvTravel?.getData?.()||{enabled:false,valid:true,approved:false,km:null,description:'',amount:0,calculation:''},bank=window.__idvBankAccount?.getData?.()||{valid:false},submissionMode=window.__idvSubmissionMode?.getMode?.()||'receipts',validation=window.__idvSubmissionValidation?.validateSubmissionDetails({name:$('name').value,email:$('email').value,bank,travel,photos,submissionMode})||{valid:false,message:'Valideringsmodulen kunde inte laddas. Ladda om sidan.'};if(!validation.valid)throw Error(validation.message);let flow=window.__idvSubmissionFlow,service=window.__idvSubmissionService;if(!flow||!service)throw Error('Inskickningsmodulen kunde inte laddas. Ladda om sidan.');let fd=await flow.buildSubmissionFormData({submissionMode,name:$('name').value,email:$('email').value,eventTag:$('event').value,otherInfo:$('other').value,copyRequested:$('cc').checked,bank,travel,photos});
 $('send').disabled=true;$('send').textContent='Skickar …';$('sendError').replaceChildren();let result=await service.submitReceipt({endpoint:ENDPOINT,key:ANON_KEY,formData:fd,parseResponse:flow.parseSubmissionResponse,buildResult:flow.buildSubmissionResult}),doneText=$('doneText');doneText.textContent=result.message;doneText.dataset.state=result.warning?'warning':'success';let submittedPdf=$('submittedPdf');if(submittedPdf&&result.pdfUrl){submittedPdf.href=result.pdfUrl;submittedPdf.hidden=false}show('done')}
-catch(e){showSendError(e.message);$('send').disabled=false;$('send').textContent='Skicka in kvitton'}
+catch(e){showSendError(e.message);$('send').disabled=false;$('send').textContent='Skicka in underlaget'}
 }
 }
 )();</script>
