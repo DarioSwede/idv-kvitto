@@ -11,8 +11,11 @@ test('PDF-sammanställningen visar fullständigt ärende-ID och en läsbar refer
 });
 
 test('PDF-sammanställningen använder vita streckade informationsrutor',()=>{
-  assert.match(source,/color: rgb\(1, 1, 1\), borderColor: brand/);
-  assert.match(source,/borderDashArray: \[5, 4\]/);
+  assert.match(source,/const dashedLine =/);
+  assert.match(source,/summaryPage\.drawLine\(\{/);
+  assert.match(source,/offset \+= 9/);
+  assert.match(source,/Math\.min\(offset \+ 5, length\)/);
+  assert.doesNotMatch(source,/borderDashArray/);
   assert.match(source,/dashedBox\(38, 656, 519, 70\)/);
   assert.match(source,/dashedBox\(38, 550, 519, 88\)/);
 });

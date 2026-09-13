@@ -171,7 +171,27 @@ Deno.serve(async (req: Request) => {
       drawRight(submissionDate(submittedAt), 798, 8, muted);
       drawRight(submission.id, 783, 7, muted);
 
-      const dashedBox = (x: number, y: number, width: number, height: number) => summaryPage.drawRectangle({ x, y, width, height, color: rgb(1, 1, 1), borderColor: brand, borderWidth: 1, borderDashArray: [5, 4], borderOpacity: 0.72 });
+      const dashedLine = (startX: number, startY: number, endX: number, endY: number) => {
+        const length = Math.hypot(endX - startX, endY - startY);
+        const dx = (endX - startX) / length, dy = (endY - startY) / length;
+        for (let offset = 0; offset < length; offset += 9) {
+          const dashEnd = Math.min(offset + 5, length);
+          summaryPage.drawLine({
+            start: { x: startX + dx * offset, y: startY + dy * offset },
+            end: { x: startX + dx * dashEnd, y: startY + dy * dashEnd },
+            thickness: 1,
+            color: brand,
+            opacity: 0.72
+          });
+        }
+      };
+      const dashedBox = (x: number, y: number, width: number, height: number) => {
+        summaryPage.drawRectangle({ x, y, width, height, color: rgb(1, 1, 1) });
+        dashedLine(x, y, x + width, y);
+        dashedLine(x + width, y, x + width, y + height);
+        dashedLine(x + width, y + height, x, y + height);
+        dashedLine(x, y + height, x, y);
+      };
       const label = (value: string, x: number, y: number) => summaryPage.drawText(pdfSafeText(value.toUpperCase()), { x, y, size: 8, font: footerFont, color: muted });
       const value = (text: string, x: number, y: number, size = 11) => summaryPage.drawText(pdfSafeText(text), { x, y, size, font: footerFont, color: ink });
 
