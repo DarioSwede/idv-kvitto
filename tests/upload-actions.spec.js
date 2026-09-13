@@ -33,7 +33,9 @@ test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold'
   await expect(page.getByText('Har du rest med eget fordon och ska ha reseersättning?',{exact:true})).toHaveCount(0);
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
   await page.getByLabel('Antal kilometer').fill('10');
+  await expect(page.locator('#travelCalculation')).toContainText('Godkänner du uträkningen?');
   await page.locator('#travelCalculation').click();
+  await expect(page.locator('#travelCalculation')).toContainText('Godkänd:');
   await expect(page.locator('#continue')).toBeEnabled();
 
   await page.getByLabel(/Kvitton \+ reseräkning/).check();

@@ -20,7 +20,11 @@ const modeLabel = (mode: string) => mode === "travel" ? "Endast reseräkning" : 
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
 const isKnownClearingNumber = (value: string) => value.length === 4 && CLEARING_RANGES.some(([from, to]) => Number(value) >= from && Number(value) <= to);
 const maskAccountNumber = (value: string) => value.length > 4 ? `•••• ${value.slice(-4)}` : "••••";
-const shortSubmissionId = (value: string) => value.length > 18 ? `${value.slice(0, 8)}...${value.slice(-4)}` : value;
+const submissionDate = (date: Date) => new Intl.DateTimeFormat("sv-SE", { year: "numeric", month: "2-digit", day: "2-digit", timeZone: "Europe/Stockholm" }).format(date);
+const submissionReference = (name: string, date: Date, id: string) => {
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 3).map((part) => part[0]).join("").toUpperCase() || "IDV";
+  return `${initials}-${submissionDate(date).replaceAll("-", "")}-${id.slice(-4).toUpperCase()}`;
+};
 const positiveNumber = (value: unknown, fallback: number) => typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
 const boundedNumber = (value: unknown, fallback: number, maximum: number) => Math.min(positiveNumber(value, fallback), maximum);
 async function runtimeSettings(client: ReturnType<typeof createClient>) {
@@ -153,35 +157,66 @@ Deno.serve(async (req: Request) => {
       let logo: Awaited<ReturnType<typeof finalPdf.embedPng>> | null = null;
       try { const logoResponse = await fetch("https://darioswede.github.io/idv-kvitto/idv-mark.png"); if (logoResponse.ok) logo = await finalPdf.embedPng(new Uint8Array(await logoResponse.arrayBuffer())); } catch { /* PDF remains valid without the decorative mark. */ }
       const summaryPage = finalPdf.addPage([595.28, 841.89]);
-      const ink = rgb(0.1, 0.18, 0.16), muted = rgb(0.35, 0.42, 0.39), brand = rgb(0.18, 0.42, 0.31), soft = rgb(0.92, 0.96, 0.93);
+      const ink = rgb(0.1, 0.18, 0.16), muted = rgb(0.35, 0.42, 0.39), brand = rgb(0.18, 0.42, 0.31);
       summaryPage.drawRectangle({ x: 0, y: 770, width: 595.28, height: 71.89, color: rgb(1, 1, 1) });
       if (logo) summaryPage.drawImage(logo, { x: 42, y: 785, width: 38, height: 48, opacity: 0.9 });
       summaryPage.drawText(pdfSafeText("IDROTTSVETERANERNA"), { x: 92, y: 812, size: 10, font: footerFont, color: brand });
       summaryPage.drawText(pdfSafeText("Inskickad sammanställning"), { x: 92, y: 785, size: 21, font: footerFont, color: ink });
-      const coverRows: Array<[string, string]> = [
-        ["Typ av underlag", modeLabel(submissionMode)],
-        ["Ärende-ID", shortSubmissionId(submission.id)],
-        ["Avsändare", shortText(senderName, 70)],
-        ["E-post", shortText(senderEmail, 80)],
-        ["Konto för utbetalning", `Clearing ${clearingNumber} · Konto ${maskAccountNumber(accountNumber)}`],
-        ...(eventTag ? [["Tillfälle", shortText(eventTag, 80)] as [string, string]] : [])
-      ];
-      let coverY = 724;
-      for (const [label, value] of coverRows) {
-        summaryPage.drawText(pdfSafeText(label.toUpperCase()), { x: 48, y: coverY, size: 8, font: footerFont, color: muted });
-        const valueLines = wrapText(value, 76);
-        valueLines.forEach((line, index) => summaryPage.drawText(pdfSafeText(line), { x: 48, y: coverY - 18 - index * 14, size: 12, font: footerFont, color: ink }));
-        coverY -= 42 + Math.max(0, valueLines.length - 1) * 14;
-      }
+      const reference = submissionReference(senderName, submittedAt, submission.id);
+      const drawRight = (text: string, y: number, size: number, color: ReturnType<typeof rgb>) => {
+        const safe = pdfSafeText(text);
+        summaryPage.drawText(safe, { x: 557 - footerFont.widthOfTextAtSize(safe, size), y, size, font: footerFont, color });
+      };
+      drawRight(reference, 815, 10, brand);
+      drawRight(submissionDate(submittedAt), 798, 8, muted);
+      drawRight(submission.id, 783, 7, muted);
+
+      const dashedLine = (startX: number, startY: number, endX: number, endY: number) => {
+        const length = Math.hypot(endX - startX, endY - startY);
+        const dx = (endX - startX) / length, dy = (endY - startY) / length;
+        for (let offset = 0; offset < length; offset += 9) {
+          const dashEnd = Math.min(offset + 5, length);
+          summaryPage.drawLine({
+            start: { x: startX + dx * offset, y: startY + dy * offset },
+            end: { x: startX + dx * dashEnd, y: startY + dy * dashEnd },
+            thickness: 1,
+            color: brand,
+            opacity: 0.72
+          });
+        }
+      };
+      const dashedBox = (x: number, y: number, width: number, height: number) => {
+        summaryPage.drawRectangle({ x, y, width, height, color: rgb(1, 1, 1) });
+        dashedLine(x, y, x + width, y);
+        dashedLine(x + width, y, x + width, y + height);
+        dashedLine(x + width, y + height, x, y + height);
+        dashedLine(x, y + height, x, y);
+      };
+      const label = (value: string, x: number, y: number) => summaryPage.drawText(pdfSafeText(value.toUpperCase()), { x, y, size: 8, font: footerFont, color: muted });
+      const value = (text: string, x: number, y: number, size = 11) => summaryPage.drawText(pdfSafeText(text), { x, y, size, font: footerFont, color: ink });
+
+      dashedBox(38, 656, 519, 70);
+      label("Typ av underlag", 52, 705);
+      value(modeLabel(submissionMode), 52, 683);
+      label("Tillfälle", 310, 705);
+      value(shortText(eventTag || "-", 42), 310, 683);
+
+      dashedBox(38, 550, 519, 88);
+      label("Avsändare", 52, 616);
+      value(shortText(senderName, 38), 52, 594);
+      label("E-post", 300, 616);
+      value(shortText(senderEmail, 42), 300, 594, 10.5);
+      label("Konto för utbetalning", 52, 572);
+      value(`Clearing ${clearingNumber} · Konto ${maskAccountNumber(accountNumber)}`, 179, 571, 10.5);
       const amountRows: Array<[string, string]> = [];
       if (needsReceipts) amountRows.push(["Summa kvitton", formatAmount(receiptTotal) || "-"]);
       if (needsTravel) {
         amountRows.push(["Reseersättning", formatAmount(travelAmount) || "-"]);
         amountRows.push(["Beräkning", `${formatNumber(travelKm!)} km x ${formatNumber(settings.travelRatePerKm)} kr`]);
       }
-      const amountBoxTop = coverY - 4;
+      const amountBoxTop = 522;
       const amountBoxHeight = 52 + amountRows.length * 24;
-      summaryPage.drawRectangle({ x: 38, y: amountBoxTop - amountBoxHeight, width: 519, height: amountBoxHeight, color: soft });
+      dashedBox(38, amountBoxTop - amountBoxHeight, 519, amountBoxHeight);
       summaryPage.drawText(pdfSafeText("BELOPPSÖVERSIKT"), { x: 52, y: amountBoxTop - 18, size: 9, font: footerFont, color: brand });
       let amountY = amountBoxTop - 42;
       for (const [label, value] of amountRows) {
@@ -191,16 +226,14 @@ Deno.serve(async (req: Request) => {
       }
       summaryPage.drawText(pdfSafeText("TOTALT"), { x: 52, y: amountY - 6, size: 12, font: footerFont, color: ink });
       summaryPage.drawText(pdfSafeText(formatAmount(amountTotal) || "-"), { x: 425, y: amountY - 6, size: 13, font: footerFont, color: brand });
-      let notesY = amountBoxTop - amountBoxHeight - 28;
-      if (needsTravel) {
-        summaryPage.drawText(pdfSafeText(`Resa: ${travelNote}`), { x: 48, y: notesY, size: 10, font: footerFont, color: muted });
-        notesY -= 18;
+      const noteLines = [needsTravel ? `Resa: ${travelNote}` : "", otherInfo ? `Övrigt: ${otherInfo}` : ""].filter(Boolean).flatMap((line) => wrapText(line, 88));
+      let notesY = amountBoxTop - amountBoxHeight - 30;
+      if (noteLines.length) {
+        const notesHeight = 42 + noteLines.length * 14;
+        dashedBox(38, notesY - notesHeight + 12, 519, notesHeight);
+        summaryPage.drawText(pdfSafeText("UNDERLAG"), { x: 52, y: notesY - 8, size: 9, font: footerFont, color: brand });
+        noteLines.forEach((line, index) => summaryPage.drawText(pdfSafeText(line), { x: 52, y: notesY - 30 - index * 14, size: 10, font: footerFont, color: ink }));
       }
-      if (otherInfo) {
-        summaryPage.drawText(pdfSafeText("Övrigt:"), { x: 48, y: notesY, size: 10, font: footerFont, color: muted });
-        wrapText(otherInfo, 92).forEach((line, index) => summaryPage.drawText(pdfSafeText(line), { x: 48, y: notesY - 14 - index * 14, size: 10, font: footerFont, color: muted }));
-      }
-      if (logo) summaryPage.drawImage(logo, { x: 205, y: 265, width: 185, height: 185, opacity: 0.055 });
       summaryPage.drawText(pdfSafeText("Detta försättsblad följs av inskickade underlag."), { x: 48, y: 42, size: 9, font: footerFont, color: muted });
       for (const [index, file] of files.entries()) {
         const displayName = receiptNames[index], displayAmount = receiptAmounts[index];

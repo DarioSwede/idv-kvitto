@@ -2,6 +2,8 @@
 export async function buildSubmissionFormData({submissionMode='receipts',name,email,eventTag='',otherInfo='',copyRequested=false,bank,travel,photos=[]}){
   const formData=new FormData();
   const receiptTotal=calculateReceiptTotal(photos);
+  const needsTravel=submissionMode!=='receipts';
+  const travelAmount=needsTravel?(Number(travel.amount)||0):0;
   formData.append('submission_mode',submissionMode);
   formData.append('client_reference',globalThis.__idvSubmissionCaseId||'');
   formData.append('sender_name',String(name||'').trim());
@@ -10,12 +12,12 @@ export async function buildSubmissionFormData({submissionMode='receipts',name,em
   formData.append('account_number',bank.accountNumber||'');
   formData.append('event_tag',String(eventTag||'').trim());
   formData.append('other_info',String(otherInfo||'').trim());
-  formData.append('amount_total',receiptTotal+(Number(travel.amount)||0)||'');
-  formData.append('travel_enabled',travel.enabled?'true':'false');
-  formData.append('travel_km',travel.km??'');
-  formData.append('travel_description',travel.description||String(eventTag||'').trim());
-  formData.append('travel_amount',travel.amount||'');
-  formData.append('travel_approved',travel.approved?'true':'false');
+  formData.append('amount_total',receiptTotal+travelAmount||'');
+  formData.append('travel_enabled',needsTravel&&travel.enabled?'true':'false');
+  formData.append('travel_km',needsTravel?(travel.km??''):'');
+  formData.append('travel_description',needsTravel?(travel.description||String(eventTag||'').trim()):'');
+  formData.append('travel_amount',needsTravel?(travel.amount||''):'');
+  formData.append('travel_approved',needsTravel&&travel.approved?'true':'false');
   formData.append('cc_self',copyRequested?'true':'false');
   if(submissionMode!=='travel')for(let index=0;index<photos.length;index+=1){const photo=photos[index];const metadata=buildReceiptMetadata(photo,index);formData.append('receipt_names',metadata.name);formData.append('receipt_amounts',metadata.amount);if(photo.pdf||photo.raw){formData.append('receipts',photo.file,photo.file.name||metadata.filename);continue}const blob=await canvasToBlob(photo.canvas);formData.append('receipts',blob,metadata.filename)}
   return formData;

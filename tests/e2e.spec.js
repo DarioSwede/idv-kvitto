@@ -10,10 +10,25 @@ async function waitForAppState(page){
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
 }
 
+async function addTestReceipt(page,{name='Testkvitto',amount='125'}={}){
+  await page.evaluate(({name,amount})=>{
+    const state=window.__idvReceiptState;
+    const canvas=document.createElement('canvas');
+    canvas.width=120;canvas.height=80;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,120,80);
+    ctx.fillStyle='#111';ctx.font='14px sans-serif';ctx.fillText(`${name} ${amount} kr`,8,42);
+    state.photos.push({name,amount,amountSource:'manual',ocrState:'manual',ocrMessage:'Testbelopp',canvas,masks:[],done:true,pdf:false,processing:false});
+    state.render();
+  },{name,amount});
+}
+
 test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
+  let submittedBody='';
   await page.route('**/functions/v1/**',async route=>{
     if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true}'});
-    return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true,"reference":"E2E"}'});
+    submittedBody=route.request().postData()||'';
+    return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true,"reference":"E2E","delivery_sent":true}'});
   });
 
   await page.goto('/');
@@ -24,23 +39,17 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Resa till samlingen');
   await page.getByLabel('Antal kilometer').fill('34');
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
-  await page.locator('#travelCalculation').click();
+  await expect(page.locator('#travelCalculation')).toContainText('Godkänner du uträkningen?');
   await expect(page.locator('#deliveryNote')).toContainText('betala@idrottsveteranerna.se');
   await expect(page.locator('.build-meta')).toContainText(`Version ${version}`);
   await waitForAppState(page);
 
-  await page.evaluate(()=>{
-    const state=window.__idvReceiptState;
-    const canvas=document.createElement('canvas');
-    canvas.width=120;canvas.height=80;
-    const ctx=canvas.getContext('2d');
-    ctx.fillStyle='#fff';ctx.fillRect(0,0,120,80);
-    ctx.fillStyle='#111';ctx.font='14px sans-serif';ctx.fillText('TESTKVITTO 125 kr',8,42);
-    state.photos.push({name:'Testkvitto',amount:'125',amountSource:'manual',ocrState:'manual',ocrMessage:'Testbelopp',canvas,masks:[],done:true,pdf:false,processing:false});
-    state.render();
-  });
+  await addTestReceipt(page);
 
   await expect(page.locator('.receipt-item')).toHaveCount(1);
+  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
+  await page.locator('#travelCalculation').click();
+  await expect(page.locator('#travelCalculation')).toContainText('Godkänd:');
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
   await page.getByLabel('Ditt namn').fill('Testperson');
@@ -56,7 +65,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.locator('#cc')).toBeChecked();
   await expect(page.locator('.copy-option small')).toContainText('samma sammanställning och PDF');
   await expect(page.locator('#travelFields')).toBeVisible();
-  await expect(page.locator('#travelCalculation')).toHaveText('34 km ÷ 10 × 25 kr = 85,00 kr');
+  await expect(page.locator('#travelCalculation')).toHaveText('Godkänd: 34 km ÷ 10 × 25 kr = 85,00 kr');
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
 
@@ -69,6 +78,41 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.locator('#summary')).toContainText('210,00 kr');
   await expect(page.locator('#summary')).toContainText('Clearing 5000 · •••• 7890');
   await expect(page.locator('#summary')).not.toContainText('1234567890');
+  await page.locator('#confirm').check();
+  await page.getByRole('button',{name:'Skicka in kvitton'}).click();
+  await expect.poll(()=>submittedBody).toContain('name="submission_mode"');
+  expect(submittedBody).toContain('combined');
+  expect(submittedBody).toContain('name="receipts"');
+  await expect(page.getByRole('heading',{name:/Tack! Vi har tagit emot/})).toBeVisible();
+});
+
+test('endast kvitton går genom alla steg med ett ifyllt tillfälle',async({page})=>{
+  let submittedBody='';
+  await page.route('**/functions/v1/**',async route=>{
+    if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true}'});
+    submittedBody=route.request().postData()||'';
+    return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true,"reference":"KVITTO","delivery_sent":true}'});
+  });
+  await page.goto('/');
+  await waitForAppState(page);
+  await expect(page.getByLabel(/Endast kvitton/)).toBeChecked();
+  await addTestReceipt(page,{name:'Hotell',amount:'540'});
+  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
+  await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
+  await page.getByLabel('Ditt namn').fill('Kvittoägare');
+  await page.getByLabel('Din e-postadress').fill('kvitto@example.se');
+  await page.getByLabel('Clearingnummer').fill('5000');
+  await page.getByLabel('Kontonummer').fill('1234567');
+  await page.getByLabel('Vilket tillfälle gäller det?').fill('Marsch i Holland');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
+  await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
+  await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
+  await page.locator('#confirm').check();
+  await page.getByRole('button',{name:'Skicka in kvitton'}).click();
+  await expect.poll(()=>submittedBody).toContain('name="submission_mode"');
+  expect(submittedBody).toContain('receipts');
+  expect(submittedBody).toContain('name="receipts"');
+  await expect(page.getByRole('heading',{name:/Tack! Vi har tagit emot/})).toBeVisible();
 });
 
 test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitto',async({page})=>{

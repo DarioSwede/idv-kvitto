@@ -30,7 +30,7 @@ export function initSubmissionMode(){
   upload.insertBefore(chooser,subtitle||upload.firstChild);
 
   const style=document.createElement('style');
-  style.textContent=`.submission-mode-card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px;margin:14px 0}.submission-mode-card legend{font-weight:800;padding:0 6px}.submission-mode-card label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;margin:8px 0;cursor:pointer;transition:.18s ease}.submission-mode-card label:hover,.submission-mode-card label:has(input:focus-visible){border-color:var(--action);background:#f5faf6;box-shadow:0 10px 30px rgba(45,106,79,.11);outline:3px solid rgba(45,106,79,.13);outline-offset:0}.submission-mode-card input{width:auto;margin:3px 0 0;accent-color:var(--action)}.submission-mode-card span{display:grid;gap:3px}.submission-mode-card small{font-weight:400;color:var(--muted);line-height:1.35}.submission-mode-card label:has(input:checked){border-color:var(--action);background:var(--action-soft);box-shadow:0 0 0 1px var(--action)}.submission-mode-card label:has(input:focus-visible){outline:3px solid rgba(23,107,74,.2);outline-offset:2px}`;
+  style.textContent=`.submission-mode-card{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:0;background:transparent;padding:0;margin:14px 0}.submission-mode-card legend{grid-column:1/-1;font-weight:800;padding:0;margin:0 0 2px}.submission-mode-card label{position:relative;display:flex;align-items:center;justify-content:center;min-height:76px;border:1px solid var(--line);border-radius:12px;padding:11px 9px;margin:0;background:#fff;cursor:pointer;text-align:center;transition:.18s ease}.submission-mode-card label:hover,.submission-mode-card label:has(input:focus-visible){border-color:var(--action);background:#f5faf6;box-shadow:0 8px 22px rgba(45,106,79,.11);outline:3px solid rgba(45,106,79,.13);outline-offset:0}.submission-mode-card input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.submission-mode-card span{display:grid;gap:4px;pointer-events:none}.submission-mode-card small{font-weight:400;color:var(--muted);line-height:1.3}.submission-mode-card label:has(input:checked){border-color:var(--action);background:var(--action-soft);box-shadow:inset 0 0 0 2px var(--action)}.submission-mode-card label:has(input:focus-visible){outline:3px solid rgba(23,107,74,.2);outline-offset:2px}@media(max-width:560px){.submission-mode-card{grid-template-columns:1fr}.submission-mode-card label{min-height:0;justify-content:flex-start;text-align:left}}`;
   document.head.append(style);
 
   const radios=[...chooser.querySelectorAll('input[name="submissionMode"]')];
@@ -162,8 +162,10 @@ export function initSubmissionMode(){
   document.addEventListener('travel-state-change',event=>{
     travelApproved=Boolean(event.detail?.approved);
     syncTravelDependentFields();
-    if(getMode()==='travel'&&continueBtn){
-      const canContinue=travelApproved&&Boolean(eventField?.value.trim());
+    const mode=getMode();
+    if(mode!=='receipts'&&continueBtn){
+      const receiptsValid=mode==='travel'||baseCanLeaveReceipts();
+      const canContinue=receiptsValid&&travelApproved&&Boolean(eventField?.value.trim());
       continueBtn.disabled=!canContinue;
       continueBtn.title=canContinue?'':'Beskriv kort vad resan avsåg och godkänn reseersättningen.';
     }
