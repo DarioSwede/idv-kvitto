@@ -4,7 +4,7 @@ import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
 import {initTravelReimbursement,configureTravelReimbursement} from './travel-reimbursement.js?v=20260912-1';
-import {initSubmissionMode} from './submission-mode.js?v=20260912-1';
+import {initSubmissionMode} from './submission-mode.js?v=20260913-1';
 import {initBankAccount} from './bank-account.js';
 import {appendSummaryRow} from './review-summary.js';
 import {buildSubmissionFormData} from './submission-flow.js?v=20260912-1';
@@ -89,6 +89,7 @@ function initReceiptManager(){
   const inspectorTools=document.getElementById('inspectorTools');
   const toggle=document.getElementById('maskModeToggle');
   const previewBtn=document.getElementById('previewBtn');
+  const formBack=document.getElementById('formBack');
   const backBtn=document.getElementById('back');
   const reviewNext=document.getElementById('reviewNext');
   const addMoreReceipts=document.getElementById('addMoreReceipts');
@@ -205,8 +206,17 @@ function initReceiptManager(){
     if(!modes?.hasRequiredReceipts?.()||!window.__idvCanLeaveReceipts?.())return state.show('upload');
     applyMasks();
     state.render();
-    window.__idvRestoreTravelCard?.();
+    if(modes.getMode?.()==='travel'){
+      previewBtn?.click();
+      return;
+    }
     state.show('form');
+    window.__idvRestoreTravelCard?.();
+  };
+
+  if(formBack)formBack.onclick=()=>{
+    state.show('upload');
+    window.__idvSyncSubmissionMode?.();
   };
 
   if(previewBtn){
