@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.13.12
+- Ger namn- och e-postfälten samma obrutna, jämnt rundade kant.
+- Visar fokusmarkeringen runt hela fältet utan att den klipps av behållaren.
+
 ## 2026.09.13.11
 - Lägger till en välkomstsida med IDV-logga och en kort beskrivning av sidans syfte.
 - Förklarar de tre stegen och vad användaren behöver ha redo innan ansökan startas.

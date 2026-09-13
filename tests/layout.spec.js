@@ -13,6 +13,7 @@ async function openCompensationStep(page){
 
 test('toppmenyn visar det gemensamma trestegsflödet',async({page})=>{
   await page.goto('/');
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
   await expect(page.getByRole('heading',{name:'Ansök om ersättning'})).toBeVisible();
   await expect(page.getByText('Här skickar du in kvitton för utlägg')).toBeVisible();
   await page.getByRole('button',{name:'Starta ansökan'}).click();
@@ -47,6 +48,7 @@ test('steg två skapar kombinationsläget automatiskt när båda valen är aktiv
 
 test('huvudknappen på första steget är centrerad',async({page})=>{
   await page.goto('/');
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
   await page.getByRole('button',{name:'Starta ansökan'}).click();
   const formButton=page.locator('#form #previewBtn');
   const formBox=await page.locator('#form').boundingBox();
@@ -54,4 +56,19 @@ test('huvudknappen på första steget är centrerad',async({page})=>{
   expect(formBox&&formButtonBox).toBeTruthy();
   expect(Math.abs((formButtonBox.x+formButtonBox.width/2)-(formBox.x+formBox.width/2))).toBeLessThan(2);
   expect(formButtonBox.width).toBeLessThanOrEqual(360.5);
+});
+
+test('namn och e-post har hela jämna fokusramar',async({page})=>{
+  await page.goto('/');
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
+  const name=page.getByLabel('Ditt namn'),email=page.getByLabel('Din e-postadress');
+  await name.focus();
+  const nameStyle=await name.evaluate(element=>({border:getComputedStyle(element).borderWidth,radius:getComputedStyle(element).borderRadius,outline:getComputedStyle(element).outlineStyle,shadow:getComputedStyle(element).boxShadow}));
+  await email.focus();
+  const emailStyle=await email.evaluate(element=>({border:getComputedStyle(element).borderWidth,radius:getComputedStyle(element).borderRadius,outline:getComputedStyle(element).outlineStyle,shadow:getComputedStyle(element).boxShadow}));
+  expect(nameStyle).toEqual(emailStyle);
+  expect(nameStyle.border).toBe('2px');
+  expect(nameStyle.radius).toBe('10px');
+  expect(nameStyle.shadow).not.toBe('none');
 });
