@@ -140,7 +140,7 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <div id="travelFields" hidden>
 <div class="travel-km-row">
 <label id="travelKmLabel" for="travelKm"><span id="travelKmLabelText">Ange antal kilometer</span></label>
-<input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" aria-label="Antal kilometer" placeholder="Ange antal kilometer">
+<div class="travel-km-input"><input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" aria-label="Antal kilometer" placeholder="Ange antal kilometer"><span aria-hidden="true">kilometer</span></div>
 <button class="travel-calculation" id="travelCalculation" type="button" disabled aria-pressed="false">Milersättning: 25 kr per mil.</button>
 </div>
 <p class="travel-error" id="travelError" aria-live="polite"></p>

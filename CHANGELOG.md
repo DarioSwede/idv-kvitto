@@ -1,5 +1,11 @@
 # Versionshistorik
 
+## 2026.09.13.10
+- Aktiverar Nästa direkt efter ett enda klick på godkännandet av milersättningen.
+- Behåller godkänd milersättning tills kilometerantalet ändras och visar en tydlig klar-bock.
+- Visar enheten kilometer direkt efter det ifyllda värdet.
+- Ger även ett använt OCR-förslag en tydlig klar-bock.
+
 ## 2026.09.13.9
 - Förenklar ansökan till tre gemensamma steg: Dina uppgifter, Välj ersättning samt Kontroll och skicka.
 - Låter användaren välja kvitton, milersättning eller båda med två tydliga val som öppnar rätt fält automatiskt.

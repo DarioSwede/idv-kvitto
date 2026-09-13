@@ -19,11 +19,13 @@ test('milersättningen kräver ett tydligt aktivt godkännande',async({page})=>{
   await expect(page.locator('#travelCalculation')).toHaveText('Milersättning: 25 kr per mil.');
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
   await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('10');
+  await expect(page.locator('.travel-km-input')).toContainText('kilometer');
   await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
   await expect(page.locator('#travelCalculation')).toHaveClass(/needs-approval/);
   await expect(page.locator('#continue')).toBeDisabled();
   await page.locator('#travelCalculation').click();
   await expect(page.locator('#travelCalculation')).toContainText('Godkänd:');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await expect(page.locator('#travelCalculation')).not.toHaveClass(/needs-approval/);
   await expect(page.locator('#continue')).toBeEnabled();
 });

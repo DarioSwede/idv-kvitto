@@ -39,7 +39,7 @@ export function renderReceiptList({container,documentRef=document,photos=[],proc
     amountWrap.append(amountInput,documentRef.createTextNode('kr'));amountGroup.append(amountWrap);
     if(photo.ocrSuggestion&&photo.amountSource!=='manual'){
       hint.disabled=false;hint.dataset.state='suggested';hint.textContent='OCR-förslag '+Number(photo.ocrSuggestion).toLocaleString('sv-SE',{maximumFractionDigits:0})+' kr (avrundat till hel krona). Använd?';
-      hint.onclick=()=>{photo.amount=photo.ocrSuggestion;photo.amountSource='ocr';photo.ocrSuggestion='';photo.ocrState='accepted';photo.ocrMessage='OCR-förslaget används';onRerender()};
+      hint.onclick=()=>{photo.amount=photo.ocrSuggestion;photo.amountSource='ocr';photo.ocrSuggestion='';photo.ocrState='accepted';photo.ocrMessage='✓ OCR-förslaget används';onRerender()};
     }
     item.append(thumbnail,hint,nameRow,amountGroup);container.append(item);
   });

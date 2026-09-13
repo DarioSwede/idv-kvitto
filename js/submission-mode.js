@@ -50,7 +50,6 @@ export function initSubmissionMode(){
   const baseCanLeaveReceipts=window.__idvCanLeaveReceipts||(()=>false);
   const getMode=()=>receiptsToggle.checked&&travelToggle.checked?'combined':receiptsToggle.checked?'receipts':travelToggle.checked?'travel':null;
   const hasReceipts=()=>Boolean(window.__idvReceiptState?.photos?.length);
-  let travelApproved=false;
 
   function decorateSummary(){
     if(!summary||!summary.innerHTML)return;
@@ -61,7 +60,7 @@ export function initSubmissionMode(){
   function canLeaveCompensation(){
     const mode=getMode();if(!mode)return false;
     const receiptsValid=!receiptsToggle.checked||Boolean(baseCanLeaveReceipts());
-    const travelValid=!travelToggle.checked||(travelApproved&&Boolean(eventField?.value.trim()));
+    const travelValid=!travelToggle.checked||(Boolean(window.__idvTravel?.getData()?.approved)&&Boolean(eventField?.value.trim()));
     return receiptsValid&&travelValid;
   }
   function sync(){
@@ -78,9 +77,9 @@ export function initSubmissionMode(){
 
   window.__idvSubmissionMode={getMode,needsReceipts:()=>receiptsToggle.checked,needsTravel:()=>travelToggle.checked,canLeaveReceipts:canLeaveCompensation,hasRequiredReceipts:()=>!receiptsToggle.checked||hasReceipts()};
   window.__idvCanLeaveReceipts=canLeaveCompensation;window.__idvSyncSubmissionMode=sync;
-  [receiptsToggle,travelToggle].forEach(toggle=>toggle.addEventListener('change',()=>{travelApproved=false;sync()}));
+  [receiptsToggle,travelToggle].forEach(toggle=>toggle.addEventListener('change',sync));
   eventField?.addEventListener('input',sync);
-  document.addEventListener('travel-state-change',event=>{travelApproved=Boolean(event.detail?.approved);sync()});
+  document.addEventListener('travel-state-change',sync);
   document.getElementById('thumbs')?.addEventListener('input',sync);
   const thumbs=document.getElementById('thumbs');if(thumbs)new MutationObserver(sync).observe(thumbs,{childList:true});
   if(summary)new MutationObserver(decorateSummary).observe(summary,{childList:true,subtree:true});

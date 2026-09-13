@@ -217,6 +217,7 @@ test('avrundat OCR-förslag pulserar tills det används',async({page})=>{
   expect(await suggestion.evaluate(element=>getComputedStyle(element).animationName)).toBe('ocr-suggestion-pulse');
   await suggestion.click();
   await expect(page.getByLabel('Belopp för kvitto 1')).toHaveValue('22');
+  await expect(page.locator('.receipt-hint[data-state="accepted"]')).toHaveText('✓ OCR-förslaget används');
   await expect(page.locator('.receipt-hint[data-state="suggested"]')).toHaveCount(0);
 });
 

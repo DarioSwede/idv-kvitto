@@ -4,7 +4,7 @@ import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
 import {initTravelReimbursement,configureTravelReimbursement} from './travel-reimbursement.js?v=20260913-8';
-import {initSubmissionMode} from './submission-mode.js?v=20260913-9';
+import {initSubmissionMode} from './submission-mode.js?v=20260913-10';
 import {initBankAccount} from './bank-account.js';
 import {appendSummaryRow} from './review-summary.js';
 import {buildSubmissionFormData} from './submission-flow.js?v=20260912-1';
@@ -13,7 +13,7 @@ import {fileBaseName,cleanReceiptImage,compressPdf,pdfPreviewUrl} from './receip
 import {validateSubmissionDetails} from './submission-validation.js?v=20260913-8';
 import {renderSubmissionSummary,updateSubmissionTotals} from './submission-summary.js?v=20260913-8';
 import {renderReceiptReview} from './receipt-review.js';
-import {renderReceiptList} from './receipt-list.js';
+import {renderReceiptList} from './receipt-list.js?v=20260913-10';
 import {createReceiptPreview} from './receipt-preview.js';
 import {createReceiptMaskEditor} from './receipt-mask-editor.js';
 import {createReceiptIngestion} from './receipt-ingestion.js';
