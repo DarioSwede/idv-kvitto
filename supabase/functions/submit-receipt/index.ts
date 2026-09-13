@@ -27,6 +27,7 @@ const submissionReference = (name: string, date: Date, id: string) => {
 };
 const positiveNumber = (value: unknown, fallback: number) => typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
 const boundedNumber = (value: unknown, fallback: number, maximum: number) => Math.min(positiveNumber(value, fallback), maximum);
+const boundedOpacity = (value: unknown, fallback: number) => Math.min(Math.max(typeof value === "number" && Number.isFinite(value) ? value : fallback, 0.01), 0.15);
 async function runtimeSettings(client: ReturnType<typeof createClient>) {
   const defaults = {
     travelRatePerKm: 2.5,
@@ -40,9 +41,11 @@ async function runtimeSettings(client: ReturnType<typeof createClient>) {
     emailDeliveryMode: "production",
     emailTestRecipient: "mail@torbjornzimmerman.se",
     rateLimitRequests: 5,
-    rateLimitWindowSeconds: 600
+    rateLimitWindowSeconds: 600,
+    pdfWatermarkEnabled: true,
+    pdfWatermarkOpacity: 0.04
   };
-  const { data, error } = await client.from("app_settings").select("key,value").in("key", ["travel_rate_per_km","max_travel_km","max_receipts","max_file_size_mb","max_total_upload_mb","allowed_mime_types","cc_self_enabled","receipt_email_to","email_delivery_mode","email_test_recipient","submission_rate_limit_requests","submission_rate_limit_window_seconds"]);
+  const { data, error } = await client.from("app_settings").select("key,value").in("key", ["travel_rate_per_km","max_travel_km","max_receipts","max_file_size_mb","max_total_upload_mb","allowed_mime_types","cc_self_enabled","receipt_email_to","email_delivery_mode","email_test_recipient","submission_rate_limit_requests","submission_rate_limit_window_seconds","pdf_watermark_enabled","pdf_watermark_opacity"]);
   if (error) { console.error("app settings unavailable", error); return defaults; }
   const values = Object.fromEntries((data ?? []).map((row: { key: string; value: unknown }) => [row.key, row.value]));
   return {
@@ -54,7 +57,9 @@ async function runtimeSettings(client: ReturnType<typeof createClient>) {
     emailDeliveryMode: typeof values.email_delivery_mode === "string" ? values.email_delivery_mode : defaults.emailDeliveryMode,
     emailTestRecipient: typeof values.email_test_recipient === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email_test_recipient) ? values.email_test_recipient : defaults.emailTestRecipient,
     rateLimitRequests: Math.floor(boundedNumber(values.submission_rate_limit_requests, defaults.rateLimitRequests, 100)),
-    rateLimitWindowSeconds: Math.floor(boundedNumber(values.submission_rate_limit_window_seconds, defaults.rateLimitWindowSeconds, 86400))
+    rateLimitWindowSeconds: Math.floor(boundedNumber(values.submission_rate_limit_window_seconds, defaults.rateLimitWindowSeconds, 86400)),
+    pdfWatermarkEnabled: typeof values.pdf_watermark_enabled === "boolean" ? values.pdf_watermark_enabled : defaults.pdfWatermarkEnabled,
+    pdfWatermarkOpacity: boundedOpacity(values.pdf_watermark_opacity, defaults.pdfWatermarkOpacity)
   };
 }
 
@@ -158,18 +163,25 @@ Deno.serve(async (req: Request) => {
       try { const logoResponse = await fetch("https://darioswede.github.io/idv-kvitto/idv-mark.png"); if (logoResponse.ok) logo = await finalPdf.embedPng(new Uint8Array(await logoResponse.arrayBuffer())); } catch { /* PDF remains valid without the decorative mark. */ }
       const summaryPage = finalPdf.addPage([595.28, 841.89]);
       const ink = rgb(0.1, 0.18, 0.16), muted = rgb(0.35, 0.42, 0.39), brand = rgb(0.18, 0.42, 0.31);
+      const reference = submissionReference(senderName, submittedAt, submission.id);
+      const drawWatermark = (page: any) => {
+        if (!logo || !settings.pdfWatermarkEnabled) return;
+        const width = Math.min(page.getWidth() * 0.42, 230), height = width * (logo.height / logo.width);
+        page.drawImage(logo, { x: (page.getWidth() - width) / 2, y: (page.getHeight() - height) / 2, width, height, opacity: settings.pdfWatermarkOpacity });
+      };
+      const drawTrace = (page: any) => {
+        const right = page.getWidth() - 38, top = page.getHeight() - 27;
+        page.drawRectangle({ x: right - 190, y: top - 42, width: 190, height: 51, color: rgb(1, 1, 1), opacity: 0.92 });
+        for (const [text, y, size, color] of [[reference, top, 10, brand], [submissionDate(submittedAt), top - 17, 8, muted], [submission.id, top - 32, 7, muted]] as const) {
+          const safe = pdfSafeText(text);
+          page.drawText(safe, { x: right - footerFont.widthOfTextAtSize(safe, size), y, size, font: footerFont, color });
+        }
+      };
       summaryPage.drawRectangle({ x: 0, y: 770, width: 595.28, height: 71.89, color: rgb(1, 1, 1) });
       if (logo) summaryPage.drawImage(logo, { x: 42, y: 785, width: 38, height: 48, opacity: 0.9 });
       summaryPage.drawText(pdfSafeText("IDROTTSVETERANERNA"), { x: 92, y: 812, size: 10, font: footerFont, color: brand });
       summaryPage.drawText(pdfSafeText("Inskickad sammanställning"), { x: 92, y: 785, size: 21, font: footerFont, color: ink });
-      const reference = submissionReference(senderName, submittedAt, submission.id);
-      const drawRight = (text: string, y: number, size: number, color: ReturnType<typeof rgb>) => {
-        const safe = pdfSafeText(text);
-        summaryPage.drawText(safe, { x: 557 - footerFont.widthOfTextAtSize(safe, size), y, size, font: footerFont, color });
-      };
-      drawRight(reference, 815, 10, brand);
-      drawRight(submissionDate(submittedAt), 798, 8, muted);
-      drawRight(submission.id, 783, 7, muted);
+      drawTrace(summaryPage);
 
       const dashedLine = (startX: number, startY: number, endX: number, endY: number) => {
         const length = Math.hypot(endX - startX, endY - startY);
@@ -207,7 +219,7 @@ Deno.serve(async (req: Request) => {
       label("E-post", 300, 616);
       value(shortText(senderEmail, 42), 300, 594, 10.5);
       label("Konto för utbetalning", 52, 572);
-      value(`Clearing ${clearingNumber} · Konto ${maskAccountNumber(accountNumber)}`, 179, 571, 10.5);
+      value(`Clearingnummer ${clearingNumber} · Kontonummer ${accountNumber}`, 179, 571, 10.5);
       const amountRows: Array<[string, string]> = [];
       if (needsReceipts) amountRows.push(["Summa kvitton", formatAmount(receiptTotal) || "-"]);
       if (needsTravel) {
@@ -234,6 +246,7 @@ Deno.serve(async (req: Request) => {
         summaryPage.drawText(pdfSafeText("UNDERLAG"), { x: 52, y: notesY - 8, size: 9, font: footerFont, color: brand });
         noteLines.forEach((line, index) => summaryPage.drawText(pdfSafeText(line), { x: 52, y: notesY - 30 - index * 14, size: 10, font: footerFont, color: ink }));
       }
+      drawWatermark(summaryPage);
       summaryPage.drawText(pdfSafeText("Detta försättsblad följs av inskickade underlag."), { x: 48, y: 42, size: 9, font: footerFont, color: muted });
       for (const [index, file] of files.entries()) {
         const displayName = receiptNames[index], displayAmount = receiptAmounts[index];
@@ -245,7 +258,7 @@ Deno.serve(async (req: Request) => {
         const details = [displayName, formatAmount(displayAmount)].filter(Boolean).join(" · ");
         const stampSender = pdfSafeText(`Avsändare: ${shortText(senderName, 45)} · E-post: ${shortText(senderEmail, 55)}`);
         const stampReceipt = pdfSafeText(`Kvitto: ${shortText(displayName, 60)} · Belopp: ${formatAmount(displayAmount) || "—"}`);
-        const stamp = (page: any) => { page.drawRectangle({ x: 0, y: 0, width: page.getWidth(), height: 44, color: rgb(1, 1, 1), opacity: 0.94 }); if (logo) page.drawImage(logo, { x: 8, y: 9, width: 26, height: 26 }); const textX = logo ? 42 : 12; page.drawText(stampSender, { x: textX, y: 25, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawText(stampReceipt, { x: textX, y: 11, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); };
+        const stamp = (page: any) => { drawWatermark(page); drawTrace(page); page.drawRectangle({ x: 0, y: 0, width: page.getWidth(), height: 44, color: rgb(1, 1, 1), opacity: 0.94 }); if (logo) page.drawImage(logo, { x: 8, y: 9, width: 26, height: 26 }); const textX = logo ? 42 : 12; page.drawText(stampSender, { x: textX, y: 25, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawText(stampReceipt, { x: textX, y: 11, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); };
         if (file.type === "application/pdf") { let sourcePdf; try { sourcePdf = await PDFDocument.load(bytes); } catch { throw new Error(`PDF-filen ${file.name} kunde inte läsas. Prova att öppna den och spara en ny PDF innan du laddar upp igen.`); } const pages = await finalPdf.copyPages(sourcePdf, sourcePdf.getPageIndices()); for (const page of pages) { finalPdf.addPage(page); stamp(page); } }
         else if (file.type === "image/jpeg" || file.type === "image/png") { const image = file.type === "image/png" ? await finalPdf.embedPng(bytes) : await finalPdf.embedJpg(bytes); const page = finalPdf.addPage([595.28, 841.89]), maxWidth = page.getWidth() - 72, maxHeight = page.getHeight() - 122, scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1), width = image.width * scale, height = image.height * scale; page.drawText(pdfSafeText(shortText(details, 70)), { x: 36, y: page.getHeight() - 36, size: 12, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawImage(image, { x: (page.getWidth() - width) / 2, y: 50 + (maxHeight - height) / 2, width, height }); stamp(page); }
         else throw new Error(`${file.name} kunde inte omvandlas till PDF. Öppna bilden på telefonen och spara den som JPG.`);

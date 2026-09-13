@@ -57,6 +57,17 @@ test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{
   await expect(actions).not.toHaveClass(/continue-centered/);
 });
 
+test('kombinationsläget samlar resefälten i samma Resan-kort',async({page})=>{
+  await page.goto('/');
+  await waitForAppState(page);
+  await page.getByLabel(/Kvitton \+ milersättning/).check();
+  const journeyCard=page.locator('.combined-travel-form .travel-only-section');
+  await expect(journeyCard).toBeVisible();
+  await expect(journeyCard.getByRole('heading',{name:'Resan'})).toBeVisible();
+  await expect(journeyCard.locator('#event')).toBeVisible();
+  await expect(journeyCard.locator('.travel-card')).toBeVisible();
+});
+
 test('ensamma huvudknappar centreras i senare steg',async({page})=>{
   await page.goto('/');
   await waitForAppState(page);

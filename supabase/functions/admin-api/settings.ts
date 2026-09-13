@@ -3,8 +3,9 @@ export const EDITABLE_SETTING_KEYS=new Set([
   'allowed_mime_types','ocr_enabled','ocr_retry_enabled','cc_self_enabled','receipt_email_to',
   'email_delivery_mode','email_test_recipient','retention_days'
   ,'submission_rate_limit_requests','submission_rate_limit_window_seconds'
+  ,'pdf_watermark_enabled','pdf_watermark_opacity'
 ]);
-export const ADMIN_ONLY_SETTING_KEYS=new Set(['receipt_email_to','email_delivery_mode','email_test_recipient','submission_rate_limit_requests','submission_rate_limit_window_seconds']);
+export const ADMIN_ONLY_SETTING_KEYS=new Set(['receipt_email_to','email_delivery_mode','email_test_recipient','submission_rate_limit_requests','submission_rate_limit_window_seconds','pdf_watermark_enabled','pdf_watermark_opacity']);
 export class SettingValidationError extends Error{}
 
 export async function listSettings(client:any){

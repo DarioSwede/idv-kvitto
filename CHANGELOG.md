@@ -1,5 +1,11 @@
 # Versionshistorik
 
+## 2026.09.13.7
+- Visar clearing- och kontonummer i klartext i den inskickade PDF-filen och placerar dem under rubriken Konto för utbetalning.
+- Lägger kontrollreferens, datum och fullständigt ärende-ID på samtliga PDF-sidor.
+- Gör PDF-filens svaga bakgrundslogotyp valbar och justerbar mellan 1 och 15 procent i admininställningarna.
+- Samlar resefälten i kombinationsläget i samma Resan-kort som endast milersättning och ger kilometerfältet bättre plats.
+
 ## 2026.09.13.6
 - Byter konsekvent till begreppet milersättning i val, rubriker, hjälptexter, sammanställningar, PDF och e-postunderlag.
 

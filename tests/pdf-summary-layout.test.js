@@ -6,8 +6,22 @@ const source=await readFile(new URL('../supabase/functions/submit-receipt/index.
 
 test('PDF-sammanställningen visar fullständigt ärende-ID och en läsbar referens',()=>{
   assert.match(source,/submissionReference\(senderName, submittedAt, submission\.id\)/);
-  assert.match(source,/drawRight\(submission\.id, 783, 7, muted\)/);
+  assert.match(source,/const drawTrace =/);
+  assert.match(source,/\[submission\.id, top - 32, 7, muted\]/);
+  assert.match(source,/stamp = \(page: any\) => \{ drawWatermark\(page\); drawTrace\(page\);/);
   assert.doesNotMatch(source,/shortSubmissionId/);
+});
+
+test('PDF-sammanställningen visar fullständiga betalningsuppgifter',()=>{
+  assert.match(source,/Clearingnummer \$\{clearingNumber\} · Kontonummer \$\{accountNumber\}/);
+  assert.doesNotMatch(source,/Konto \$\{maskAccountNumber\(accountNumber\)\}/);
+});
+
+test('PDF-bakgrundslogotypen kan stängas av och justeras',()=>{
+  assert.match(source,/pdfWatermarkEnabled: true/);
+  assert.match(source,/pdfWatermarkOpacity: 0\.04/);
+  assert.match(source,/if \(!logo \|\| !settings\.pdfWatermarkEnabled\) return/);
+  assert.match(source,/opacity: settings\.pdfWatermarkOpacity/);
 });
 
 test('PDF-sammanställningen använder vita streckade informationsrutor',()=>{
