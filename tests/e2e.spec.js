@@ -39,7 +39,7 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Resa till samlingen');
   await page.getByLabel('Antal kilometer').fill('34');
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
-  await expect(page.locator('#travelCalculation')).toContainText('Godkänner du uträkningen?');
+  await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
   await expect(page.locator('#deliveryNote')).toContainText('betala@idrottsveteranerna.se');
   await expect(page.locator('.build-meta')).toContainText(`Version ${version}`);
   await waitForAppState(page);
@@ -65,7 +65,7 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   await expect(page.locator('#cc')).toBeChecked();
   await expect(page.locator('.copy-option small')).toContainText('samma sammanställning och PDF');
   await expect(page.locator('#travelFields')).toBeVisible();
-  await expect(page.locator('#travelCalculation')).toHaveText('Godkänd: 34 km ÷ 10 × 25 kr = 85,00 kr');
+  await expect(page.locator('#travelCalculation')).toHaveText('✓ Godkänd: 34 km ÷ 10 × 25 kr = 85,00 kr');
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
 

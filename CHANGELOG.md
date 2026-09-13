@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.13.8
+- Gör godkännandet av milersättningen övertydligt med pil, direkt uppmaning och en mjuk puls som upphör efter godkännande.
+- Visar en tydlig bock i det godkända läget och respekterar användarens inställning för minskade animationer.
+
 ## 2026.09.13.7
 - Visar clearing- och kontonummer i klartext i den inskickade PDF-filen och placerar dem under rubriken Konto för utbetalning.
 - Lägger kontrollreferens, datum och fullständigt ärende-ID på samtliga PDF-sidor.

@@ -40,9 +40,11 @@ test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold'
   await expect(page.locator('#travelCalculation')).not.toHaveCSS('background-color','rgb(255, 255, 255)');
   await page.getByLabel('Clearingnummer').fill('5000');
   await page.getByLabel('Kontonummer').fill('1234567');
-  await expect(page.locator('#travelCalculation')).toContainText('Godkänner du uträkningen?');
+  await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
+  await expect(page.locator('#travelCalculation')).toHaveClass(/needs-approval/);
   await page.locator('#travelCalculation').click();
   await expect(page.locator('#travelCalculation')).toContainText('Godkänd:');
+  await expect(page.locator('#travelCalculation')).not.toHaveClass(/needs-approval/);
   await expect(page.locator('#continue')).toBeEnabled();
   await expect(page.locator('#continue')).toHaveText('Nästa: kontrollera och skicka');
 
@@ -53,7 +55,7 @@ test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold'
   await expect(page.locator('#travelCalculation')).toHaveCSS('background-color','rgb(255, 255, 255)');
   await page.getByLabel('Antal kilometer').fill('12');
   await expect(page.locator('#travelCalculation')).not.toHaveCSS('background-color','rgb(255, 255, 255)');
-  await expect(page.locator('#travelCalculation')).toContainText('Godkänner du uträkningen?');
+  await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
   await expectFullWidth(page);
   await expect(page.locator('#continue')).toBeDisabled();
 });
