@@ -8,13 +8,20 @@ test('PDF-sammanställningen visar fullständigt ärende-ID och en läsbar refer
   assert.match(source,/submissionReference\(senderName, submittedAt, submission\.id\)/);
   assert.match(source,/const drawTrace =/);
   assert.match(source,/\[submission\.id, top - 32, 7, muted\]/);
-  assert.match(source,/stamp = \(page: any\) => \{ drawWatermark\(page\); drawTrace\(page\);/);
+  assert.match(source,/finalPages\.forEach\(\(page, index\) => drawTrace\(page, index \+ 1, finalPages\.length\)\)/);
   assert.doesNotMatch(source,/shortSubmissionId/);
 });
 
+test('alla PDF-sidor visar sidnummer och kontrolluppgifter',()=>{
+  assert.match(source,/`Sid \$\{pageNumber\} av \$\{pageCount\}`/);
+  assert.match(source,/const finalPages = finalPdf\.getPages\(\)/);
+  assert.match(source,/finalPages\.forEach\(\(page, index\) => drawTrace\(page, index \+ 1, finalPages\.length\)\)/);
+});
+
 test('PDF-sammanställningen visar fullständiga betalningsuppgifter',()=>{
-  assert.match(source,/Clearingnummer \$\{clearingNumber\} · Kontonummer \$\{accountNumber\}/);
+  assert.match(source,/Clearingnummer: \$\{clearingNumber\} · Kontonummer: \$\{accountNumber\}/);
   assert.doesNotMatch(source,/Konto \$\{maskAccountNumber\(accountNumber\)\}/);
+  assert.match(source,/label\("Konto för utbetalning", 52, 572\);\s+value\(`/);
 });
 
 test('PDF-bakgrundslogotypen kan stängas av och justeras',()=>{
@@ -31,5 +38,5 @@ test('PDF-sammanställningen använder vita streckade informationsrutor',()=>{
   assert.match(source,/Math\.min\(offset \+ 5, length\)/);
   assert.doesNotMatch(source,/borderDashArray/);
   assert.match(source,/dashedBox\(38, 656, 519, 70\)/);
-  assert.match(source,/dashedBox\(38, 550, 519, 88\)/);
+  assert.match(source,/dashedBox\(38, 534, 519, 104\)/);
 });

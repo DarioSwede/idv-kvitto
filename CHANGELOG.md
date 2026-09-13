@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.13.13
+- Visar kontrollreferens, datum, fullständigt ärende-ID och sidnummer på samtliga PDF-sidor.
+- Skriver sidnumret som Sid X av Y så att hela den inskickade sammanställningen kan kontrolleras.
+- Placerar fullständigt clearingnummer och kontonummer under rubriken Konto för utbetalning utan maskering.
+
 ## 2026.09.13.12
 - Ger namn- och e-postfälten samma obrutna, jämnt rundade kant.
 - Visar fokusmarkeringen runt hela fältet utan att den klipps av behållaren.

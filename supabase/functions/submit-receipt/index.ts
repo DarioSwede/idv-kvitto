@@ -169,19 +169,20 @@ Deno.serve(async (req: Request) => {
         const width = Math.min(page.getWidth() * 0.42, 230), height = width * (logo.height / logo.width);
         page.drawImage(logo, { x: (page.getWidth() - width) / 2, y: (page.getHeight() - height) / 2, width, height, opacity: settings.pdfWatermarkOpacity });
       };
-      const drawTrace = (page: any) => {
+      const drawTrace = (page: any, pageNumber: number, pageCount: number) => {
         const right = page.getWidth() - 38, top = page.getHeight() - 27;
-        page.drawRectangle({ x: right - 190, y: top - 42, width: 190, height: 51, color: rgb(1, 1, 1), opacity: 0.92 });
+        page.drawRectangle({ x: right - 190, y: top - 59, width: 190, height: 68, color: rgb(1, 1, 1), opacity: 0.92 });
         for (const [text, y, size, color] of [[reference, top, 10, brand], [submissionDate(submittedAt), top - 17, 8, muted], [submission.id, top - 32, 7, muted]] as const) {
           const safe = pdfSafeText(text);
           page.drawText(safe, { x: right - footerFont.widthOfTextAtSize(safe, size), y, size, font: footerFont, color });
         }
+        const pageLabel = pdfSafeText(`Sid ${pageNumber} av ${pageCount}`);
+        page.drawText(pageLabel, { x: right - footerFont.widthOfTextAtSize(pageLabel, 8), y: top - 49, size: 8, font: footerFont, color: muted });
       };
       summaryPage.drawRectangle({ x: 0, y: 770, width: 595.28, height: 71.89, color: rgb(1, 1, 1) });
       if (logo) summaryPage.drawImage(logo, { x: 42, y: 785, width: 38, height: 48, opacity: 0.9 });
       summaryPage.drawText(pdfSafeText("IDROTTSVETERANERNA"), { x: 92, y: 812, size: 10, font: footerFont, color: brand });
       summaryPage.drawText(pdfSafeText("Inskickad sammanställning"), { x: 92, y: 785, size: 21, font: footerFont, color: ink });
-      drawTrace(summaryPage);
 
       const dashedLine = (startX: number, startY: number, endX: number, endY: number) => {
         const length = Math.hypot(endX - startX, endY - startY);
@@ -213,13 +214,13 @@ Deno.serve(async (req: Request) => {
       label("Tillfälle", 310, 705);
       value(shortText(eventTag || "-", 42), 310, 683);
 
-      dashedBox(38, 550, 519, 88);
+      dashedBox(38, 534, 519, 104);
       label("Avsändare", 52, 616);
       value(shortText(senderName, 38), 52, 594);
       label("E-post", 300, 616);
       value(shortText(senderEmail, 42), 300, 594, 10.5);
       label("Konto för utbetalning", 52, 572);
-      value(`Clearingnummer ${clearingNumber} · Kontonummer ${accountNumber}`, 179, 571, 10.5);
+      value(`Clearingnummer: ${clearingNumber} · Kontonummer: ${accountNumber}`, 52, 550, 10.5);
       const amountRows: Array<[string, string]> = [];
       if (needsReceipts) amountRows.push(["Summa kvitton", formatAmount(receiptTotal) || "-"]);
       if (needsTravel) {
@@ -258,11 +259,13 @@ Deno.serve(async (req: Request) => {
         const details = [displayName, formatAmount(displayAmount)].filter(Boolean).join(" · ");
         const stampSender = pdfSafeText(`Avsändare: ${shortText(senderName, 45)} · E-post: ${shortText(senderEmail, 55)}`);
         const stampReceipt = pdfSafeText(`Kvitto: ${shortText(displayName, 60)} · Belopp: ${formatAmount(displayAmount) || "—"}`);
-        const stamp = (page: any) => { drawWatermark(page); drawTrace(page); page.drawRectangle({ x: 0, y: 0, width: page.getWidth(), height: 44, color: rgb(1, 1, 1), opacity: 0.94 }); if (logo) page.drawImage(logo, { x: 8, y: 9, width: 26, height: 26 }); const textX = logo ? 42 : 12; page.drawText(stampSender, { x: textX, y: 25, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawText(stampReceipt, { x: textX, y: 11, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); };
+        const stamp = (page: any) => { drawWatermark(page); page.drawRectangle({ x: 0, y: 0, width: page.getWidth(), height: 44, color: rgb(1, 1, 1), opacity: 0.94 }); if (logo) page.drawImage(logo, { x: 8, y: 9, width: 26, height: 26 }); const textX = logo ? 42 : 12; page.drawText(stampSender, { x: textX, y: 25, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawText(stampReceipt, { x: textX, y: 11, size: 7.5, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); };
         if (file.type === "application/pdf") { let sourcePdf; try { sourcePdf = await PDFDocument.load(bytes); } catch { throw new Error(`PDF-filen ${file.name} kunde inte läsas. Prova att öppna den och spara en ny PDF innan du laddar upp igen.`); } const pages = await finalPdf.copyPages(sourcePdf, sourcePdf.getPageIndices()); for (const page of pages) { finalPdf.addPage(page); stamp(page); } }
         else if (file.type === "image/jpeg" || file.type === "image/png") { const image = file.type === "image/png" ? await finalPdf.embedPng(bytes) : await finalPdf.embedJpg(bytes); const page = finalPdf.addPage([595.28, 841.89]), maxWidth = page.getWidth() - 72, maxHeight = page.getHeight() - 122, scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1), width = image.width * scale, height = image.height * scale; page.drawText(pdfSafeText(shortText(details, 70)), { x: 36, y: page.getHeight() - 36, size: 12, font: footerFont, color: rgb(0.1, 0.18, 0.16) }); page.drawImage(image, { x: (page.getWidth() - width) / 2, y: 50 + (maxHeight - height) / 2, width, height }); stamp(page); }
         else throw new Error(`${file.name} kunde inte omvandlas till PDF. Öppna bilden på telefonen och spara den som JPG.`);
       }
+      const finalPages = finalPdf.getPages();
+      finalPages.forEach((page, index) => drawTrace(page, index + 1, finalPages.length));
       if (fileRows.length) { const { error: filesError } = await supabase.from("receipt_files").insert(fileRows); if (filesError) throw filesError; }
       const finalPdfPath = `${submission.id}/sammanstallt-underlag.pdf`; finalPdfBytes = new Uint8Array(await finalPdf.save());
       const { error: finalUploadError } = await supabase.storage.from("receipt-files").upload(finalPdfPath, finalPdfBytes, { contentType: "application/pdf", upsert: false }); if (finalUploadError) throw finalUploadError;
