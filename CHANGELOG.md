@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.13.1
+- Samlar reseräkningens personuppgifter, reseuppgifter och utbetalningskonto på en sida.
+- Visar reseräkningsläget som ett tydligt tvåstegsflöde: fyll i och kontrollera.
+- Ordnar fälten i den naturliga följden namn, e-post, tillfälle, kilometer, clearingnummer och kontonummer.
+
 ## 2026.09.12.1
 - Gör de tre valen för underlag till tydliga knappar och stramar upp sidans kanter.
 - Kräver ett uttryckligt godkännande av reseersättningen innan användaren går vidare.

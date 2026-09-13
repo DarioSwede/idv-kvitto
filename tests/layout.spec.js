@@ -52,10 +52,12 @@ test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{
 test('ensamma huvudknappar centreras i senare steg',async({page})=>{
   await page.goto('/');
   await waitForAppState(page);
-  await page.getByLabel(/Endast reseräkning/).check();
-  await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Tur och retur till samlingen');
-  await page.getByLabel('Antal kilometer').fill('10');
-  await page.locator('#travelCalculation').click();
+  await page.evaluate(()=>{
+    const state=window.__idvReceiptState,canvas=document.createElement('canvas');
+    canvas.width=20;canvas.height=20;
+    state.photos.push({name:'Layouttest',amount:'50',amountSource:'manual',ocrState:'manual',ocrMessage:'Test',canvas,masks:[],done:true,pdf:false,processing:false});
+    state.render();
+  });
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
 
   const formButton=page.locator('#form #previewBtn');
