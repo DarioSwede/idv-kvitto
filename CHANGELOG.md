@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.13.11
+- Lägger till en välkomstsida med IDV-logga och en kort beskrivning av sidans syfte.
+- Förklarar de tre stegen och vad användaren behöver ha redo innan ansökan startas.
+- Öppnar formulärets första steg via den tydliga knappen Starta ansökan.
+
 ## 2026.09.13.10
 - Aktiverar Nästa direkt efter ett enda klick på godkännandet av milersättningen.
 - Behåller godkänd milersättning tills kilometerantalet ändras och visar en tydlig klar-bock.

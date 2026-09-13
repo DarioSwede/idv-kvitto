@@ -2,6 +2,21 @@ export function applyTemplates(html,versionMeta={}){
   const appVersion=versionMeta.version||'dev';
   html=html.replace("const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'","const ENDPOINT=window.__idvSubmitEndpoint||'https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'");
   html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','');
+  const welcome=`<section class="welcome" id="welcome" aria-labelledby="welcomeTitle">
+<img class="welcome-logo" src="idv-mark.png" alt="Idrottsveteranerna">
+<div class="welcome-kicker">Idrottsveteranerna</div>
+<h1 id="welcomeTitle">Ansök om ersättning</h1>
+<p class="welcome-lead">Här skickar du in kvitton för utlägg, ansöker om milersättning eller kombinerar båda i samma underlag.</p>
+<div class="welcome-steps" aria-label="Så fungerar ansökan">
+  <div class="welcome-step"><span>1</span><div><strong>Dina uppgifter</strong><small>Fyll i namn, e-postadress och konto för utbetalning.</small></div></div>
+  <div class="welcome-step"><span>2</span><div><strong>Välj ersättning</strong><small>Välj kvitton, milersättning eller båda. Rätt fält öppnas automatiskt.</small></div></div>
+  <div class="welcome-step"><span>3</span><div><strong>Kontrollera och skicka</strong><small>Granska allt, välj om du vill ha en kopia och skicka in underlaget.</small></div></div>
+</div>
+<p class="welcome-ready"><strong>Bra att ha redo:</strong> bankuppgifter och eventuella kvittofiler.</p>
+<button class="btn welcome-start" id="startApplication" type="button">Starta ansökan</button>
+<p class="welcome-security">🔒 Dina uppgifter skickas krypterat.</p>
+</section>`;
+  html=html.replace('<body>','<body class="welcome-mode">'+welcome);
 
   const timelineStart=html.indexOf('<div class="timeline" aria-label="Steg i formuläret">');
   const timelineEnd=html.indexOf('</div>',timelineStart)+6;

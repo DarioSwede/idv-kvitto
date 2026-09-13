@@ -3,6 +3,7 @@ import {test,expect} from '@playwright/test';
 async function openCompensationStep(page){
   await page.goto('/');
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
   await page.getByLabel('Clearingnummer').fill('5000');

@@ -1,4 +1,5 @@
 import {initUploadUi} from './upload-ui.js?v=20260913-9';
+import {initWelcomePage} from './welcome-page.js?v=20260913-11';
 import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
@@ -33,6 +34,7 @@ window.__idvSubmissionPreview={renderReceiptPreviews,prepareSubmissionReview};
 window.__idvSubmissionService={submitReceipt};
 window.__idvModulesReady=true;
 
+initWelcomePage();
 initUploadUi();
 initMaskMode();
 initDonePage();

@@ -5,6 +5,8 @@ const version=JSON.parse(fs.readFileSync(new URL('../version.json',import.meta.u
 
 async function waitForAppState(page){
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  const start=page.getByRole('button',{name:'Starta ansökan'});
+  if(await start.isVisible())await start.click();
 }
 
 async function fillProfileAndContinue(page,{name='Testperson',email='test@example.se',clearing='5000',account='1234567'}={}){
@@ -37,6 +39,7 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   });
 
   await page.goto('/');
+  await expect(page.getByRole('heading',{name:'Ansök om ersättning'})).toBeVisible();
   await waitForAppState(page);
   await expect(page.getByRole('heading',{name:'Dina uppgifter'})).toBeVisible();
   await fillProfileAndContinue(page);
@@ -178,8 +181,8 @@ test('avstängd milersättning nollställer reseuppgifter',async({page})=>{
 
 test('integritetslänken ligger i säkerhetsfotnoten och bevarar uppladdat kvitto',async({page})=>{
   await page.goto('/');
-  await expect(page.getByRole('heading',{name:'Dina uppgifter'})).toBeVisible();
   await waitForAppState(page);
+  await expect(page.getByRole('heading',{name:'Dina uppgifter'})).toBeVisible();
   await page.evaluate(()=>{
     const state=window.__idvReceiptState;
     const canvas=document.createElement('canvas');

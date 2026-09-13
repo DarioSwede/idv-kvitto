@@ -3,6 +3,7 @@ import {test,expect} from '@playwright/test';
 async function openCompensationStep(page){
   await page.goto('/');
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
   await page.getByLabel('Ditt namn').fill('Layouttest');
   await page.getByLabel('Din e-postadress').fill('layout@example.se');
   await page.getByLabel('Clearingnummer').fill('5000');
@@ -12,6 +13,9 @@ async function openCompensationStep(page){
 
 test('toppmenyn visar det gemensamma trestegsflödet',async({page})=>{
   await page.goto('/');
+  await expect(page.getByRole('heading',{name:'Ansök om ersättning'})).toBeVisible();
+  await expect(page.getByText('Här skickar du in kvitton för utlägg')).toBeVisible();
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
   await expect(page.locator('.timeline .seg')).toHaveCount(3);
   await expect(page.locator('.timeline .seg-label')).toHaveText(['Dina uppgifter','Välj ersättning','Kontroll & skicka']);
   await expect(page.getByRole('heading',{name:'Dina uppgifter'})).toBeVisible();
@@ -43,6 +47,7 @@ test('steg två skapar kombinationsläget automatiskt när båda valen är aktiv
 
 test('huvudknappen på första steget är centrerad',async({page})=>{
   await page.goto('/');
+  await page.getByRole('button',{name:'Starta ansökan'}).click();
   const formButton=page.locator('#form #previewBtn');
   const formBox=await page.locator('#form').boundingBox();
   const formButtonBox=await formButton.boundingBox();
