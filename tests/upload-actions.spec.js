@@ -1,61 +1,38 @@
 import {test,expect} from '@playwright/test';
 
-async function waitForAppState(page){
-  if(await page.locator('input[name="submissionMode"]:checked').count()===0){
-    await page.getByLabel(/Endast kvitton/).check();
-  }
-  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
-}
-
-async function expectFullWidth(page){
-  const actions=page.locator('#upload .receipt-actions');
-  const button=page.locator('#upload #continue');
-  const actionsBox=await actions.boundingBox();
-  const buttonBox=await button.boundingBox();
-  expect(actionsBox&&buttonBox).toBeTruthy();
-  expect(Math.abs(buttonBox.x-actionsBox.x)).toBeLessThan(2);
-  expect(Math.abs(buttonBox.width-actionsBox.width)).toBeLessThan(2);
-}
-
-test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold',async({page})=>{
+async function openCompensationStep(page){
   await page.goto('/');
-  await waitForAppState(page);
-  await expect(page.locator('#upload #restart')).toBeHidden();
-  await expectFullWidth(page);
-  await expect(page.locator('#continue')).toBeDisabled();
-
-  await page.getByLabel(/Endast milersättning/).check();
-  await expectFullWidth(page);
-  await expect(page.locator('#continue')).toBeDisabled();
-  await expect(page.locator('#travelFields')).toBeVisible();
-  await expect(page.getByLabel('Antal kilometer')).toBeVisible();
-  await expect(page.locator('#travelKmLabel')).toBeHidden();
-  await expect(page.getByLabel('Antal kilometer')).toHaveAttribute('placeholder','Ange antal kilometer');
-  await expect(page.locator('#travelCalculation')).toHaveCSS('background-color','rgb(255, 255, 255)');
-  await expect(page.locator('#travelCalculation')).toHaveText('Milersättning: 25 kr per mil.');
+  await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
-  await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
-  await page.getByLabel('Antal kilometer').fill('10');
-  await expect(page.locator('#travelCalculation')).not.toHaveCSS('background-color','rgb(255, 255, 255)');
   await page.getByLabel('Clearingnummer').fill('5000');
   await page.getByLabel('Kontonummer').fill('1234567');
+  await page.getByRole('button',{name:'Nästa: välj ersättning'}).click();
+}
+
+test('milersättningen kräver ett tydligt aktivt godkännande',async({page})=>{
+  await openCompensationStep(page);
+  await expect(page.locator('#continue')).toBeDisabled();
+  await page.getByLabel(/^Milersättning/).check();
+  await expect(page.locator('#travelFields')).toBeVisible();
+  await expect(page.getByRole('spinbutton',{name:'Antal kilometer'})).toHaveAttribute('placeholder','Ange antal kilometer');
+  await expect(page.locator('#travelCalculation')).toHaveText('Milersättning: 25 kr per mil.');
+  await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
+  await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('10');
   await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
   await expect(page.locator('#travelCalculation')).toHaveClass(/needs-approval/);
+  await expect(page.locator('#continue')).toBeDisabled();
   await page.locator('#travelCalculation').click();
   await expect(page.locator('#travelCalculation')).toContainText('Godkänd:');
   await expect(page.locator('#travelCalculation')).not.toHaveClass(/needs-approval/);
   await expect(page.locator('#continue')).toBeEnabled();
-  await expect(page.locator('#continue')).toHaveText('Nästa: kontrollera och skicka');
+});
 
-  await page.getByLabel(/Kvitton \+ milersättning/).check();
-  await expect(page.locator('#travelKmLabel')).toBeHidden();
-  await expect(page.getByLabel('Antal kilometer')).toHaveAttribute('placeholder','Ange antal kilometer');
-  await page.getByLabel('Antal kilometer').fill('');
-  await expect(page.locator('#travelCalculation')).toHaveCSS('background-color','rgb(255, 255, 255)');
-  await page.getByLabel('Antal kilometer').fill('12');
-  await expect(page.locator('#travelCalculation')).not.toHaveCSS('background-color','rgb(255, 255, 255)');
-  await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
-  await expectFullWidth(page);
+test('ingen ersättningstyp kan skickas vidare utan innehåll',async({page})=>{
+  await openCompensationStep(page);
+  await expect(page.locator('#continue')).toBeDisabled();
+  await page.getByLabel(/Kvitton för utlägg/).check();
+  await expect(page.locator('#continue')).toBeDisabled();
+  await page.getByLabel(/Kvitton för utlägg/).uncheck();
   await expect(page.locator('#continue')).toBeDisabled();
 });

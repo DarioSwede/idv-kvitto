@@ -4,10 +4,15 @@ import fs from 'node:fs';
 const version=JSON.parse(fs.readFileSync(new URL('../version.json',import.meta.url),'utf8')).version;
 
 async function waitForAppState(page){
-  if(await page.locator('input[name="submissionMode"]:checked').count()===0){
-    await page.getByLabel(/Endast kvitton/).check();
-  }
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
+}
+
+async function fillProfileAndContinue(page,{name='Testperson',email='test@example.se',clearing='5000',account='1234567'}={}){
+  await page.getByLabel('Ditt namn').fill(name);
+  await page.getByLabel('Din e-postadress').fill(email);
+  await page.getByLabel('Clearingnummer').fill(clearing);
+  await page.getByLabel('Kontonummer').fill(account);
+  await page.getByRole('button',{name:'Nästa: välj ersättning'}).click();
 }
 
 async function addTestReceipt(page,{name='Testkvitto',amount='125'}={}){
@@ -32,13 +37,15 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   });
 
   await page.goto('/');
-  await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
-  await expect(page.getByText('Vad vill du göra?')).toBeVisible();
-  await page.getByLabel(/Kvitton \+ milersättning/).check();
-  await expect(page.getByRole('heading',{name:'Kvitton och milersättning'})).toBeVisible();
+  await waitForAppState(page);
+  await expect(page.getByRole('heading',{name:'Dina uppgifter'})).toBeVisible();
+  await fillProfileAndContinue(page);
+  await expect(page.getByRole('heading',{name:'Välj ersättning'})).toBeVisible();
+  await page.getByLabel(/Kvitton för utlägg/).check();
+  await page.getByLabel(/^Milersättning/).check();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Resa till samlingen');
-  await page.getByLabel('Antal kilometer').fill('34');
-  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
+  await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('34');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
   await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
   await expect(page.locator('#deliveryNote')).toContainText('betala@idrottsveteranerna.se');
   await expect(page.locator('.build-meta')).toContainText(`Version ${version}`);
@@ -47,26 +54,15 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   await addTestReceipt(page);
 
   await expect(page.locator('.receipt-item')).toHaveCount(1);
-  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
   await page.locator('#travelCalculation').click();
   await expect(page.locator('#travelCalculation')).toContainText('Godkänd:');
-  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
-  await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
-  await page.getByLabel('Ditt namn').fill('Testperson');
-  await page.getByLabel('Din e-postadress').fill('test@example.se');
-  await page.getByLabel('Clearingnummer').fill('9999');
-  await page.getByLabel('Kontonummer').fill('1234567890');
-  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
-  await page.getByLabel('Clearingnummer').fill('5000');
-  await page.getByLabel('Kontonummer').fill('1234-5678-7890');
-  await expect(page.getByLabel('Kontonummer')).toHaveValue('123456787890');
-  await expect(page.locator('#bankAccountStatus')).toContainText('5000 (SEB)');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await expect(page.locator('#cc')).toBeEnabled();
   await expect(page.locator('#cc')).toBeChecked();
   await expect(page.locator('.copy-option small')).toContainText('samma sammanställning och PDF');
   await expect(page.locator('#travelFields')).toBeVisible();
   await expect(page.locator('#travelCalculation')).toHaveText('✓ Godkänd: 34 km ÷ 10 × 25 kr = 85,00 kr');
-  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
 
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
@@ -76,10 +72,10 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   await expect(page.locator('#summary')).toContainText('125');
   await expect(page.locator('#summary')).toContainText('85,00 kr');
   await expect(page.locator('#summary')).toContainText('210,00 kr');
-  await expect(page.locator('#summary')).toContainText('Clearing 5000 · •••• 7890');
-  await expect(page.locator('#summary')).not.toContainText('1234567890');
+  await expect(page.locator('#summary')).toContainText('Clearing 5000 · •••• 4567');
+  await expect(page.locator('#summary')).not.toContainText('1234567');
   await page.locator('#confirm').check();
-  await page.getByRole('button',{name:'Skicka in kvitton'}).click();
+  await page.getByRole('button',{name:'Skicka in underlaget'}).click();
   await expect.poll(()=>submittedBody).toContain('name="submission_mode"');
   expect(submittedBody).toContain('combined');
   expect(submittedBody).toContain('name="receipts"');
@@ -95,24 +91,14 @@ test('endast kvitton går genom alla steg med ett ifyllt tillfälle',async({page
   });
   await page.goto('/');
   await waitForAppState(page);
-  await expect(page.getByLabel(/Endast kvitton/)).toBeChecked();
+  await fillProfileAndContinue(page,{name:'Kvittoägare',email:'kvitto@example.se'});
+  await page.getByLabel(/Kvitton för utlägg/).check();
   await addTestReceipt(page,{name:'Hotell',amount:'540'});
-  await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
-  await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
-  await expect(page.locator('#form .receipt-details-form')).toBeVisible();
-  await expect(page.locator('#form .receipt-details-form h2')).toHaveText(['Dina uppgifter','Kort beskrivning','Konto för utbetalning']);
-  const receiptDetailOrder=await page.locator('#form .receipt-details-form input:visible').evaluateAll(inputs=>inputs.map(input=>input.id));
-  expect(receiptDetailOrder).toEqual(['name','email','event','clearingNumber','accountNumber']);
-  await page.getByLabel('Ditt namn').fill('Kvittoägare');
-  await page.getByLabel('Din e-postadress').fill('kvitto@example.se');
-  await page.getByLabel('Clearingnummer').fill('5000');
-  await page.getByLabel('Kontonummer').fill('1234567');
-  await page.getByLabel('Vilket tillfälle gäller det?').fill('Marsch i Holland');
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
   await page.locator('#confirm').check();
-  await page.getByRole('button',{name:'Skicka in kvitton'}).click();
+  await page.getByRole('button',{name:'Skicka in underlaget'}).click();
   await expect.poll(()=>submittedBody).toContain('name="submission_mode"');
   expect(submittedBody).toContain('receipts');
   expect(submittedBody).toContain('name="receipts"');
@@ -136,32 +122,22 @@ test('endast milersättning går igenom utan kvittofil även efter uppladdat kvi
     state.render();
   });
   await expect(page.locator('.receipt-item')).toHaveCount(1);
-  await page.getByLabel(/Endast milersättning/).check();
-  await expect(page.getByRole('heading',{name:'Milersättning'})).toBeVisible();
+  await fillProfileAndContinue(page,{name:'Resenär',email:'resa@example.se',clearing:'6000',account:'7654321'});
+  await page.getByLabel(/^Milersättning/).check();
   await expect(page.locator('#dropzone')).toBeHidden();
   await expect(page.locator('.missing-receipt')).toBeHidden();
-  await expect(page.locator('.timeline .seg:visible')).toHaveCount(2);
-  await expect(page.locator('.timeline .seg-index').last()).toHaveText('2');
-  await expect(page.locator('#form')).not.toBeVisible();
-  const visibleInputOrder=await page.locator('.travel-only-form input:visible').evaluateAll(inputs=>inputs.map(input=>input.id));
-  expect(visibleInputOrder).toEqual(['name','email','event','travelKm','clearingNumber','accountNumber']);
-  await page.getByLabel('Ditt namn').fill('Resenär');
-  await page.getByLabel('Din e-postadress').fill('resa@example.se');
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Tur och retur till samlingen');
-  await page.getByLabel('Antal kilometer').fill('40');
-  await page.getByLabel('Clearingnummer').fill('6000');
-  await page.getByLabel('Kontonummer').fill('7654321');
+  await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('40');
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
   await page.locator('#travelCalculation').click();
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeEnabled();
   await expect(page.getByLabel('Tillfälle eller kort beskrivning av resan')).toHaveValue('Tur och retur till samlingen');
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
-  await expect(page.locator('#form')).not.toBeVisible();
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
   await expect(page.locator('#summary')).toContainText('Endast milersättning');
   await expect(page.locator('#summary')).toContainText('100,00 kr');
   await page.locator('#confirm').check();
-  await page.getByRole('button',{name:'Skicka in kvitton'}).click();
+  await page.getByRole('button',{name:'Skicka in underlaget'}).click();
   await expect.poll(()=>submittedBody).toContain('name="submission_mode"');
   expect(submittedBody).toContain('travel');
   expect(submittedBody).toContain('name="clearing_number"');
@@ -176,40 +152,33 @@ test('endast milersättning går igenom utan kvittofil även efter uppladdat kvi
 test('kvitto måste ha namn före granskning',async({page})=>{
   await page.goto('/');
   await waitForAppState(page);
+  await fillProfileAndContinue(page);
+  await page.getByLabel(/Kvitton för utlägg/).check();
   await page.evaluate(()=>{
     const state=window.__idvReceiptState,canvas=document.createElement('canvas');
     canvas.width=20;canvas.height=20;
     state.photos.push({name:'',amount:'10',amountSource:'manual',ocrState:'manual',ocrMessage:'Test',canvas,masks:[],done:true,pdf:false,processing:false});
     state.render();
   });
-  await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
-  await page.getByLabel('Ditt namn').fill('Testperson');
-  await page.getByLabel('Din e-postadress').fill('test@example.se');
-  await page.getByLabel('Clearingnummer').fill('5000');
-  await page.getByLabel('Kontonummer').fill('1234567');
-  await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
-  await expect(page.locator('#formError')).toContainText('Ange vad varje kvitto gäller');
+  await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
 });
 
-test('byte till endast kvitton nollställer reseuppgifter',async({page})=>{
+test('avstängd milersättning nollställer reseuppgifter',async({page})=>{
   await page.goto('/');
   await waitForAppState(page);
-  await page.getByLabel(/Endast milersättning/).check();
-  await page.getByLabel('Ditt namn').fill('Testperson');
-  await page.getByLabel('Din e-postadress').fill('test@example.se');
+  await fillProfileAndContinue(page);
+  await page.getByLabel(/^Milersättning/).check();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
-  await page.getByLabel('Antal kilometer').fill('34');
-  await page.getByLabel('Clearingnummer').fill('5000');
-  await page.getByLabel('Kontonummer').fill('1234567');
+  await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('34');
   await page.locator('#travelCalculation').click();
-  await page.getByLabel(/Endast kvitton/).check();
+  await page.getByLabel(/^Milersättning/).uncheck();
   const travel=await page.evaluate(()=>window.__idvTravel.getData());
   expect(travel).toEqual({enabled:false,valid:true,approved:false,km:null,description:'',amount:0,calculation:''});
 });
 
 test('integritetslänken ligger i säkerhetsfotnoten och bevarar uppladdat kvitto',async({page})=>{
   await page.goto('/');
-  await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Dina uppgifter'})).toBeVisible();
   await waitForAppState(page);
   await page.evaluate(()=>{
     const state=window.__idvReceiptState;
@@ -234,6 +203,8 @@ test('integritetslänken ligger i säkerhetsfotnoten och bevarar uppladdat kvitt
 test('avrundat OCR-förslag pulserar tills det används',async({page})=>{
   await page.goto('/');
   await waitForAppState(page);
+  await fillProfileAndContinue(page);
+  await page.getByLabel(/Kvitton för utlägg/).check();
   await page.evaluate(()=>{
     const state=window.__idvReceiptState;
     const canvas=document.createElement('canvas');

@@ -1,10 +1,10 @@
-import {initUploadUi} from './upload-ui.js?v=20260830-13';
+import {initUploadUi} from './upload-ui.js?v=20260913-9';
 import {initMaskMode} from './mask-mode.js?v=20260830-1';
 import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
 import {initTravelReimbursement,configureTravelReimbursement} from './travel-reimbursement.js?v=20260913-8';
-import {initSubmissionMode} from './submission-mode.js?v=20260913-8';
+import {initSubmissionMode} from './submission-mode.js?v=20260913-9';
 import {initBankAccount} from './bank-account.js';
 import {appendSummaryRow} from './review-summary.js';
 import {buildSubmissionFormData} from './submission-flow.js?v=20260912-1';
@@ -94,6 +94,7 @@ function initReceiptManager(){
   const reviewNext=document.getElementById('reviewNext');
   const addMoreReceipts=document.getElementById('addMoreReceipts');
   const otherInfo=document.getElementById('other');
+  const buildSubmissionPreview=previewBtn?.onclick;
 
   let inspectingImage=false;
 
@@ -206,12 +207,15 @@ function initReceiptManager(){
     if(!modes?.hasRequiredReceipts?.()||!window.__idvCanLeaveReceipts?.())return state.show('upload');
     applyMasks();
     state.render();
-    if(modes.getMode?.()==='travel'){
-      previewBtn?.click();
-      return;
+    buildSubmissionPreview?.();
+    const summary=document.getElementById('summary');
+    const cc=document.getElementById('cc');
+    const email=document.getElementById('email')?.value.trim().toLowerCase();
+    if(summary&&cc){
+      const copyRow=appendSummaryRow(summary,document,'Kopia till dig',cc.checked?`Ja – ${email}`:'Nej','copy-summary');
+      cc.onchange=()=>{const value=copyRow?.querySelector('b');if(value)value.textContent=cc.checked?`Ja – ${email}`:'Nej'};
     }
-    state.show('form');
-    window.__idvRestoreTravelCard?.();
+    if(document.getElementById('review')?.classList.contains('active'))reviewNext?.click();
   };
 
   if(formBack)formBack.onclick=()=>{
@@ -219,25 +223,8 @@ function initReceiptManager(){
     window.__idvSyncSubmissionMode?.();
   };
 
-  if(previewBtn){
-    const buildPreview=previewBtn.onclick;
-    previewBtn.onclick=()=>{
-      if(!window.__idvCanLeaveContact?.())return;
-      buildPreview?.();
-      const summary=document.getElementById('summary');
-      const cc=document.getElementById('cc');
-      const email=document.getElementById('email')?.value.trim().toLowerCase();
-      if(summary&&cc){
-        const copyRow=appendSummaryRow(summary,document,'Kopia till dig',cc.checked?`Ja – ${email}`:'Nej','copy-summary');
-        cc.onchange=()=>{
-          const value=copyRow?.querySelector('b');
-          if(value)value.textContent=cc.checked?`Ja – ${email}`:'Nej';
-        };
-      }
-      if(document.getElementById('review')?.classList.contains('active'))reviewNext?.click();
-    };
-  }
-  if(backBtn)backBtn.onclick=()=>state.show('form');
+  if(previewBtn)previewBtn.onclick=()=>{if(window.__idvCanLeaveContact?.())state.show('upload')};
+  if(backBtn)backBtn.onclick=()=>{state.show('upload');window.__idvSyncSubmissionMode?.()};
 
   if(closeBtn)closeBtn.onclick=()=>closeInspector();
   if(lightbox)lightbox.onclick=e=>{if(e.target===lightbox)closeInspector()};

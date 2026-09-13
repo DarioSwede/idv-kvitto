@@ -1,5 +1,11 @@
 # Versionshistorik
 
+## 2026.09.13.9
+- Förenklar ansökan till tre gemensamma steg: Dina uppgifter, Välj ersättning samt Kontroll och skicka.
+- Låter användaren välja kvitton, milersättning eller båda med två tydliga val som öppnar rätt fält automatiskt.
+- Samlar kontakt- och utbetalningsuppgifter först och använder neutrala texter som fungerar för alla tre underlagstyper.
+- Behåller uttryckligt godkännande av milersättningen och kontrollerar att varje kvitto har både namn och belopp.
+
 ## 2026.09.13.8
 - Gör godkännandet av milersättningen övertydligt med pil, direkt uppmaning och en mjuk puls som upphör efter godkännande.
 - Visar en tydlig bock i det godkända läget och respekterar användarens inställning för minskade animationer.
