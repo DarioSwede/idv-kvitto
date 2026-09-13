@@ -31,7 +31,7 @@ export function initSubmissionMode(){
   upload.insertBefore(chooser,subtitle||upload.firstChild);
 
   const style=document.createElement('style');
-  style.textContent=`.submission-mode-card{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:0;background:transparent;padding:0;margin:14px 0}.submission-mode-card legend{grid-column:1/-1;font-weight:800;padding:0;margin:0 0 2px}.submission-mode-card label{position:relative;display:flex;align-items:center;justify-content:center;min-height:76px;border:1px solid var(--line);border-radius:12px;padding:11px 9px;margin:0;background:#fff;cursor:pointer;text-align:center;transition:.18s ease}.submission-mode-card label:hover,.submission-mode-card label:has(input:focus-visible){border-color:var(--action);background:#f5faf6;box-shadow:0 8px 22px rgba(45,106,79,.11);outline:3px solid rgba(45,106,79,.13);outline-offset:0}.submission-mode-card input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.submission-mode-card span{display:grid;gap:4px;pointer-events:none}.submission-mode-card small{font-weight:400;color:var(--muted);line-height:1.3}.submission-mode-card label:has(input:checked){border-color:var(--action);background:var(--action-soft);box-shadow:inset 0 0 0 2px var(--action)}.submission-mode-card label:has(input:focus-visible){outline:3px solid rgba(23,107,74,.2);outline-offset:2px}.timeline .seg[hidden]{display:none!important}body[data-submission-mode="travel"] .timeline{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-submission-mode="travel"] .timeline::before{left:25%;right:25%}.travel-only-form{display:grid;gap:12px;margin:18px 0}.travel-only-section{padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.92);box-shadow:0 4px 14px rgba(26,46,42,.05)}.travel-only-section h2{margin:0 0 12px;font-size:1rem}.travel-only-section .contact-grid,.travel-only-section .bank-account-card,.travel-only-section .travel-card{margin:0}.travel-only-section .bank-account-card{padding:0;border:0;box-shadow:none}.travel-only-section #event{margin-bottom:10px}@media(max-width:560px){.submission-mode-card{grid-template-columns:1fr}.submission-mode-card label{min-height:0;justify-content:flex-start;text-align:left}.travel-only-section{padding:13px}}`;
+  style.textContent=`.submission-mode-card{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:0;background:transparent;padding:0;margin:14px 0}.submission-mode-card legend{grid-column:1/-1;font-weight:800;padding:0;margin:0 0 2px}.submission-mode-card label{position:relative;display:flex;align-items:center;justify-content:center;min-height:76px;border:1px solid var(--line);border-radius:12px;padding:11px 9px;margin:0;background:#fff;cursor:pointer;text-align:center;transition:.18s ease}.submission-mode-card label:hover,.submission-mode-card label:has(input:focus-visible){border-color:var(--action);background:#f5faf6;box-shadow:0 8px 22px rgba(45,106,79,.11);outline:3px solid rgba(45,106,79,.13);outline-offset:0}.submission-mode-card input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.submission-mode-card span{display:grid;gap:4px;pointer-events:none}.submission-mode-card small{font-weight:400;color:var(--muted);line-height:1.3}.submission-mode-card label:has(input:checked){border-color:var(--action);background:var(--action-soft);box-shadow:inset 0 0 0 2px var(--action)}.submission-mode-card label:has(input:focus-visible){outline:3px solid rgba(23,107,74,.2);outline-offset:2px}.timeline .seg[hidden],.travel-only-form[hidden]{display:none!important}body[data-submission-mode="travel"] .timeline{grid-template-columns:repeat(2,minmax(0,1fr))}body[data-submission-mode="travel"] .timeline::before{left:25%;right:25%}.travel-only-form{display:grid;gap:12px;margin:18px 0}.travel-only-section{padding:15px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.92);box-shadow:0 4px 14px rgba(26,46,42,.05)}.travel-only-section h2{margin:0 0 12px;font-size:1rem}.travel-only-section .contact-grid,.travel-only-section .bank-account-card,.travel-only-section .travel-card{margin:0}.travel-only-section .bank-account-card{padding:0;border:0;box-shadow:none}.travel-only-section #event{margin-bottom:10px}@media(max-width:560px){.submission-mode-card{grid-template-columns:1fr}.submission-mode-card label{min-height:0;justify-content:flex-start;text-align:left}.travel-only-section{padding:13px}}`;
   document.head.append(style);
 
   const radios=[...chooser.querySelectorAll('input[name="submissionMode"]')];
@@ -49,6 +49,14 @@ export function initSubmissionMode(){
   const eventAnchor=eventField?.nextSibling;
   const bankParent=bankCard?.parentElement;
   const contactParent=contactFields?.parentElement;
+  const receiptDetailsForm=document.createElement('div');
+  receiptDetailsForm.className='receipt-details-form travel-only-form';
+  receiptDetailsForm.hidden=true;
+  receiptDetailsForm.innerHTML='<section class="travel-only-section"><h2>Dina uppgifter</h2><div data-receipt-slot="contact"></div></section><section class="travel-only-section"><h2>Kort beskrivning</h2><div data-receipt-slot="event"></div></section><section class="travel-only-section"><h2>Konto för utbetalning</h2><div data-receipt-slot="bank"></div></section>';
+  contactParent?.insertBefore(receiptDetailsForm,contactFields);
+  const receiptContactSlot=receiptDetailsForm.querySelector('[data-receipt-slot="contact"]');
+  const receiptEventSlot=receiptDetailsForm.querySelector('[data-receipt-slot="event"]');
+  const receiptBankSlot=receiptDetailsForm.querySelector('[data-receipt-slot="bank"]');
   const baseCanLeaveReceipts=window.__idvCanLeaveReceipts||(()=>false);
   const getMode=()=>radios.find(r=>r.checked)?.value||null;
   const hasReceipts=()=>Boolean(window.__idvReceiptState?.photos?.length);
@@ -68,6 +76,7 @@ export function initSubmissionMode(){
     if(mode==='travel')return contactFields?.parentElement===contactSlot&&eventField?.parentElement===journeySlot&&travelCard?.parentElement===journeySlot&&bankCard?.parentElement===bankSlot;
     if(mode==='combined'&&document.getElementById('form')?.classList.contains('active'))return eventField?.parentElement===eventParent&&travelCard?.parentElement===travelParent;
     if(mode==='combined')return eventField?.parentElement===upload&&travelCard?.parentElement===upload&&contactFields?.parentElement===contactParent&&bankCard?.parentElement===bankParent;
+    if(mode==='receipts')return contactFields?.parentElement===receiptContactSlot&&eventField?.parentElement===receiptEventSlot&&bankCard?.parentElement===receiptBankSlot;
     return eventField?.parentElement===eventParent&&travelCard?.parentElement===travelParent&&contactFields?.parentElement===contactParent&&bankCard?.parentElement===bankParent;
   };
   const restoreTravelCard=()=>{
@@ -113,6 +122,7 @@ export function initSubmissionMode(){
     const needsReceipts=mode!=='travel';
     const needsTravel=mode!=='receipts';
     travelOnlyForm.hidden=!travelOnly;
+    receiptDetailsForm.hidden=mode!=='receipts';
     if(!fieldsPlacedFor(mode)){
       restoreFormFields();
       if(travelOnly){
@@ -123,6 +133,10 @@ export function initSubmissionMode(){
       }else if(needsTravel&&travelCard){
         upload.insertBefore(travelCard,receiptActions||null);
         if(eventField)upload.insertBefore(eventField,travelCard);
+      }else if(mode==='receipts'){
+        if(contactFields&&receiptContactSlot)receiptContactSlot.append(contactFields);
+        if(eventField&&receiptEventSlot)receiptEventSlot.append(eventField);
+        if(bankCard&&receiptBankSlot)receiptBankSlot.append(bankCard);
       }
     }
     [dropzone,fileInput,receiptPanel].forEach(el=>{if(el)el.hidden=!needsReceipts});

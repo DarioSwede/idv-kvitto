@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.13.4
+- Ger endast-kvitton-läget samma tydliga kortindelning för personuppgifter, beskrivning och utbetalningskonto som reseräkningen.
+
 ## 2026.09.13.3
 - Låter reseräkningens två steg dela hela flödesheaderns bredd jämnt.
 

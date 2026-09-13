@@ -99,6 +99,10 @@ test('endast kvitton går genom alla steg med ett ifyllt tillfälle',async({page
   await addTestReceipt(page,{name:'Hotell',amount:'540'});
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeEnabled();
   await page.getByRole('button',{name:'Nästa: dina uppgifter'}).click();
+  await expect(page.locator('#form .receipt-details-form')).toBeVisible();
+  await expect(page.locator('#form .receipt-details-form h2')).toHaveText(['Dina uppgifter','Kort beskrivning','Konto för utbetalning']);
+  const receiptDetailOrder=await page.locator('#form .receipt-details-form input:visible').evaluateAll(inputs=>inputs.map(input=>input.id));
+  expect(receiptDetailOrder).toEqual(['name','email','event','clearingNumber','accountNumber']);
   await page.getByLabel('Ditt namn').fill('Kvittoägare');
   await page.getByLabel('Din e-postadress').fill('kvitto@example.se');
   await page.getByLabel('Clearingnummer').fill('5000');
