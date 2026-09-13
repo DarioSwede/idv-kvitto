@@ -17,11 +17,11 @@ test('toppmenyn visar bara lägesvalen',async({page})=>{
   await expect(page.getByLabel(/Endast kvitton/)).toBeChecked();
   await expect(page.locator('.submission-information-card')).toHaveCount(0);
   await expect(page.getByLabel(/Endast kvitton/)).toBeVisible();
-  await expect(page.getByLabel(/Endast reseräkning/)).toBeVisible();
-  await expect(page.getByLabel(/Kvitton \+ reseräkning/)).toBeVisible();
-  await page.getByLabel(/Endast reseräkning/).check();
-  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Fyll i reseersättningen');
-  await expect(page.locator('.timeline .seg').first()).toHaveAttribute('title','Fyll i reseersättningen');
+  await expect(page.getByLabel(/Endast milersättning/)).toBeVisible();
+  await expect(page.getByLabel(/Kvitton \+ milersättning/)).toBeVisible();
+  await page.getByLabel(/Endast milersättning/).check();
+  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Fyll i milersättningen');
+  await expect(page.locator('.timeline .seg').first()).toHaveAttribute('title','Fyll i milersättningen');
   const travelTimelineWidths=await page.locator('.timeline').evaluate(timeline=>({
     timeline:timeline.getBoundingClientRect().width,
     steps:[...timeline.querySelectorAll('.seg:not([hidden])')].map(step=>step.getBoundingClientRect().width)
@@ -53,7 +53,7 @@ test('nästa-knappen centreras bara i tomt kvittoläge',async({page})=>{
     window.__idvReceiptState.render();
   });
   await expect(actions).toHaveClass(/continue-centered/);
-  await page.getByLabel(/Endast reseräkning/).check();
+  await page.getByLabel(/Endast milersättning/).check();
   await expect(actions).not.toHaveClass(/continue-centered/);
 });
 

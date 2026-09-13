@@ -23,7 +23,7 @@ async function addTestReceipt(page,{name='Testkvitto',amount='125'}={}){
   },{name,amount});
 }
 
-test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
+test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   let submittedBody='';
   await page.route('**/functions/v1/**',async route=>{
     if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true}'});
@@ -34,8 +34,8 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await page.goto('/');
   await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
   await expect(page.getByText('Vad vill du göra?')).toBeVisible();
-  await page.getByLabel(/Kvitton \+ reseräkning/).check();
-  await expect(page.getByRole('heading',{name:'Kvitton och reseersättning'})).toBeVisible();
+  await page.getByLabel(/Kvitton \+ milersättning/).check();
+  await expect(page.getByRole('heading',{name:'Kvitton och milersättning'})).toBeVisible();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Resa till samlingen');
   await page.getByLabel('Antal kilometer').fill('34');
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
@@ -72,7 +72,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
   await expect(page.locator('.review-copy-option')).toBeVisible();
   await expect(page.locator('#cc')).toBeChecked();
-  await expect(page.locator('#summary')).toContainText('Kvitton + reseersättning');
+  await expect(page.locator('#summary')).toContainText('Kvitton + milersättning');
   await expect(page.locator('#summary')).toContainText('125');
   await expect(page.locator('#summary')).toContainText('85,00 kr');
   await expect(page.locator('#summary')).toContainText('210,00 kr');
@@ -119,7 +119,7 @@ test('endast kvitton går genom alla steg med ett ifyllt tillfälle',async({page
   await expect(page.getByRole('heading',{name:/Tack! Vi har tagit emot/})).toBeVisible();
 });
 
-test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitto',async({page})=>{
+test('endast milersättning går igenom utan kvittofil även efter uppladdat kvitto',async({page})=>{
   let submittedBody='';
   await page.route('**/functions/v1/**',async route=>{
     if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":false}'});
@@ -136,8 +136,8 @@ test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitt
     state.render();
   });
   await expect(page.locator('.receipt-item')).toHaveCount(1);
-  await page.getByLabel(/Endast reseräkning/).check();
-  await expect(page.getByRole('heading',{name:'Reseersättning'})).toBeVisible();
+  await page.getByLabel(/Endast milersättning/).check();
+  await expect(page.getByRole('heading',{name:'Milersättning'})).toBeVisible();
   await expect(page.locator('#dropzone')).toBeHidden();
   await expect(page.locator('.missing-receipt')).toBeHidden();
   await expect(page.locator('.timeline .seg:visible')).toHaveCount(2);
@@ -158,7 +158,7 @@ test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitt
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
   await expect(page.locator('#form')).not.toBeVisible();
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
-  await expect(page.locator('#summary')).toContainText('Endast reseersättning');
+  await expect(page.locator('#summary')).toContainText('Endast milersättning');
   await expect(page.locator('#summary')).toContainText('100,00 kr');
   await page.locator('#confirm').check();
   await page.getByRole('button',{name:'Skicka in kvitton'}).click();
@@ -194,7 +194,7 @@ test('kvitto måste ha namn före granskning',async({page})=>{
 test('byte till endast kvitton nollställer reseuppgifter',async({page})=>{
   await page.goto('/');
   await waitForAppState(page);
-  await page.getByLabel(/Endast reseräkning/).check();
+  await page.getByLabel(/Endast milersättning/).check();
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');

@@ -16,7 +16,7 @@ const formatAmount = (amount: number | null) => amount === null ? "" : new Intl.
 const formatNumber = (value: number) => new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 2 }).format(value);
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]!));
 const toBase64 = (bytes: Uint8Array) => { let result = ""; for (let i = 0; i < bytes.length; i += 32768) result += String.fromCharCode(...bytes.subarray(i, i + 32768)); return btoa(result); };
-const modeLabel = (mode: string) => mode === "travel" ? "Endast reseräkning" : mode === "combined" ? "Kvitton + reseräkning" : "Endast kvitton";
+const modeLabel = (mode: string) => mode === "travel" ? "Endast milersättning" : mode === "combined" ? "Kvitton + milersättning" : "Endast kvitton";
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
 const isKnownClearingNumber = (value: string) => value.length === 4 && CLEARING_RANGES.some(([from, to]) => Number(value) >= from && Number(value) <= to);
 const maskAccountNumber = (value: string) => value.length > 4 ? `•••• ${value.slice(-4)}` : "••••";
@@ -68,7 +68,7 @@ async function sendReceiptEmail(input: { submissionMode: string; senderName: str
   const rows = input.receiptNames.map((name, index) => `<tr><td style="padding:8px;border-bottom:1px solid #e7e3d8">${escapeHtml(name)}</td><td style="padding:8px;border-bottom:1px solid #e7e3d8;text-align:right">${escapeHtml(formatAmount(input.receiptAmounts[index])) || "—"}</td></tr>`).join("");
   const timestamp = new Intl.DateTimeFormat("sv-SE", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Stockholm" }).format(input.submittedAt);
   const receiptTotalRow = input.submissionMode !== "travel" ? `<tr><td style="padding:10px 8px">Summa kvitton</td><td style="padding:10px 8px;text-align:right">${escapeHtml(formatAmount(input.receiptTotal))}</td></tr>` : "";
-  const travelRows = input.travel.enabled ? `<tr><td style="padding:10px 8px">Reseersättning<br><small>${escapeHtml(input.travel.description)} · ${escapeHtml(input.travel.calculation)}</small></td><td style="padding:10px 8px;text-align:right">${escapeHtml(formatAmount(input.travel.amount))}</td></tr>` : "";
+  const travelRows = input.travel.enabled ? `<tr><td style="padding:10px 8px">Milersättning<br><small>${escapeHtml(input.travel.description)} · ${escapeHtml(input.travel.calculation)}</small></td><td style="padding:10px 8px;text-align:right">${escapeHtml(formatAmount(input.travel.amount))}</td></tr>` : "";
   const title = modeLabel(input.submissionMode);
   const intro = senderCopy ? `Här är din kopia av underlaget som skickades in ${escapeHtml(timestamp)}.` : `Nytt underlag inskickat ${escapeHtml(timestamp)} av ${escapeHtml(input.senderName)} (${escapeHtml(input.senderEmail)}).`;
   const accountForRecipient = senderCopy ? maskAccountNumber(input.bank.accountNumber) : input.bank.accountNumber;
@@ -118,7 +118,7 @@ Deno.serve(async (req: Request) => {
     const settings = await runtimeSettings(supabase), allowedTypes = new Set(settings.allowedTypes);
     const limiterPepper = Deno.env.get("RATE_LIMIT_PEPPER") || serviceKey;
     if (ccSelf && !settings.ccSelfEnabled) return reply({ error: "E-postkopian är inte aktiverad." }, 400);
-    if (!submissionModes.has(submissionMode)) return reply({ error: "Välj om du skickar kvitton, reseräkning eller båda." }, 400);
+    if (!submissionModes.has(submissionMode)) return reply({ error: "Välj om du skickar kvitton, milersättning eller båda." }, 400);
     const needsReceipts = submissionMode !== "travel";
     const needsTravel = submissionMode !== "receipts";
     if (!senderName || senderName.length > 200) return reply({ error: "Ange ett giltigt namn." }, 400);
@@ -127,14 +127,14 @@ Deno.serve(async (req: Request) => {
     if (!/^\d{7,12}$/.test(accountNumber)) return reply({ error: "Ange ett kontonummer med 7–12 siffror utan clearingnummer." }, 400);
     if (eventTag.length > 300 || otherInfo.length > 5000) return reply({ error: "Texten är för lång." }, 400);
     if (needsReceipts && (!files.length || files.length > settings.maxReceipts)) return reply({ error: `Lägg till mellan 1 och ${settings.maxReceipts} kvittofiler.` }, 400);
-    if (!needsReceipts && files.length) return reply({ error: "Kvittofiler ska inte skickas i läget endast reseräkning." }, 400);
+    if (!needsReceipts && files.length) return reply({ error: "Kvittofiler ska inte skickas i läget endast milersättning." }, 400);
     if (receiptNames.length !== files.length || receiptNames.some((name) => !name || name.length > 200)) return reply({ error: "Ange vad varje kvitto gäller." }, 400);
     if (receiptAmounts.length !== files.length || receiptAmounts.some((amount) => amount === null || !Number.isFinite(amount) || amount <= 0 || amount > 9999999999.99)) return reply({ error: "Ange ett belopp större än 0 för varje kvitto." }, 400);
     if (needsTravel) {
-      if (!travelEnabled || !travelApproved || travelKm === null || !Number.isFinite(travelKm) || travelKm < 0.01 || travelKm > settings.maxTravelKm || Math.abs(travelKm * 100 - Math.round(travelKm * 100)) > 1e-9) return reply({ error: "Kontrollera antal kilometer och godkänn reseersättningen." }, 400);
+      if (!travelEnabled || !travelApproved || travelKm === null || !Number.isFinite(travelKm) || travelKm < 0.01 || travelKm > settings.maxTravelKm || Math.abs(travelKm * 100 - Math.round(travelKm * 100)) > 1e-9) return reply({ error: "Kontrollera antal kilometer och godkänn milersättningen." }, 400);
       if (travelDescription.length > 500) return reply({ error: "Resebeskrivningen får vara högst 500 tecken." }, 400);
       const expected = Math.round(travelKm * settings.travelRatePerKm * 100) / 100;
-      if (!Number.isFinite(travelAmount) || travelAmount !== expected) return reply({ error: `Reseersättningen stämmer inte med ${settings.travelRatePerKm.toLocaleString('sv-SE')} kr per kilometer.` }, 400);
+      if (!Number.isFinite(travelAmount) || travelAmount !== expected) return reply({ error: `Milersättningen stämmer inte med ${settings.travelRatePerKm.toLocaleString('sv-SE')} kr per kilometer.` }, 400);
     } else if (travelEnabled || travelApproved || travelKmRaw || travelDescription || travelAmountRaw) return reply({ error: "Reseuppgifter får inte skickas i läget endast kvitton." }, 400);
     let totalSize = 0;
     for (const file of files) { totalSize += file.size; if (!allowedTypes.has(file.type)) return reply({ error: `Filtypen för ${file.name} stöds inte.` }, 400); if (!file.size || file.size > settings.maxFileSizeMb * 1024 * 1024) return reply({ error: `${file.name} är tom eller större än ${settings.maxFileSizeMb} MB.` }, 400); }
@@ -144,9 +144,9 @@ Deno.serve(async (req: Request) => {
     await enforceRateLimit(supabase, { scope: "email", value: senderEmail, windowSeconds: settings.rateLimitWindowSeconds, maxRequests: settings.rateLimitRequests, pepper: limiterPepper });
     const submittedAt = new Date(), receiptTotal = receiptAmounts.reduce((sum, amount) => sum + (amount ?? 0), 0), amountTotal = receiptTotal + travelAmount;
     const calculation = needsTravel ? `${formatNumber(travelKm!)} km × ${formatNumber(settings.travelRatePerKm)} kr = ${formatAmount(travelAmount)}` : "";
-    const travelNote = travelDescription || "Kilometerersättning";
+    const travelNote = travelDescription || "Milersättning";
     const travel: TravelDetails = { enabled: needsTravel, km: needsTravel ? travelKm : null, description: needsTravel ? travelNote : "", amount: needsTravel ? travelAmount : 0, calculation };
-    const travelSummary = needsTravel ? `Reseersättning\nResa: ${travelNote}\nKilometer: ${formatNumber(travelKm!)} km\nBeräkning: ${calculation}\nGodkänt belopp: ${formatAmount(travelAmount)}` : "";
+    const travelSummary = needsTravel ? `Milersättning\nResa: ${travelNote}\nKilometer: ${formatNumber(travelKm!)} km\nBeräkning: ${calculation}\nGodkänt belopp: ${formatAmount(travelAmount)}` : "";
     const storedOtherInfo = [`Typ av underlag: ${modeLabel(submissionMode)}`, otherInfo, travelSummary].filter(Boolean).join("\n\n");
     const { data: submission, error: submissionError } = await supabase.from("receipt_submissions").insert({ sender_name: senderName, sender_email: senderEmail, bank_clearing_number: clearingNumber, bank_account_number: accountNumber, event_tag: eventTag, other_info: storedOtherInfo, amount_total: amountTotal || null, receipt_total: needsReceipts ? (receiptTotal || null) : null, travel_km: needsTravel ? travelKm : null, travel_description: needsTravel ? travelDescription : null, travel_amount: needsTravel ? travelAmount : null, cc_self: false }).select("id").single();
     if (submissionError) throw submissionError;
@@ -211,7 +211,7 @@ Deno.serve(async (req: Request) => {
       const amountRows: Array<[string, string]> = [];
       if (needsReceipts) amountRows.push(["Summa kvitton", formatAmount(receiptTotal) || "-"]);
       if (needsTravel) {
-        amountRows.push(["Reseersättning", formatAmount(travelAmount) || "-"]);
+        amountRows.push(["Milersättning", formatAmount(travelAmount) || "-"]);
         amountRows.push(["Beräkning", `${formatNumber(travelKm!)} km x ${formatNumber(settings.travelRatePerKm)} kr`]);
       }
       const amountBoxTop = 522;

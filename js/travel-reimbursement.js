@@ -33,7 +33,7 @@ export function initTravelReimbursement(){
   function announce(){
     document.dispatchEvent(new CustomEvent('travel-state-change',{detail:{approved:approve.checked,amountValid:calculateTravelAmount(km.value)!==null}}));
   }
-  function rateHelp(){return `Ersättning: ${TRAVEL_RATE_PER_MIL.toLocaleString('sv-SE',{maximumFractionDigits:2})} kr per mil.`}
+  function rateHelp(){return `Milersättning: ${TRAVEL_RATE_PER_MIL.toLocaleString('sv-SE',{maximumFractionDigits:2})} kr per mil.`}
   function resetApproval(){approve.checked=false;calculation.disabled=true;calculation.setAttribute('aria-pressed','false')}
   function sync(){
     fields.hidden=!enabled.checked;

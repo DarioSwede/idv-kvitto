@@ -1,7 +1,7 @@
 export const SUBMISSION_MODES=new Set(['receipts','travel','combined']);
 
-const MODE_LABELS={receipts:'Endast kvitton för utlägg',travel:'Endast reseersättning',combined:'Kvitton + reseersättning'};
-const STEP_LABELS={receipts:'Kvitton',travel:'Fyll i reseersättningen',combined:'Kvitton + reseersättning'};
+const MODE_LABELS={receipts:'Endast kvitton för utlägg',travel:'Endast milersättning',combined:'Kvitton + milersättning'};
+const STEP_LABELS={receipts:'Kvitton',travel:'Fyll i milersättningen',combined:'Kvitton + milersättning'};
 
 export function initSubmissionMode(){
   const upload=document.getElementById('upload');
@@ -26,8 +26,8 @@ export function initSubmissionMode(){
   chooser.className='submission-mode-card';
   chooser.innerHTML=`<legend>Vad vill du göra?</legend>
     <label><input type="radio" name="submissionMode" value="receipts" checked><span><strong>Endast kvitton</strong><small>Ersättning för utlägg med ett eller flera kvitton.</small></span></label>
-    <label><input type="radio" name="submissionMode" value="travel"><span><strong>Endast reseräkning</strong><small>Eget fordon, utan kvittofiler.</small></span></label>
-    <label><input type="radio" name="submissionMode" value="combined"><span><strong>Kvitton + reseräkning</strong><small>Skicka båda delarna i samma underlag.</small></span></label>`;
+    <label><input type="radio" name="submissionMode" value="travel"><span><strong>Endast milersättning</strong><small>Eget fordon, utan kvittofiler.</small></span></label>
+    <label><input type="radio" name="submissionMode" value="combined"><span><strong>Kvitton + milersättning</strong><small>Skicka båda delarna i samma underlag.</small></span></label>`;
   upload.insertBefore(chooser,subtitle||upload.firstChild);
 
   const style=document.createElement('style');
@@ -115,7 +115,7 @@ export function initSubmissionMode(){
     if(stepLabels[1])stepLabels[1].textContent='Dina uppgifter';
     if(stepLabels[2])stepLabels[2].textContent='Kontroll & skicka';
     if(segments[1])segments[1].hidden=travelOnly;
-    if(segments[0])segments[0].title=travelOnly?'Fyll i reseersättningen':'Gå till kvitton';
+    if(segments[0])segments[0].title=travelOnly?'Fyll i milersättningen':'Gå till kvitton';
     const finalStepIndex=segments[2]?.querySelector('.seg-index');
     if(finalStepIndex)finalStepIndex.textContent=travelOnly?'2':'3';
     const receiptsPresent=hasReceipts();
@@ -158,14 +158,14 @@ export function initSubmissionMode(){
     continueBtn.style.display='';
     continueBtn.disabled=!canContinue;
     continueBtn.textContent=travelOnly?'Nästa: kontrollera och skicka':'Nästa: dina uppgifter';
-    continueBtn.title=canContinue?'':travelOnly?'Fyll i dina uppgifter, resan och ett giltigt konto samt godkänn uträkningen.':needsTravel?'Beskriv kort vad resan avsåg och godkänn reseersättningen.':'Lägg till minst ett kvitto och fyll i belopp på alla kvitton';
-    if(subtitle)subtitle.textContent=mode==='travel'?'Fyll i uppgifterna och godkänn reseersättningen innan du går vidare.':mode==='combined'?'Lägg till kvitton och ange sedan reseersättningen.':'Lägg till kvitton och fyll i belopp innan du går vidare.';
+    continueBtn.title=canContinue?'':travelOnly?'Fyll i dina uppgifter, resan och ett giltigt konto samt godkänn uträkningen.':needsTravel?'Beskriv kort vad resan avsåg och godkänn milersättningen.':'Lägg till minst ett kvitto och fyll i belopp på alla kvitton';
+    if(subtitle)subtitle.textContent=mode==='travel'?'Fyll i uppgifterna och godkänn milersättningen innan du går vidare.':mode==='combined'?'Lägg till kvitton och ange sedan milersättningen.':'Lägg till kvitton och fyll i belopp innan du går vidare.';
     const uploadTitle=document.querySelector('#upload h1');
     const formTitle=document.querySelector('#form h1');
     const travelKmLabelText=document.getElementById('travelKmLabelText');
     if(travelKmLabelText)travelKmLabelText.textContent=mode==='travel'?'Ange antal kilometer':'Antal kilometer';
-    if(uploadTitle)uploadTitle.textContent=mode==='travel'?'Reseersättning':mode==='combined'?'Kvitton och reseersättning':'Lägg till kvitton';
-    if(formTitle)formTitle.textContent=mode==='travel'?'Fyll i reseersättningen':'Vem gäller kvittot?';
+    if(uploadTitle)uploadTitle.textContent=mode==='travel'?'Milersättning':mode==='combined'?'Kvitton och milersättning':'Lägg till kvitton';
+    if(formTitle)formTitle.textContent=mode==='travel'?'Fyll i milersättningen':'Vem gäller kvittot?';
     if(eventField){
       eventField.hidden=false;
       eventField.required=needsTravel;

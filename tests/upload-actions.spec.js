@@ -24,7 +24,7 @@ test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold'
   await expectFullWidth(page);
   await expect(page.locator('#continue')).toBeDisabled();
 
-  await page.getByLabel(/Endast reseräkning/).check();
+  await page.getByLabel(/Endast milersättning/).check();
   await expectFullWidth(page);
   await expect(page.locator('#continue')).toBeDisabled();
   await expect(page.locator('#travelFields')).toBeVisible();
@@ -32,7 +32,7 @@ test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold'
   await expect(page.locator('#travelKmLabel')).toBeHidden();
   await expect(page.getByLabel('Antal kilometer')).toHaveAttribute('placeholder','Ange antal kilometer');
   await expect(page.locator('#travelCalculation')).toHaveCSS('background-color','rgb(255, 255, 255)');
-  await expect(page.getByText('Har du rest med eget fordon och ska ha reseersättning?',{exact:true})).toHaveCount(0);
+  await expect(page.locator('#travelCalculation')).toHaveText('Milersättning: 25 kr per mil.');
   await page.getByLabel('Ditt namn').fill('Testperson');
   await page.getByLabel('Din e-postadress').fill('test@example.se');
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
@@ -46,7 +46,7 @@ test('nästa-knappen ligger fullbredd i alla inskickslägen och avbryt är dold'
   await expect(page.locator('#continue')).toBeEnabled();
   await expect(page.locator('#continue')).toHaveText('Nästa: kontrollera och skicka');
 
-  await page.getByLabel(/Kvitton \+ reseräkning/).check();
+  await page.getByLabel(/Kvitton \+ milersättning/).check();
   await expect(page.locator('#travelKmLabel')).toBeHidden();
   await expect(page.getByLabel('Antal kilometer')).toHaveAttribute('placeholder','Ange antal kilometer');
   await page.getByLabel('Antal kilometer').fill('');

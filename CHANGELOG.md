@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.13.6
+- Byter konsekvent till begreppet milersättning i val, rubriker, hjälptexter, sammanställningar, PDF och e-postunderlag.
+
 ## 2026.09.13.5
 - Använder reseersättning konsekvent i de delar av båda reseflödena som beskriver ersättningen.
 - Flyttar kilometerinstruktionen till inmatningsfältet och gör beräkningsknappen vit tills en uträkning finns att godkänna.
