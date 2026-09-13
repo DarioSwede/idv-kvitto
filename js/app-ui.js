@@ -4,7 +4,7 @@ import {initDonePage} from './done-page.js';
 import {initReceiptOcr} from './receipt-ocr.js?v=20260830-2';
 import {initContactValidation} from './contact-validation.js?v=20260830-8';
 import {initTravelReimbursement,configureTravelReimbursement} from './travel-reimbursement.js?v=20260912-1';
-import {initSubmissionMode} from './submission-mode.js?v=20260913-4';
+import {initSubmissionMode} from './submission-mode.js?v=20260913-5';
 import {initBankAccount} from './bank-account.js';
 import {appendSummaryRow} from './review-summary.js';
 import {buildSubmissionFormData} from './submission-flow.js?v=20260912-1';

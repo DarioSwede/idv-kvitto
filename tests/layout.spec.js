@@ -20,8 +20,8 @@ test('toppmenyn visar bara lägesvalen',async({page})=>{
   await expect(page.getByLabel(/Endast reseräkning/)).toBeVisible();
   await expect(page.getByLabel(/Kvitton \+ reseräkning/)).toBeVisible();
   await page.getByLabel(/Endast reseräkning/).check();
-  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Fyll i reseräkningen');
-  await expect(page.locator('.timeline .seg').first()).toHaveAttribute('title','Fyll i reseräkningen');
+  await expect(page.locator('.timeline .seg-label').nth(0)).toHaveText('Fyll i reseersättningen');
+  await expect(page.locator('.timeline .seg').first()).toHaveAttribute('title','Fyll i reseersättningen');
   const travelTimelineWidths=await page.locator('.timeline').evaluate(timeline=>({
     timeline:timeline.getBoundingClientRect().width,
     steps:[...timeline.querySelectorAll('.seg:not([hidden])')].map(step=>step.getBoundingClientRect().width)

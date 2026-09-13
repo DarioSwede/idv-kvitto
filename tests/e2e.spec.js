@@ -35,7 +35,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.getByRole('heading',{name:'Lägg till kvitton'})).toBeVisible();
   await expect(page.getByText('Vad vill du göra?')).toBeVisible();
   await page.getByLabel(/Kvitton \+ reseräkning/).check();
-  await expect(page.getByRole('heading',{name:'Kvitton och reseräkning'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Kvitton och reseersättning'})).toBeVisible();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Resa till samlingen');
   await page.getByLabel('Antal kilometer').fill('34');
   await expect(page.getByRole('button',{name:'Nästa: dina uppgifter'})).toBeDisabled();
@@ -72,7 +72,7 @@ test('kombinationsflödet validerar kvitto och reseräkning',async({page})=>{
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
   await expect(page.locator('.review-copy-option')).toBeVisible();
   await expect(page.locator('#cc')).toBeChecked();
-  await expect(page.locator('#summary')).toContainText('Kvitton + kilometerersättning');
+  await expect(page.locator('#summary')).toContainText('Kvitton + reseersättning');
   await expect(page.locator('#summary')).toContainText('125');
   await expect(page.locator('#summary')).toContainText('85,00 kr');
   await expect(page.locator('#summary')).toContainText('210,00 kr');
@@ -158,7 +158,7 @@ test('endast reseräkning går igenom utan kvittofil även efter uppladdat kvitt
   await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
   await expect(page.locator('#form')).not.toBeVisible();
   await expect(page.getByRole('heading',{name:'Stämmer allt?'})).toBeVisible();
-  await expect(page.locator('#summary')).toContainText('Endast reseräkning');
+  await expect(page.locator('#summary')).toContainText('Endast reseersättning');
   await expect(page.locator('#summary')).toContainText('100,00 kr');
   await page.locator('#confirm').check();
   await page.getByRole('button',{name:'Skicka in kvitton'}).click();
