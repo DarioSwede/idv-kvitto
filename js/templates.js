@@ -13,8 +13,13 @@ export function applyTemplates(html,versionMeta={}){
   <div class="welcome-step"><span>3</span><div><strong>Kontrollera och skicka</strong><small>Granska allt, välj om du vill ha en kopia och skicka in underlaget.</small></div></div>
 </div>
 <p class="welcome-ready"><strong>Bra att ha redo:</strong> bankuppgifter och eventuella kvittofiler.</p>
+<p class="welcome-processing">Handläggningstiden är 3-5 dagar, men normalt kortare. Utbetalning sker till det bankkonto du uppger. Observera att både clearingnummer och kontonummer krävs.</p>
 <button class="btn welcome-start" id="startApplication" type="button">Starta ansökan</button>
 <p class="welcome-security">🔒 Dina uppgifter skickas krypterat.</p>
+<footer class="welcome-footer">
+  <a class="privacy-link" href="privacy.html" target="_blank" rel="noopener">Så hanterar vi dina personuppgifter</a>
+  <small class="welcome-build-meta">Version ${appVersion} · Byggd av Zimmerman<br>© 2026 Idrottsveteranerna</small>
+</footer>
 </section>`;
   html=html.replace('<body>','<body class="welcome-mode">'+welcome);
 
