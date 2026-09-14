@@ -16,6 +16,11 @@ test('toppmenyn visar det gemensamma trestegsflödet',async({page})=>{
   await page.waitForFunction(()=>Boolean(window.__idvReceiptState?.photos));
   await expect(page.getByRole('heading',{name:'Ansök om ersättning'})).toBeVisible();
   await expect(page.getByText('Här skickar du in kvitton för utlägg')).toBeVisible();
+  await expect(page.getByText(/Handläggningstiden är 3-5 dagar/)).toBeVisible();
+  await expect(page.getByText(/både clearingnummer och kontonummer krävs/)).toBeVisible();
+  await expect(page.locator('#welcome').getByRole('link',{name:'Så hanterar vi dina personuppgifter'})).toHaveAttribute('href','privacy.html');
+  await expect(page.locator('#welcome .welcome-build-meta')).toContainText('Version 2026.09.13.13 · Byggd av Zimmerman');
+  await expect(page.locator('#welcome .welcome-build-meta')).toContainText('© 2026 Idrottsveteranerna');
   await page.getByRole('button',{name:'Starta ansökan'}).click();
   await expect(page.locator('.timeline .seg')).toHaveCount(3);
   await expect(page.locator('.timeline .seg-label')).toHaveText(['Dina uppgifter','Välj ersättning','Kontroll & skicka']);
