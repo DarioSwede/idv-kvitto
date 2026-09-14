@@ -18,6 +18,9 @@ test('toppmenyn visar det gemensamma trestegsflödet',async({page})=>{
   await expect(page.getByText('Här skickar du in kvitton för utlägg')).toBeVisible();
   await expect(page.getByText(/Handläggningstiden är 3-5 dagar/)).toBeVisible();
   await expect(page.getByText(/både clearingnummer och kontonummer krävs/)).toBeVisible();
+  const processingStyle=await page.locator('.welcome-processing').evaluate(element=>{const style=getComputedStyle(element);return{borderStyle:style.borderStyle,backgroundColor:style.backgroundColor}});
+  expect(processingStyle.borderStyle).toBe('dashed');
+  expect(processingStyle.backgroundColor).toBe('rgb(238, 240, 237)');
   await expect(page.locator('#welcome').getByRole('link',{name:'Så hanterar vi dina personuppgifter'})).toHaveAttribute('href','privacy.html');
   await expect(page.locator('#welcome .welcome-build-meta')).toContainText('Version 2026.09.13.13 · Byggd av Zimmerman');
   await expect(page.locator('#welcome .welcome-build-meta')).toContainText('© 2026 Idrottsveteranerna');
