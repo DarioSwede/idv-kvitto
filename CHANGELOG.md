@@ -1,5 +1,11 @@
 # Versionshistorik
 
+## Ej publicerat – kontrollcentrets e-poststatus
+- Visar leveransläge och mottagare via lokal server och autentiserat admin-API.
+- Skiljer Resends serverkonfiguration från egen kopia och verifierad leverans.
+- Öppnar admin på kontrollcentrets adress i samma flik, även utan previewserver.
+- Lägger grunden för separat testmail via admin-API; ingen testmail-sändning ingår.
+
 ## 2026.09.13.13
 - Visar kontrollreferens, datum, fullständigt ärende-ID och sidnummer på samtliga PDF-sidor.
 - Skriver sidnumret som Sid X av Y så att hela den inskickade sammanställningen kan kontrolleras.

@@ -2,7 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 import { corsHeaders, isAllowedOrigin } from "./cors.js";
-import { resolveDeliveryRecipient } from "./email-config.js";
+import { resolveDeliveryRecipient, resolveEmailSettings } from "./email-config.js";
 import { clientAddress, enforceRateLimit, RateLimitError } from "./rate-limit.js";
 
 const defaultAllowedTypes = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/heic", "image/heif", "application/pdf"];
@@ -30,16 +30,13 @@ const boundedNumber = (value: unknown, fallback: number, maximum: number) => Mat
 const boundedOpacity = (value: unknown, fallback: number) => Math.min(Math.max(typeof value === "number" && Number.isFinite(value) ? value : fallback, 0.01), 0.15);
 async function runtimeSettings(client: ReturnType<typeof createClient>) {
   const defaults = {
+    ...resolveEmailSettings(),
     travelRatePerKm: 2.5,
     maxTravelKm: 10000,
     maxReceipts: 10,
     maxFileSizeMb: 10,
     maxTotalUploadMb: 25,
     allowedTypes: defaultAllowedTypes,
-    ccSelfEnabled: true,
-    receiptEmailTo: "betala@idrottsveteranerna.se",
-    emailDeliveryMode: "production",
-    emailTestRecipient: "mail@torbjornzimmerman.se",
     rateLimitRequests: 5,
     rateLimitWindowSeconds: 600,
     pdfWatermarkEnabled: true,
@@ -49,13 +46,10 @@ async function runtimeSettings(client: ReturnType<typeof createClient>) {
   if (error) { console.error("app settings unavailable", error); return defaults; }
   const values = Object.fromEntries((data ?? []).map((row: { key: string; value: unknown }) => [row.key, row.value]));
   return {
+    ...resolveEmailSettings(values),
     travelRatePerKm: positiveNumber(values.travel_rate_per_km, defaults.travelRatePerKm), maxTravelKm: positiveNumber(values.max_travel_km, defaults.maxTravelKm),
     maxReceipts: Math.floor(positiveNumber(values.max_receipts, defaults.maxReceipts)), maxFileSizeMb: positiveNumber(values.max_file_size_mb, defaults.maxFileSizeMb), maxTotalUploadMb: positiveNumber(values.max_total_upload_mb, defaults.maxTotalUploadMb),
     allowedTypes: Array.isArray(values.allowed_mime_types) && values.allowed_mime_types.every(value => typeof value === "string") ? values.allowed_mime_types : defaults.allowedTypes,
-    ccSelfEnabled: typeof values.cc_self_enabled === "boolean" ? values.cc_self_enabled : defaults.ccSelfEnabled,
-    receiptEmailTo: typeof values.receipt_email_to === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.receipt_email_to) ? values.receipt_email_to : defaults.receiptEmailTo,
-    emailDeliveryMode: typeof values.email_delivery_mode === "string" ? values.email_delivery_mode : defaults.emailDeliveryMode,
-    emailTestRecipient: typeof values.email_test_recipient === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email_test_recipient) ? values.email_test_recipient : defaults.emailTestRecipient,
     rateLimitRequests: Math.floor(boundedNumber(values.submission_rate_limit_requests, defaults.rateLimitRequests, 100)),
     rateLimitWindowSeconds: Math.floor(boundedNumber(values.submission_rate_limit_window_seconds, defaults.rateLimitWindowSeconds, 86400)),
     pdfWatermarkEnabled: typeof values.pdf_watermark_enabled === "boolean" ? values.pdf_watermark_enabled : defaults.pdfWatermarkEnabled,

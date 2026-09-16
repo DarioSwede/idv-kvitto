@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import {emailStatus} from './email-status.js';
 import {requireStaff} from './auth.ts';
 import {listSettings,updateSetting,SettingValidationError} from './settings.ts';
 import {listSubmissions,getSubmission,updateSubmissionStatus,archiveSubmission,createPdfLink,purgeExpiredSubmissions,SubmissionValidationError} from './submissions.ts';
@@ -24,6 +25,9 @@ Deno.serve(async(req:Request)=>{
     const parts=url.pathname.split('/').filter(Boolean);
     const resource=parts.at(-2)==='admin-api'?parts.at(-1):parts.at(-1);
 
+    if(req.method==='GET'&&resource==='email-status'){
+      return reply(emailStatus(await listSettings(client), {apiKey:Deno.env.get('RESEND_API_KEY'),from:Deno.env.get('RECEIPT_EMAIL_FROM')}));
+    }
     if(req.method==='GET'&&resource==='settings')return reply({settings:await listSettings(client)});
     if(req.method==='PATCH'&&resource==='settings'){
       const body=await req.json();
