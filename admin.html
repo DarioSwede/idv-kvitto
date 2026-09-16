@@ -1118,6 +1118,14 @@
       adminEmailInput.value = storedConnection.email || '';
     }
 
+    if (location.port === '43920' && ['localhost', '127.0.0.1'].includes(location.hostname)) {
+      const controlLink = document.createElement('a');
+      controlLink.href = '/control-center.html';
+      controlLink.className = 'button';
+      controlLink.textContent = 'Till kontrollcentret';
+      document.querySelector('.sidebar').append(controlLink);
+    }
+
     bootstrap();
     loadVersion();
 

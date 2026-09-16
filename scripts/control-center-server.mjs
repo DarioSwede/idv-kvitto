@@ -1,3 +1,4 @@
+import { readEmailStatus } from './control-center-email.mjs';
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
@@ -59,6 +60,11 @@ async function serveFile(request, response, defaultPage = '/control-center.html'
 }
 
 const server = createServer(async (request, response) => {
+  if (request.url === '/api/email-status') {
+    if (request.method !== 'GET') return json(response, 405, { error: 'Metoden stöds inte.' });
+    const result = await readEmailStatus(request);
+    return json(response, result.status, result.body);
+  }
   if (request.method === 'GET' && request.url === '/api/status') {
     const version = JSON.parse(await readFile(resolve(root, 'version.json'), 'utf8'));
     const branch = await run('git', ['branch', '--show-current']);

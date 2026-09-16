@@ -72,3 +72,11 @@ Om en publicerad version får problem:
 ## Integritet och säkerhet
 
 Kvitton och kontaktuppgifter ska bara användas för att hantera det aktuella ersättningsärendet. Den publika sidan länkar till `privacy.html` för tydlig information till användaren. Kommunikation sker över HTTPS/TLS.
+
+### E-poststatus i kontrollcentret
+
+Öppna kontrollcentret på `http://localhost:43920`, välj **Hantera testläge** och logga in i IDV-projektet med ditt personalkonto. Välj **Till kontrollcentret** i samma flik. Sessionen lagras endast i flikens befintliga `sessionStorage`; en inloggning på previewport 43922 delas inte med kontrollcentret. Vid utgången session behöver du logga in igen.
+
+Webbläsaren hämtar `/api/email-status` på sin egen adress. Den lokala servern vidarebefordrar användarens Bearer-token och publika API-nyckel till den fasta admin-routen `GET admin-api/email-status`, som använder `requireStaff`. Resend- och service-nycklar stannar i backend. Routen är skrivskyddad, har timeout och accepterar inte andra mål eller omdirigeringar. `submit-receipt` får inga nya CORS-undantag eller lättnader i autentisering.
+
+Backendändringen i `admin-api` måste publiceras separat innan statusrouten kan användas mot drift. PR:n innebär ingen publicering. Saknad route visas som ett uttryckligt fel. Status visar konfiguration, inte bevis på levererad e-post. En framtida testmail-route ska använda samma personalautentisering, separat POST med admin/tester-behörighet och uttryckligt vald testmottagare; denna ändring skickar ingen e-post.

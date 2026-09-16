@@ -26,9 +26,12 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          for file in js/*.js tests/*.js playwright.config.js; do
+          for file in js/*.js tests/*.js scripts/*.mjs supabase/functions/admin-api/*.js supabase/functions/submit-receipt/*.js playwright.config.js; do
             node --check "$file"
           done
+
+      - name: Run unit tests
+        run: npm run test:unit
 
       - name: Validate version metadata
         run: |
