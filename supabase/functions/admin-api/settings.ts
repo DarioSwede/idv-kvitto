@@ -1,3 +1,5 @@
+import {requireSettingsAdmin} from './roles.js';
+import {emailSettingError} from './email-settings.js';
 export const EDITABLE_SETTING_KEYS=new Set([
   'travel_rate_per_km','max_travel_km','max_receipts','max_file_size_mb','max_total_upload_mb',
   'allowed_mime_types','ocr_enabled','ocr_retry_enabled','cc_self_enabled','receipt_email_to',
@@ -15,10 +17,10 @@ export async function listSettings(client:any){
 }
 
 export async function updateSetting(client:any,userId:string,key:string,value:unknown,role?:string){
+  requireSettingsAdmin(role);
+  const emailError=emailSettingError(key,value,role);
+  if(emailError)throw new SettingValidationError(emailError);
   if(!EDITABLE_SETTING_KEYS.has(key))throw new SettingValidationError('Inställningen kan inte ändras här.');
-  if(role && ADMIN_ONLY_SETTING_KEYS.has(key) && role !== 'admin' && role !== 'tester'){
-    throw new SettingValidationError('Den här inställningen kräver administratörs- eller driftbehörighet.');
-  }
   const {data,error}=await client.from('app_settings').update({value,updated_at:new Date().toISOString(),updated_by:userId}).eq('key',key).select('key,value,description,is_public,updated_at').single();
   if(error)throw error;
   return data;

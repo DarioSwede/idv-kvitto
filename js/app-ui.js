@@ -56,18 +56,28 @@ async function initEmailCopy(){
   help.textContent='Kontrollerar om e-postkopian är tillgänglig …';
   try{
     const response=await fetch(api.endpoint,{headers:{apikey:api.key,Authorization:'Bearer '+api.key}});
+    if(!response.ok)throw new Error('E-poststatus kunde inte hämtas');
     const result=await response.json();
     window.__idvRuntimeSettings=result.settings||{};
     configureTravelReimbursement(result.settings);
-    checkbox.disabled=false;
-    checkbox.checked=true;
-    const recipient=result.settings?.receipt_email_to||'betala@idrottsveteranerna.se';
+    checkbox.disabled=!result.email_configured;
+    checkbox.checked=Boolean(result.email_configured);
+    const mode=result.settings?.email_delivery_mode;
+    const recipient=mode==='test'?result.settings?.email_test_recipient:result.settings?.receipt_email_to;
     const deliveryRecipient=deliveryNote?.querySelector('strong');
-    if(deliveryRecipient)deliveryRecipient.textContent=recipient;
-    help.textContent=result.email_configured?`Du får samma sammanställning och PDF som skickas till ${recipient}.`:'E-postkopian är inte aktiverad ännu.';
+    if(deliveryRecipient)deliveryRecipient.textContent=recipient||'ingen mottagare';
+    if(mode==='disabled'&&deliveryNote)deliveryNote.textContent='E-post avstängd – underlaget sparas utan utskick.';
+    if(mode==='test'){
+      const banner=document.createElement('p');
+      banner.id='emailTestBanner'; banner.setAttribute('role','status');
+      banner.textContent='TESTLÄGE – underlaget ska inte betalas ut. Både kassörsmejl och eventuell kopia går till den konfigurerade testmottagaren.';
+      banner.style.cssText='padding:16px;background:#fff0bc;color:#392b00;font-weight:600';
+      document.body.prepend(banner);
+      help.textContent=result.email_configured?`Testkopian skickas till ${recipient}, inte till adressen i formuläret.`:'Testutskick är blockerat tills mottagare och e-posttjänst är konfigurerade.';
+    }else help.textContent=result.email_configured?`Du får samma sammanställning och PDF som skickas till ${recipient}.`:'E-post är avstängd eller inte tillgänglig. Underlaget sparas utan utskick.';
   }catch{
-    checkbox.disabled=false;
-    checkbox.checked=true;
+    checkbox.disabled=true;
+    checkbox.checked=false;
     help.textContent='E-postkopian kan inte användas just nu.';
   }
 }

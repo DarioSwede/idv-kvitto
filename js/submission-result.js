@@ -5,8 +5,9 @@ export function parseSubmissionResponse(responseText=''){
 
 export function buildSubmissionResult(result={}){
   const messages=[];
-  const recipient=result.delivery_recipient||'mail@torbjornzimmerman.se';
+  const recipient=result.delivery_recipient||'konfigurerad mottagare';
+  if(result.delivery_mode==='test')messages.push('TESTUNDERLAG – ska inte betalas ut.');
   messages.push(result.delivery_sent?`Underlaget har skickats till ${recipient}.`:(result.delivery_error||'Underlaget har sparats säkert.'));
-  if(result.copy_requested)messages.push(result.copy_sent?'En kopia med samma sammanställning och PDF har skickats till din e-postadress.':(result.copy_error||'Kopian kunde inte skickas.'));
+  if(result.copy_requested)messages.push(result.copy_sent?(result.copy_redirected?'Testkopian skickades till den konfigurerade testmottagaren.':'En kopia med samma sammanställning och PDF har skickats till din e-postadress.'):(result.copy_error||'Kopian kunde inte skickas.'));
   return{message:messages.join(' '),warning:!result.delivery_sent||(result.copy_requested&&!result.copy_sent),pdfUrl:result.final_pdf_url||''};
 }

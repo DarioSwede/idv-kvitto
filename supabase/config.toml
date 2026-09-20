@@ -1,0 +1,4 @@
+# login is public; all other admin-api routes verify the user and current DB role in code.
+# Required for the publishable API key and the signed-out password flow.
+[functions.admin-api]
+verify_jwt = false

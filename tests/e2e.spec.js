@@ -33,7 +33,7 @@ async function addTestReceipt(page,{name='Testkvitto',amount='125'}={}){
 test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   let submittedBody='';
   await page.route('**/functions/v1/**',async route=>{
-    if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true}'});
+    if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true,"settings":{"email_delivery_mode":"production","receipt_email_to":"betala@idrottsveteranerna.se"}}'});
     submittedBody=route.request().postData()||'';
     return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true,"reference":"E2E","delivery_sent":true}'});
   });
@@ -88,7 +88,7 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
 test('endast kvitton går genom alla steg med ett ifyllt tillfälle',async({page})=>{
   let submittedBody='';
   await page.route('**/functions/v1/**',async route=>{
-    if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true}'});
+    if(route.request().method()==='GET')return route.fulfill({status:200,contentType:'application/json',body:'{"email_configured":true,"settings":{"email_delivery_mode":"production","receipt_email_to":"betala@idrottsveteranerna.se"}}'});
     submittedBody=route.request().postData()||'';
     return route.fulfill({status:200,contentType:'application/json',body:'{"ok":true,"reference":"KVITTO","delivery_sent":true}'});
   });
@@ -255,4 +255,27 @@ test('ett hängande OCR-kvitto lämnar nästa kvitto tydligt i kön',async({page
   await expect.poll(()=>page.evaluate(()=>window.__ocrTestStates[0].state)).toBe('working');
   await expect.poll(()=>page.evaluate(()=>window.__ocrTestStates[1].state)).toBe('queued');
   await expect(page.getByLabel('Belopp för kvitto 1')).toBeEditable();
+});
+
+
+test('testläget märker hela kombinationsflödet och förklarar testkopian',async({page})=>{
+  await page.route('https://ohwalxqwtxtlldalsclj.supabase.co/**',route=>{
+    if(route.request().method()==='GET')return route.fulfill({json:{email_configured:true,settings:{email_delivery_mode:'test',email_test_recipient:'safe-test@example.org',receipt_email_to:'cashier@example.org'}}});
+    expect(route.request().postData()).toContain('travel_km');
+    return route.fulfill({json:{ok:true,delivery_mode:'test',delivery_recipient:'safe-test@example.org',delivery_sent:true,copy_requested:true,copy_sent:true,copy_redirected:true}});
+  });
+  await page.goto('/');await waitForAppState(page);
+  await expect(page.locator('#emailTestBanner')).toBeVisible();
+  await fillProfileAndContinue(page,{email:'real-person@example.org'});
+  await page.getByLabel(/Kvitton för utlägg/).check();
+  await page.getByLabel(/^Milersättning/).check();
+  await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
+  await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('10');
+  await addTestReceipt(page);
+  await page.locator('#travelCalculation').click();
+  await expect(page.locator('.copy-option small')).toContainText('safe-test@example.org');
+  await page.getByRole('button',{name:'Nästa: kontrollera och skicka'}).click();
+  await page.locator('#confirm').check();
+  await page.getByRole('button',{name:'Skicka in'}).click();
+  await expect(page.locator('body')).toContainText('Testkopian skickades till den konfigurerade testmottagaren.');
 });

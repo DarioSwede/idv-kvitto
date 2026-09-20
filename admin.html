@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="sv">
+<html lang="sv" style="visibility:hidden">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -203,8 +203,13 @@
     .layout-switch[aria-checked="true"] { color: var(--brand); }
     .layout-switch[aria-checked="true"] .layout-switch-track { background: var(--brand); }
     .layout-switch[aria-checked="true"] .layout-switch-thumb { transform: translateX(15px); }
-    #settingsPanel { display: none; position: fixed; top: 78px; right: max(16px, calc((100vw - 1440px) / 2)); z-index: 30; width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 94px); overflow: auto; margin: 0; border-radius: 16px; box-shadow: 0 18px 42px rgba(24,31,28,.2); }
+    [hidden] { display: none !important; }
+    #settingsPanel { display: none; position: static; width: 100%; box-sizing: border-box; margin: 0; }
     #settingsPanel.open { display: block; }
+    .account-bar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+    .account-actions { display:flex; gap:12px; align-items:center; }
+    .account-actions a { color:var(--brand); }
+    .admin-page-title { margin:0 0 6px; font-size:24px; }
     .settings-backdrop { display: none; }
     .settings-hint { color: var(--muted); font-size: 12px; }
     .submission-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -223,7 +228,7 @@
       .sidebar { flex-wrap: wrap; align-items: center; }
       .stats { order: 3; width: 100%; overflow-x: auto; padding-bottom: 2px; }
       .main { padding: 16px; }
-      #settingsPanel { top: 126px; right: 16px; width: calc(100vw - 32px); max-height: calc(100vh - 142px); }
+      #settingsPanel { width:100%; }
       .layout, .settings-grid, .connection-grid { grid-template-columns: 1fr; }
       .topbar { flex-direction: column; align-items: flex-start; }
       .detail-panel { position: static; }
@@ -243,7 +248,7 @@
     </div>
     <nav class="nav">
       <button class="nav-btn active" data-view="inbox">Inkorg</button>
-      <button class="nav-btn" data-view="settings" type="button" aria-label="Inställningar" title="Inställningar">⚙ <span>Inställningar</span></button>
+      <button class="nav-btn" data-view="settings" hidden type="button" aria-label="Inställningar" title="Inställningar">⚙ <span>Inställningar</span></button>
     </nav>
     <button id="themeSwitch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Byt till mörkt läge" title="Byt tema">
       <span class="theme-switch-icon" aria-hidden="true">☀</span>
@@ -276,7 +281,11 @@
   </aside>
 
   <main class="main">
-    <section class="layout">
+    <header class="account-bar">
+      <div><h1 class="admin-page-title">Administration</h1><div class="connection-status" id="connectionStatus">Verifierar behörighet…</div></div>
+      <div class="account-actions"><a href="index.html">Öppna kvittoformuläret</a><button id="signOutButton" class="button secondary" type="button">Logga ut</button></div>
+    </header>
+    <section class="layout" id="inboxView">
       <div class="card">
         <div class="list-header">
           <h2 id="listTitle">Inkomna underlag</h2>
@@ -319,26 +328,14 @@
         <h2>Inställningar</h2>
         <button id="saveSettingsButton" class="button primary">Spara inställningar</button>
       </div>
-      <p class="settings-hint">Ändra värdena och klicka Spara. Tryck på Inställningar igen eller Esc för att stänga.</p>
+      <p class="settings-hint">Endast administratörer kan se och ändra inställningarna. Ändra värdena och välj Spara inställningar.</p>
       <div class="settings-grid">
-        <div class="setting" style="grid-column:1/-1;">
-          <label>Drift och åtkomst</label>
-          <div class="connection-status" id="connectionStatus">Lokal demo används tills du ansluter Supabase.</div>
-          <div class="connection-grid" style="margin-top:10px;">
-            <label>Supabase URL<input id="supabaseUrl" type="url" value="https://ohwalxqwtxtlldalsclj.supabase.co" placeholder="https://projekt.supabase.co" autocomplete="url"></label>
-            <label>Anon-nyckel<input id="supabaseAnonKey" type="password" placeholder="eyJ..." autocomplete="off"></label>
-            <label>Admin e-post<input id="adminEmail" type="email" placeholder="admin@foreningen.se" autocomplete="username"></label>
-            <label>Lösenord<input id="adminPassword" type="password" placeholder="Lösenord" autocomplete="current-password"></label>
-            <button id="connectButton" class="button primary" type="button">Anslut</button>
-          </div>
-          <button id="signOutButton" class="button secondary" type="button" hidden style="margin-top:10px;">Logga ut</button>
-        </div>
         <div class="setting">
           <label for="deliveryMode">E-post och testläge</label>
           <select id="deliveryMode">
-            <option value="test">test</option>
-            <option value="production">production</option>
-            <option value="disabled">disabled</option>
+            <option value="test">Test</option>
+            <option value="production">Produktion</option>
+            <option value="disabled">Avstängd</option>
           </select>
         </div>
         <div class="setting">
@@ -350,8 +347,8 @@
           <input id="productionRecipient" value="betala@idrottsveteranerna.se">
         </div>
         <div class="setting">
-          <label for="statusFilter">Användare och aktiv roll</label>
-          <select id="statusFilter">
+          <label for="statusFilter">Din serververifierade roll</label>
+          <select id="statusFilter" disabled>
             <option value="admin">admin</option>
             <option value="cashier">cashier</option>
             <option value="tester">tester</option>
@@ -378,10 +375,38 @@
           <input id="pdfWatermarkOpacity" type="number" min="1" max="15" step="1" value="4">
         </div>
       </div>
+      <div class="settings-grid" style="margin-top:20px">
+      <div class="setting" id="testMailPanel">
+        <h3>Skicka testmail</h3>
+        <p>Skickar endast till adressen nedan. Testet ändrar inte mottagarinställningarna. Avstängd blockerar även testmail.</p>
+        <label for="testMailAddress">Mottagare för detta test</label><input id="testMailAddress" type="email" placeholder="namn@example.org">
+        <label for="testMailKind">Meddelandet ska motsvara</label><select id="testMailKind"><option value="system">Neutralt systemtest</option><option value="test">Testmottagare</option><option value="production">Produktionsmottagare</option></select>
+        <button id="sendTestMail" class="button" type="button">Skicka testmail</button>
+        <p id="testMailStatus" role="status"></p><iframe id="testMailPreview" title="Kassörsmeddelande – test" sandbox="" hidden style="width:100%;height:440px;background:white"></iframe>
+      </div>
+      <div class="setting" id="adminSecurityPanel" hidden>
+        <h3>Användare och säkerhet</h3>
+        <p>Bjud in en ny användare. Välj den lägsta behörighet personen behöver.</p>
+        <label for="inviteEmail">E-postadress</label><input id="inviteEmail" type="email" required autocomplete="off">
+        <label for="inviteRole">Behörighet</label><select id="inviteRole"><option value="viewer">Läsbehörighet</option><option value="cashier">Kassör</option><option value="tester">Drift/test</option><option value="admin">Administratör</option></select>
+        <button id="inviteStaff" class="button" type="button">Skicka inbjudan</button>
+        <p id="inviteStatus" role="status"></p>
+        <h3>Säkerhetslogg</h3><p>De senaste 100 händelserna, högst 90 dagar. Tider visas i UTC.</p>
+        <button id="loadAudit" class="button" type="button">Visa säkerhetslogg</button>
+        <div id="auditEntries" role="status" style="overflow-wrap:anywhere"></div>
+      </div>
+      </div>
     </section>
   </main>
 
-  <script>
+  <script type="module">
+    import {setupAdminSecurity} from './js/admin-security.js';
+    import {verifiedSession, loginUrl, signOut, ADMIN_API} from './js/admin-auth.js';
+    let verified;
+    try { verified = await verifiedSession(); }
+    catch { location.replace(loginUrl()); }
+    if (!verified) { location.replace(loginUrl()); throw new Error('Inloggning krävs.'); }
+
     const statusClass = {
       new: 'new',
       in_progress: 'progress',
@@ -395,24 +420,6 @@
       done: 'Klar',
       archived: 'Arkiverad'
     };
-
-    const defaultSettings = {
-      emailDeliveryMode: 'test',
-      emailTestRecipient: 'mail@torbjornzimmerman.se',
-      receiptEmailTo: 'betala@idrottsveteranerna.se',
-      retentionDays: 365,
-      travelRatePerMil: 25,
-      pdfWatermarkEnabled: true,
-      pdfWatermarkOpacity: 4,
-      role: 'admin'
-    };
-
-    const defaultSubmissions = [
-      { id: 'INV-1042', name: 'Anna Svensson', email: 'anna@example.com', eventTag: 'Tävlingsdag 10', amount: '1 240 kr', status: 'new', createdAt: '2026-09-09T10:15:00+02:00' },
-      { id: 'INV-1041', name: 'Jonas Karlsson', email: 'jonas@example.com', eventTag: 'Träningsläger', amount: '860 kr', status: 'in_progress', createdAt: '2026-09-08T16:40:00+02:00' },
-      { id: 'INV-1040', name: 'Sara Lind', email: 'sara@example.com', eventTag: 'Höstcup', amount: '2 410 kr', status: 'done', createdAt: '2026-09-08T09:05:00+02:00' },
-      { id: 'INV-1039', name: 'Mikael Åberg', email: 'mikael@example.com', eventTag: 'Landslag', amount: '1 090 kr', status: 'new', createdAt: '2026-09-07T14:25:00+02:00' }
-    ];
 
     let adminApiBase = window.IDV_ADMIN_API_URL || '';
     let supabaseClient;
@@ -435,11 +442,6 @@
     const pdfWatermarkEnabled = document.getElementById('pdfWatermarkEnabled');
     const pdfWatermarkOpacity = document.getElementById('pdfWatermarkOpacity');
     const saveSettingsButton = document.getElementById('saveSettingsButton');
-    const supabaseUrlInput = document.getElementById('supabaseUrl');
-    const supabaseAnonKeyInput = document.getElementById('supabaseAnonKey');
-    const adminEmailInput = document.getElementById('adminEmail');
-    const adminPasswordInput = document.getElementById('adminPassword');
-    const connectButton = document.getElementById('connectButton');
     const signOutButton = document.getElementById('signOutButton');
     const connectionStatus = document.getElementById('connectionStatus');
     const brandVersion = document.getElementById('brandVersion');
@@ -458,7 +460,7 @@
     const bulkProgressBar = document.getElementById('bulkProgressBar');
     const bulkProgressText = document.getElementById('bulkProgressText');
 
-    let submissions = [...defaultSubmissions];
+    let submissions = [];
     let selectedIndex = 0;
     let activeFilter = 'all';
     const selectedSubmissionIds = new Set();
@@ -543,85 +545,18 @@
       }
     }
 
-    function getStoredConnection() {
-      return JSON.parse(localStorage.getItem('idv-admin-connection') || 'null');
-    }
-
-    function saveSession() {
-      if (authSession) sessionStorage.setItem('idv-admin-session', JSON.stringify(authSession));
-    }
-
-    async function restoreSession() {
-      const storedConnection = getStoredConnection();
-      const storedSession = JSON.parse(sessionStorage.getItem('idv-admin-session') || 'null');
-      if (!storedConnection || !storedSession?.access_token) return false;
-      supabaseClient = { supabaseKey: storedConnection.anonKey };
-      adminApiBase = `${storedConnection.url.replace(/\/$/, '')}/functions/v1/admin-api`;
-      authSession = storedSession;
-      signOutButton.hidden = false;
-      try {
-        await refreshFromApi();
-        setConnectionStatus(`Ansluten som ${storedConnection.email}. Live-data används.`, true);
-        return true;
-      } catch (error) {
-        sessionStorage.removeItem('idv-admin-session');
-        authSession = null;
-        supabaseClient = null;
-        adminApiBase = window.IDV_ADMIN_API_URL || '';
-        signOutButton.hidden = true;
-        setConnectionStatus(`Sessionen gick ut. Logga in igen. (${error.message})`);
-        return false;
-      }
-    }
-
     function applyConnectionHeaders(headers = {}) {
       if (authSession?.access_token) headers.Authorization = `Bearer ${authSession.access_token}`;
       if (supabaseClient) headers.apikey = supabaseClient.supabaseKey;
       return headers;
     }
 
-    async function connectToSupabase() {
-      const url = supabaseUrlInput.value.trim().replace(/\/$/, '');
-      const anonKey = supabaseAnonKeyInput.value.trim();
-      const email = adminEmailInput.value.trim();
-      const password = adminPasswordInput.value;
-      if (!url || !anonKey || !email || !password) {
-        setConnectionStatus('Fyll i Supabase URL, anon-nyckel, e-post och lösenord.');
-        return;
-      }
-
-      connectButton.disabled = true;
-      setConnectionStatus('Ansluter och verifierar adminbehörighet...');
-      try {
-        const authResponse = await fetch(`${url}/auth/v1/token?grant_type=password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', apikey: anonKey },
-          body: JSON.stringify({ email, password })
-        });
-        const authPayload = await authResponse.json().catch(() => ({}));
-        if (!authResponse.ok) throw new Error(authPayload.error_description || authPayload.msg || 'Inloggningen misslyckades.');
-        authSession = authPayload;
-        supabaseClient = { supabaseKey: anonKey };
-        adminApiBase = `${url}/functions/v1/admin-api`;
-        localStorage.setItem('idv-admin-connection', JSON.stringify({ url, anonKey, email }));
-        saveSession();
-        adminPasswordInput.value = '';
-        signOutButton.hidden = false;
-        await refreshFromApi();
-        setConnectionStatus(`Ansluten som ${email}. Live-data används.`, true);
-      } catch (error) {
-        authSession = null;
-        setConnectionStatus(`Kunde inte ansluta: ${error.message || 'okänt fel'}`);
-      } finally {
-        connectButton.disabled = false;
-      }
-    }
-
     async function refreshFromApi() {
+      if (verified.identity.role === 'admin') {
       const settingsRes = await fetch(`${adminApiBase}/settings`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
       if (!settingsRes.ok) throw new Error(`Inställningar kunde inte hämtas (${settingsRes.status}).`);
       const settingsJson = await settingsRes.json();
-      const normalizedSettings = normalizeSettings(settingsJson.settings || settingsJson || {});
+      const normalizedSettings = {...normalizeSettings(settingsJson.settings || settingsJson || {}), role:verified.identity.role};
       deliveryMode.value = normalizedSettings.emailDeliveryMode;
       testRecipient.value = normalizedSettings.emailTestRecipient;
       productionRecipient.value = normalizedSettings.receiptEmailTo;
@@ -630,13 +565,14 @@
       pdfWatermarkEnabled.value = String(normalizedSettings.pdfWatermarkEnabled);
       pdfWatermarkOpacity.value = normalizedSettings.pdfWatermarkOpacity;
       statusFilter.value = normalizedSettings.role;
+      }
       updateOverview();
 
       const submissionsRes = await fetch(`${adminApiBase}/submissions`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
       if (!submissionsRes.ok) throw new Error(`Underlag kunde inte hämtas (${submissionsRes.status}).`);
       const submissionsJson = await submissionsRes.json();
       submissions = Array.isArray(submissionsJson.submissions) ? submissionsJson.submissions.map(normalizeSubmission) : [];
-      selectedIndex = 0;
+      selectedIndex = Math.max(0, submissions.findIndex(item => item.id === new URLSearchParams(location.search).get('submission')));
       savePersistedState();
       renderList();
       updateSelection();
@@ -645,7 +581,7 @@
     function normalizeSubmission(item) {
       return {
         id: item.id || item.uuid || 'INV-0000',
-        name: item.sender_name || item.name || 'Okänt namn',
+        name: `${item.is_test ? '[TEST] ' : ''}${item.sender_name || item.name || 'Okänt namn'}`,
         email: item.sender_email || item.email || '-',
         eventTag: item.event_tag || item.eventTag || '-',
         clearingNumber: item.bank_clearing_number || item.clearing_number || '',
@@ -706,84 +642,29 @@
     function normalizeSettings(settings = {}) {
       if (Array.isArray(settings)) settings = Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
       return {
-        emailDeliveryMode: settings.email_delivery_mode || settings.emailDeliveryMode || 'test',
-        emailTestRecipient: settings.email_test_recipient || settings.emailTestRecipient || 'mail@torbjornzimmerman.se',
-        receiptEmailTo: settings.receipt_email_to || settings.receiptEmailTo || 'betala@idrottsveteranerna.se',
+        emailDeliveryMode: settings.email_delivery_mode || settings.emailDeliveryMode || 'disabled',
+        emailTestRecipient: settings.email_test_recipient ?? settings.emailTestRecipient ?? '',
+        receiptEmailTo: settings.receipt_email_to ?? settings.receiptEmailTo ?? '',
         retentionDays: Number(settings.retention_days || settings.retentionDays || 365),
         travelRatePerMil: Number(settings.travel_rate_per_km || settings.travelRatePerKm || 2.5) * 10,
         pdfWatermarkEnabled: typeof settings.pdf_watermark_enabled === 'boolean' ? settings.pdf_watermark_enabled : settings.pdfWatermarkEnabled !== false,
         pdfWatermarkOpacity: Number(settings.pdf_watermark_opacity ?? settings.pdfWatermarkOpacity ?? 0.04) * 100,
-        role: settings.role || 'admin'
+        role: verified.identity.role
       };
     }
 
-    function loadPersistedState() {
-      const stored = JSON.parse(localStorage.getItem('idv-admin-state') || 'null');
-      if (stored && stored.settings) Object.assign(defaultSettings, stored.settings);
-      if (stored && Array.isArray(stored.submissions) && stored.submissions.length) submissions = stored.submissions;
-
-      const settings = { ...defaultSettings };
-      deliveryMode.value = settings.emailDeliveryMode;
-      testRecipient.value = settings.emailTestRecipient;
-      productionRecipient.value = settings.receiptEmailTo;
-      retentionDays.value = settings.retentionDays;
-      travelRatePerMil.value = settings.travelRatePerMil;
-      pdfWatermarkEnabled.value = String(settings.pdfWatermarkEnabled);
-      pdfWatermarkOpacity.value = settings.pdfWatermarkOpacity;
-      statusFilter.value = settings.role;
-    }
-
     function savePersistedState() {
-      localStorage.setItem('idv-admin-state', JSON.stringify({
-        settings: {
-          emailDeliveryMode: deliveryMode.value,
-          emailTestRecipient: testRecipient.value,
-          receiptEmailTo: productionRecipient.value,
-          retentionDays: retentionDays.value,
-          travelRatePerMil: travelRatePerMil.value,
-          pdfWatermarkEnabled: pdfWatermarkEnabled.value === 'true',
-          pdfWatermarkOpacity: pdfWatermarkOpacity.value,
-          role: statusFilter.value
-        },
-        submissions
-      }));
-    }
-
-    async function tryLoadFromApi() {
-      if (!adminApiBase) return false;
-      try {
-        const settingsRes = await fetch(`${adminApiBase}/settings`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
-        if (!settingsRes.ok) return false;
-        const settingsJson = await settingsRes.json();
-        const normalizedSettings = normalizeSettings(settingsJson.settings || settingsJson || {});
-        deliveryMode.value = normalizedSettings.emailDeliveryMode;
-        testRecipient.value = normalizedSettings.emailTestRecipient;
-        productionRecipient.value = normalizedSettings.receiptEmailTo;
-        retentionDays.value = normalizedSettings.retentionDays;
-        statusFilter.value = normalizedSettings.role;
-        savePersistedState();
-
-        const submissionsRes = await fetch(`${adminApiBase}/submissions`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
-        if (!submissionsRes.ok) return true;
-        const submissionsJson = await submissionsRes.json();
-        const mapped = Array.isArray(submissionsJson.submissions) ? submissionsJson.submissions.map(normalizeSubmission) : defaultSubmissions;
-        if (mapped.length) {
-          submissions = mapped;
-          selectedIndex = 0;
-        }
-        savePersistedState();
-        return true;
-      } catch (error) {
-        console.warn('Admin API not available, using local state fallback.', error);
-        return false;
-      }
+      // Do not retain financial or personal data in localStorage.
+      localStorage.removeItem('idv-admin-state');
     }
 
     function updateSelection() {
       if (!submissions.length) {
         list.innerHTML = '<div class="empty-state">Inga inskickade underlag hittades.</div>';
-        selectedBadge.textContent = 'Ingen';
-        selectedBadge.className = 'badge new';
+        if (selectedBadge) {
+          selectedBadge.textContent = 'Ingen';
+          selectedBadge.className = 'badge new';
+        }
         setPdfState('Välj ett underlag för att öppna PDF-preview.');
         return;
       }
@@ -993,29 +874,24 @@
       button.addEventListener('click', () => applyFilter(button.dataset.status));
     });
 
-    document.querySelectorAll('.nav-btn[data-view]').forEach((button) => {
-      button.addEventListener('click', () => {
-        document.querySelectorAll('.nav-btn[data-view]').forEach((navButton) => navButton.classList.toggle('active', navButton === button));
-        if (button.dataset.view === 'archive') {
-          document.querySelector('[data-status="archived"]').click();
-          list.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else if (button.dataset.view === 'inbox') {
-          settingsPanel.classList.remove('open');
-          settingsPanel.setAttribute('aria-hidden', 'true');
-          document.querySelector('[data-status="all"]').click();
-          list.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else if (button.dataset.view === 'settings') {
-          const open = settingsPanel.classList.toggle('open');
-          settingsPanel.setAttribute('aria-hidden', String(!open));
-        }
+    function showAdminView(view) {
+      const settings = view === 'settings' && verified.identity.role === 'admin';
+      settingsPanel.classList.toggle('open', settings);
+      settingsPanel.setAttribute('aria-hidden', String(!settings));
+      document.querySelector('#inboxView').hidden = settings;
+      document.querySelector('.stats').hidden = settings;
+      document.querySelectorAll('.nav-btn[data-view]').forEach(button => {
+        const active = button.dataset.view === (settings ? 'settings' : 'inbox');
+        button.classList.toggle('active', active);
+        if (active) button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
       });
-    });
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape' || !settingsPanel.classList.contains('open')) return;
-      settingsPanel.classList.remove('open');
-      settingsPanel.setAttribute('aria-hidden', 'true');
-      document.querySelector('.nav-btn[data-view="inbox"]')?.focus();
+      const url = new URL(location.href);
+      if (settings) url.searchParams.set('view','settings'); else url.searchParams.delete('view');
+      history.replaceState(null,'',url);
+      window.scrollTo({top:0});
+    }
+    document.querySelectorAll('.nav-btn[data-view]').forEach(button => {
+      button.addEventListener('click', () => showAdminView(button.dataset.view));
     });
 
     async function updateStatus(status, index = selectedIndex) {
@@ -1042,22 +918,70 @@
     }
 
     async function bootstrap() {
-      loadPersistedState();
-      renderList();
-      updateSelection();
-      if (await restoreSession()) return;
-      tryLoadFromApi().finally(() => {
-        renderList();
-        updateSelection();
-      });
+      authSession = verified.session;
+      document.querySelector('[data-view="settings"]').hidden = verified.identity.role !== 'admin';
+      supabaseClient = {supabaseKey:verified.connection.anonKey};
+      adminApiBase = ADMIN_API;
+      setupAdminSecurity({role:verified.identity.role,request:async(resource,options={})=>{
+        const response=await fetch(`${adminApiBase}/${resource}`,{...options,headers:applyConnectionHeaders({'Content-Type':'application/json'})});
+        const result=await response.json();
+        if(!response.ok)throw new Error(result.error||'Begäran kunde inte genomföras.');
+        return result;
+      }});
+      submissions = [];
+      signOutButton.hidden = false;
+      statusFilter.value = verified.identity.role;
+      document.querySelector('#testMailPanel').hidden = verified.identity.role !== 'admin';
+      for (const element of [deliveryMode,testRecipient,productionRecipient]) element.disabled = verified.identity.role !== 'admin';
+      try {
+        await refreshFromApi();
+        const id = new URLSearchParams(location.search).get('submission');
+        if (id) {
+          let index = submissions.findIndex(item => item.id === id);
+          if (index < 0 && /^[0-9a-f-]{36}$/i.test(id)) {
+            const response = await fetch(`${adminApiBase}/submission?id=${encodeURIComponent(id)}`, {headers:applyConnectionHeaders()});
+            if (!response.ok) throw new Error('Ärendet kunde inte öppnas.');
+            const payload = await response.json();
+            submissions.unshift(normalizeSubmission(payload.submission)); index = 0;
+          }
+          if (index >= 0) { selectedIndex = index; renderList(); updateSelection(); await loadPdfPreview(submissions[index]); }
+        }
+        setConnectionStatus(`Ansluten som ${verified.connection.email}.`, true);
+        document.documentElement.style.visibility = 'visible';
+        showAdminView(new URLSearchParams(location.search).get('view'));
+      } catch (error) {
+        document.documentElement.style.visibility = 'visible';
+        submissions = []; renderList();
+        setConnectionStatus(error.message);
+      }
     }
 
+    document.querySelector('#sendTestMail').addEventListener('click', async event => {
+      const address = document.querySelector('#testMailAddress');
+      if (!address.value || !address.reportValidity()) return;
+      const output = document.querySelector('#testMailStatus');
+      event.target.disabled = true;
+      try {
+        const response = await fetch(`${adminApiBase}/test-mail`, {
+          method:'POST', headers:applyConnectionHeaders({'Content-Type':'application/json'}),
+          body:JSON.stringify({recipient:address.value, kind:document.querySelector('#testMailKind').value})
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.sent) throw new Error(payload.error || 'Testmailet kunde inte skickas.');
+        output.textContent = `Testmail skickat till ${address.value}.`;
+        const frame = document.querySelector('#testMailPreview');
+        frame.srcdoc = payload.preview.html; frame.hidden = false;
+      } catch (error) { output.textContent = error.message; }
+      finally { event.target.disabled = false; }
+    });
+
     saveSettingsButton.addEventListener('click', async () => {
+      if (verified.identity.role !== 'admin') return;
       if (adminApiBase && authSession) {
         const updates = [
-          ['email_delivery_mode', deliveryMode.value],
           ['email_test_recipient', testRecipient.value.trim()],
           ['receipt_email_to', productionRecipient.value.trim()],
+          ['email_delivery_mode', deliveryMode.value],
           ['retention_days', Number(retentionDays.value)],
           ['travel_rate_per_km', Number(travelRatePerMil.value) / 10],
           ['pdf_watermark_enabled', pdfWatermarkEnabled.value === 'true'],
@@ -1077,13 +1001,12 @@
           return;
         } catch (error) {
           setConnectionStatus(error.message);
+          return;
         }
       }
-      savePersistedState();
-      window.alert('Inställningarna sparades lokalt i browsern.');
+      setConnectionStatus('Inloggning krävs för att spara.');
     });
 
-    connectButton.addEventListener('click', connectToSupabase);
     refreshSubmissionsButton.addEventListener('click', async () => {
       if (!authSession) {
         setConnectionStatus('Anslut först för att hämta nya underlag.');
@@ -1100,23 +1023,11 @@
       }
     });
     window.setInterval(() => {
-      if (authSession && !refreshSubmissionsButton.disabled) refreshSubmissionsButton.click();
+      verifiedSession().then(session => { if (!session) location.replace(loginUrl()); else if (session.identity.role !== verified.identity.role) { location.reload(); } else { authSession=session.session; if (!refreshSubmissionsButton.disabled) refreshSubmissionsButton.click(); } }).catch(() => setConnectionStatus('Behörigheten kunde inte verifieras.'));
     }, 30000);
-    signOutButton.addEventListener('click', () => {
-      supabaseClient = null;
-      authSession = null;
-      sessionStorage.removeItem('idv-admin-session');
-      adminApiBase = window.IDV_ADMIN_API_URL || '';
-      signOutButton.hidden = true;
-      setConnectionStatus('Utloggad. Lokal demo används.');
+    signOutButton.addEventListener('click', async () => {
+      try { await signOut(); } finally { location.replace(new URL('admin-login.html', location.href)); }
     });
-
-    const storedConnection = getStoredConnection();
-    if (storedConnection) {
-      supabaseUrlInput.value = storedConnection.url || '';
-      supabaseAnonKeyInput.value = storedConnection.anonKey || '';
-      adminEmailInput.value = storedConnection.email || '';
-    }
 
     if (location.port === '43920' && ['localhost', '127.0.0.1'].includes(location.hostname)) {
       const controlLink = document.createElement('a');

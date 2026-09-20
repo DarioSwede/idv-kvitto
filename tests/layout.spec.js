@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+const version=JSON.parse(fs.readFileSync(new URL('../version.json',import.meta.url),'utf8')).version;
 import {test,expect} from '@playwright/test';
 
 async function openCompensationStep(page){
@@ -22,7 +24,7 @@ test('toppmenyn visar det gemensamma trestegsflödet',async({page})=>{
   expect(processingStyle.borderStyle).toBe('dashed');
   expect(processingStyle.backgroundColor).toBe('rgb(238, 240, 237)');
   await expect(page.locator('#welcome').getByRole('link',{name:'Så hanterar vi dina personuppgifter'})).toHaveAttribute('href','privacy.html');
-  await expect(page.locator('#welcome .welcome-build-meta')).toContainText('Version 2026.09.13.13 · Byggd av Zimmerman');
+  await expect(page.locator('#welcome .welcome-build-meta')).toContainText(`Version ${version} · Byggd av Zimmerman`);
   await expect(page.locator('#welcome .welcome-build-meta')).toContainText('© 2026 Idrottsveteranerna');
   await page.getByRole('button',{name:'Starta ansökan'}).click();
   await expect(page.locator('.timeline .seg')).toHaveCount(3);

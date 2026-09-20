@@ -53,5 +53,5 @@ document.querySelector('#clearNote').addEventListener('click',()=>{note.value=''
 document.querySelector('#clearOutput').addEventListener('click',()=>{output.textContent='Ingen körning ännu.';delete output.dataset.state});
 document.querySelector('#refreshStatus').addEventListener('click',refresh);
 document.querySelector('#refreshEmail').addEventListener('click',refreshEmail);
-document.querySelector('#openEmailAdmin').addEventListener('click',()=>{window.location.href='/admin.html'});
+document.querySelector('#openEmailAdmin').addEventListener('click',()=>{window.location.href='/admin.html?view=settings'});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});render({});refresh();
