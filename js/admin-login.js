@@ -14,7 +14,8 @@ if(invitation){
   password.autocomplete='new-password';password.minLength=12;button.textContent='Spara lösenord och logga in';
 }
 const saved = storedAuth();
-const key = saved?.connection.anonKey || DEFAULT_PUBLIC_KEY;
+// A cached key may have been revoked; the deployed configuration is authoritative.
+const key = DEFAULT_PUBLIC_KEY;
 email.value = saved?.connection.email || '';
 const returnTo = safeReturnTo(new URLSearchParams(location.search).get('returnTo'), location.href);
 form.addEventListener('submit', async event => {
