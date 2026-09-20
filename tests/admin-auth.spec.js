@@ -14,8 +14,6 @@ async function api(page,{role='superuser',meStatus=200}={}) {
   });
 }
 async function login(page){
-  await page.locator('#connectionSetup').evaluate(element=>{element.open=true;});
-  await page.locator('#publicKey').fill('sb_publishable_test');
   await page.locator('#email').fill('test@example.org');
   await page.locator('#password').fill('test-password');
   await page.locator('#loginButton').click();
@@ -114,8 +112,7 @@ test('invitation callback clears URL credentials and sets password after role ve
   await page.goto('/admin-login.html#type=invite&access_token=invite-token&refresh_token=refresh&expires_in=3600');
   await expect(page).toHaveURL(/admin-login.html$/);
   await expect(page.getByRole('heading',{name:'Aktivera ditt konto'})).toBeVisible();
-  await page.locator('#connectionSetup').evaluate(element=>{element.open=true;});
-  await page.locator('#publicKey').fill('sb_publishable_test');await page.locator('#password').fill('new-password-long');await page.locator('#loginButton').click();
+  await page.locator('#password').fill('new-password-long');await page.locator('#loginButton').click();
   await expect(page).toHaveURL(/admin.html$/);
   await expect(page.locator('#connectionStatus')).toContainText('invited@example.org');
 });
@@ -125,7 +122,8 @@ test('viewer never sees invitation or audit controls',async({page})=>{
 });
 test('normal login needs only email and password, not a Supabase key',async({page})=>{
   await api(page);await page.goto('/admin-login.html');
-  await expect(page.locator('#publicKey')).toBeHidden();
+  await expect(page.locator('#publicKey')).toHaveCount(0);
+  await expect(page.locator('#connectionSetup')).toHaveCount(0);
   await page.locator('#email').fill('test@example.org');await page.locator('#password').fill('test-password');await page.locator('#loginButton').click();
   await expect(page.locator('#connectionStatus')).toContainText('Ansluten som');
 });
