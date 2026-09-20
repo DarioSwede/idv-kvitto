@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.20.5
+- Inloggningen visar endast e-post och lösenord. Publik anslutningsnyckel hämtas automatiskt från konfigurationen.
+
 ## 2026.09.20.4
 - Milersättning ändras endast av SU på inställningssidan. Inkorgens överflödiga självlänk tas bort.
 - Formulärets startsida får en tydlig länk till administrationens inloggning.
