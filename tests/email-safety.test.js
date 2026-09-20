@@ -95,3 +95,21 @@ test('login accepts only public key types, never service-role or secret keys', (
   assert.equal(publicKeyOnly('sb_publishable_example'),true);
   for(const key of [jwt('service_role'),'sb_secret_example','invalid']) assert.equal(publicKeyOnly(key),false);
 });
+
+test('mail rejection explanations are specific but never echo provider details',async()=>{
+  const cases=[
+    [401,'validation_error','Invalid API key secret','provider_credentials_rejected'],
+    [403,'restricted_api_key','secret','provider_credentials_rejected'],
+    [403,'validation_error','You can only send testing emails to your own email address secret','test_recipient_restricted'],
+    [403,'validation_error','The secret domain is not verified','sender_domain_unverified'],
+    [429,'rate_limit_exceeded','secret','provider_limit'],
+    [422,'validation_error','secret','provider_invalid_request'],
+    [500,'application_error','secret','provider_unavailable'],
+    [403,'secret','secret','provider_rejected']
+  ];
+  for(const [status,name,message,code] of cases){
+    const result=await sendReceiptEmail(testMessage('system'),'me@example.org',false,{apiKey:'secret',from:'sender@example.org'},async()=>Response.json({name,message},{status}));
+    assert.equal(result.sent,false);assert.equal(result.error_code,code);
+    assert.ok(!JSON.stringify(result).includes('secret'));assert.ok(!result.error.includes('Underlaget sparades'));
+  }
+});

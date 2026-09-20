@@ -21,6 +21,26 @@ export function renderReceiptEmail(input, senderCopy = false) {
 
   return {subject: `${input.isTest ? '[TEST] ' : ''}${senderCopy ? 'Kopia: ' : ''}${title} – Idrottsveteranerna`, html};
 }
+// Only fixed, allowlisted explanations leave the server; never echo provider payloads.
+export function emailFailure(status, result) {
+  const name=typeof result?.name==='string'?result.name:'';
+  const message=typeof result?.message==='string'?result.message:'';
+  let code='provider_rejected', explanation='E-posttjänsten avvisade meddelandet.';
+  if (status===403 && name==='validation_error' && /only send testing emails/i.test(message)) {
+    code='test_recipient_restricted';explanation='Resend tillåter just nu bara testmejl till kontots egen adress. Verifiera en avsändardomän för andra mottagare.';
+  } else if (status===403 && name==='validation_error' && /domain.*not verified/i.test(message)) {
+    code='sender_domain_unverified';explanation='Avsändardomänen är inte verifierad i Resend. Kontrollera domänen och RECEIPT_EMAIL_FROM.';
+  } else if (status===401 || ['invalid_api_key','missing_api_key','restricted_api_key','suspended_api_key','invalid_permission'].includes(name)) {
+    code='provider_credentials_rejected';explanation='Resend nekar API-nyckeln eller dess behörighet. Kontrollera RESEND_API_KEY i Supabase.';
+  } else if (status===429) {
+    code='provider_limit';explanation='Resends sändningsgräns har nåtts. Kontrollera kvot och hastighetsgräns.';
+  } else if (status===400 || status===422) {
+    code='provider_invalid_request';explanation='Resend godkände inte meddelandets format eller avsändaradress.';
+  } else if (status>=500) {
+    code='provider_unavailable';explanation='E-posttjänsten är tillfälligt otillgänglig. Kontrollera leveransstatus innan ett nytt försök.';
+  }
+  return {sent:false,error:`${explanation} (${code}, HTTP ${status})`,error_code:code};
+}
 export async function sendReceiptEmail(input, recipient, senderCopy, {apiKey, from}, send = fetch) {
   if (!apiKey || !from) return {sent:false, error:'E-posttjänsten är inte konfigurerad.'};
   const message = renderReceiptEmail(input, senderCopy);
@@ -32,7 +52,7 @@ export async function sendReceiptEmail(input, recipient, senderCopy, {apiKey, fr
         ...(input.pdfBytes ? {attachments:[{filename:input.isTest ? 'TEST-underlag.pdf' : 'inskickat-underlag.pdf', content:toBase64(input.pdfBytes)}]} : {})})
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok) return {sent:false, error:'Underlaget sparades, men e-posttjänsten kunde inte skicka meddelandet.'};
+    if (!response.ok) return emailFailure(response.status,result);
     return {sent:true, id:typeof result.id === 'string' ? result.id : null};
   } catch {
     return {sent:false, error:'Leveransen kunde inte bekräftas. Kontrollera leveransstatus innan du försöker igen.'};
