@@ -1,3 +1,4 @@
+import {DEFAULT_PUBLIC_KEY,SUPABASE_URL} from '../js/admin-auth.js';
 import {test,expect} from '@playwright/test';
 const id='12345678-1234-1234-1234-123456789abc';
 async function api(page,{role='superuser',meStatus=200}={}) {
@@ -14,8 +15,6 @@ async function api(page,{role='superuser',meStatus=200}={}) {
   });
 }
 async function login(page){
-  await page.locator('#connectionSetup').evaluate(element=>{element.open=true;});
-  await page.locator('#publicKey').fill('sb_publishable_test');
   await page.locator('#email').fill('test@example.org');
   await page.locator('#password').fill('test-password');
   await page.locator('#loginButton').click();
@@ -114,8 +113,7 @@ test('invitation callback clears URL credentials and sets password after role ve
   await page.goto('/admin-login.html#type=invite&access_token=invite-token&refresh_token=refresh&expires_in=3600');
   await expect(page).toHaveURL(/admin-login.html$/);
   await expect(page.getByRole('heading',{name:'Aktivera ditt konto'})).toBeVisible();
-  await page.locator('#connectionSetup').evaluate(element=>{element.open=true;});
-  await page.locator('#publicKey').fill('sb_publishable_test');await page.locator('#password').fill('new-password-long');await page.locator('#loginButton').click();
+  await page.locator('#password').fill('new-password-long');await page.locator('#loginButton').click();
   await expect(page).toHaveURL(/admin.html$/);
   await expect(page.locator('#connectionStatus')).toContainText('invited@example.org');
 });
@@ -125,7 +123,8 @@ test('viewer never sees invitation or audit controls',async({page})=>{
 });
 test('normal login needs only email and password, not a Supabase key',async({page})=>{
   await api(page);await page.goto('/admin-login.html');
-  await expect(page.locator('#publicKey')).toBeHidden();
+  await expect(page.locator('#publicKey')).toHaveCount(0);
+  await expect(page.locator('#connectionSetup')).toHaveCount(0);
   await page.locator('#email').fill('test@example.org');await page.locator('#password').fill('test-password');await page.locator('#loginButton').click();
   await expect(page.locator('#connectionStatus')).toContainText('Ansluten som');
 });
@@ -173,5 +172,33 @@ test('standalone settings require login before settings data is requested',async
   await expect(page).toHaveURL(/admin-login.html\?returnTo=/);expect(requested).toBe(0);
   await login(page);await expect(page).toHaveURL(/admin-settings.html$/);
   await expect(page.locator('#statusFilter')).toHaveValue('superuser');
-  await expect(page.locator('#statusFilter')).toBeDisabled();expect(requested).toBe(1);
+  await expect(page.locator('#statusFilter')).toBeDisabled();
+  await expect(page.locator('#saveSettingsButton')).toBeEnabled();
+  expect(requested).toBe(1);
+});
+
+for(const invitation of [false,true])test(`rotated public key recovers ${invitation?'invitation activation':'login'} without manual configuration`,async({page})=>{
+  await api(page);
+  await page.addInitScript(url=>{
+    if(!localStorage.getItem('idv-admin-connection'))localStorage.setItem('idv-admin-connection',JSON.stringify({url,anonKey:'sb_publishable_revoked',email:'test@example.org'}));
+  },SUPABASE_URL);
+  const calls=[];
+  await page.route('https://ohwalxqwtxtlldalsclj.supabase.co/**',async route=>{
+    const request=route.request();const path=new URL(request.url()).pathname;
+    calls.push(path);
+    expect(request.headers().apikey).toBe(DEFAULT_PUBLIC_KEY);
+    if(path.endsWith('/login'))return route.fulfill({json:{access_token:'fresh-session',expires_at:Math.floor(Date.now()/1000)+3600}});
+    if(path.endsWith('/me'))return route.fulfill({json:{role:'superuser',user_id:'test-user'}});
+    if(path.endsWith('/auth/v1/user'))return route.fulfill({json:{email:'test@example.org'}});
+    if(path.endsWith('/submissions'))return route.fulfill({json:{submissions:[]}});
+    return route.abort();
+  });
+  // Seed stale local storage only once; navigation must retain the repaired connection.
+  await page.goto('/admin-login.html'+(invitation?'#type=invite&access_token=invite-token&refresh_token=refresh&expires_in=3600':''));
+  if(!invitation)await page.locator('#email').fill('test@example.org');
+  await page.locator('#password').fill('new-password-long');
+  await page.locator('#loginButton').click();await expect(page).toHaveURL(/admin.html$/);
+  await expect(page.locator('#connectionStatus')).toContainText('Ansluten som');
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('idv-admin-connection')).anonKey)).toBe(DEFAULT_PUBLIC_KEY);
+  expect(calls.some(path=>path.endsWith(invitation?'/auth/v1/user':'/login'))).toBe(true);
 });

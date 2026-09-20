@@ -1,3 +1,4 @@
+import {DEFAULT_PUBLIC_KEY} from '../js/admin-auth.js';
 import { test, expect } from '@playwright/test';
 
 async function setup(page, loggedIn = true) {
@@ -66,7 +67,7 @@ test('SU login on control origin survives same-tab return without preview server
     if (path === '/api/status') return route.fulfill({json: {previewRunning: false}});
     if (path === '/api/email-status') {
       expect(route.request().headers().authorization).toBe('Bearer fake-login-token');
-      expect(route.request().headers().apikey).toBe('sb_publishable_test');
+      expect(route.request().headers().apikey).toBe(DEFAULT_PUBLIC_KEY);
       return route.fulfill({json: {settings: {email_delivery_mode: 'test', receipt_email_to: 'receipts@example.org', email_test_recipient: 'test@example.org'}, delivery_configured: true, copy_available: false}});
     }
     const type = path.endsWith('.html') ? 'text/html' : path.endsWith('.js') ? 'text/javascript' : path.endsWith('.css') ? 'text/css' : path.endsWith('.png') ? 'image/png' : 'application/json';
@@ -83,8 +84,6 @@ test('SU login on control origin survives same-tab return without preview server
   await page.goto('http://localhost:43920/control-center.html');
   await page.locator('#openEmailAdmin').click();
   await expect(page).toHaveURL(/admin-login.html/);
-  await page.locator('#connectionSetup').evaluate(element=>{element.open=true;});
-  await page.locator('#publicKey').fill('sb_publishable_test');
   await page.locator('#email').fill('staff@example.org');
   await page.locator('#password').fill('fake-password');
   await page.locator('#loginButton').click();
