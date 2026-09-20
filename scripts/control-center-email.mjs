@@ -23,7 +23,7 @@ export async function readEmailStatus(request, fetchStatus = fetch) {
     if (!response.ok) {
       const status = [401, 403, 404].includes(response.status) ? response.status : 502;
       const error = status === 401 ? 'Sessionen har gått ut. Logga in igen i adminvyn.' :
-        status === 403 ? 'Personalbehörighet krävs för e-poststatus.' :
+        status === 403 ? 'SU-behörighet krävs för e-poststatus.' :
         status === 404 ? 'Admin-API saknar e-poststatus. Backendändringen behöver publiceras.' :
         'Kunde inte läsa e-poststatus från admin-API.';
       return { status, body: { error } };

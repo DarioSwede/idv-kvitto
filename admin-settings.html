@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="sv" style="visibility:hidden">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inställningar – IDV</title>
+  <link rel="stylesheet" href="styles/admin.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-logo" src="idv-mark.png" alt="Idrottsveteranerna">
+      <div class="brand-copy">
+        <div class="brand-title">Kvittoadministration</div>
+        <div id="brandVersion" class="brand-version">Laddar version...</div>
+      </div>
+    </div>
+    <nav class="nav"><a class="nav-btn" href="admin.html">Inkorg</a><a class="nav-btn active" href="admin-settings.html" aria-current="page">Inställningar</a></nav>
+    <button id="themeSwitch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Byt till mörkt läge" title="Byt tema">
+      <span class="theme-switch-icon" aria-hidden="true">☀</span>
+      <span class="theme-switch-label">Ljust</span>
+    </button>
+
+  </aside>
+  <main class="main">
+    <header class="account-bar">
+      <div><h1 class="admin-page-title">Inställningar</h1><div class="connection-status" id="connectionStatus" role="status">Verifierar SU-behörighet…</div></div>
+      <div class="account-actions"><a href="index.html">Öppna kvittoformuläret</a><button id="signOutButton" class="button secondary" type="button">Logga ut</button></div>
+    </header>
+    <section id="settingsPanel" class="card open" aria-hidden="false">
+      <div class="list-header">
+        <h2>Inställningar</h2>
+        <button id="saveSettingsButton" class="button primary">Spara inställningar</button>
+      </div>
+      <p class="settings-hint">Endast superuser (SU) kan se och ändra inställningarna. Ändra värdena och välj Spara inställningar.</p>
+      <div class="settings-grid">
+        <div class="setting">
+          <label for="deliveryMode">E-post och testläge</label>
+          <select id="deliveryMode">
+            <option value="test">Test</option>
+            <option value="production">Produktion</option>
+            <option value="disabled">Avstängd</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="testRecipient">Testmottagare</label>
+          <input id="testRecipient" value="mail@torbjornzimmerman.se">
+        </div>
+        <div class="setting">
+          <label for="productionRecipient">Produktionsmottagare</label>
+          <input id="productionRecipient" value="betala@idrottsveteranerna.se">
+        </div>
+        <div class="setting">
+          <label for="statusFilter">Din serververifierade roll</label>
+          <select id="statusFilter" disabled>
+            <option value="superuser">Superuser (SU)</option>
+            <option value="admin">Admin</option>
+            <option value="cashier">cashier</option>
+            <option value="tester">tester</option>
+            <option value="viewer">viewer</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="retentionDays">Behåll arkiverade (dagar)</label>
+          <input id="retentionDays" type="number" min="1" max="3650" value="365">
+        </div>
+        <div class="setting">
+          <label for="travelRatePerMil">Ersättning per mil (kr)</label>
+          <input id="travelRatePerMil" type="number" min="0.01" max="10000" step="0.01" value="25">
+        </div>
+        <div class="setting">
+          <label for="pdfWatermarkEnabled">Bakgrundslogotyp i PDF</label>
+          <select id="pdfWatermarkEnabled">
+            <option value="true">På</option>
+            <option value="false">Av</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="pdfWatermarkOpacity">Bakgrundslogotypens styrka (%)</label>
+          <input id="pdfWatermarkOpacity" type="number" min="1" max="15" step="1" value="4">
+        </div>
+      </div>
+      <div class="settings-grid" style="margin-top:20px">
+      <div class="setting" id="testMailPanel">
+        <h3>Skicka testmail</h3>
+        <p>Skickar endast till adressen nedan. Testet ändrar inte mottagarinställningarna. Avstängd blockerar även testmail.</p>
+        <label for="testMailAddress">Mottagare för detta test</label><input id="testMailAddress" type="email" placeholder="namn@example.org">
+        <label for="testMailKind">Meddelandet ska motsvara</label><select id="testMailKind"><option value="system">Neutralt systemtest</option><option value="test">Testmottagare</option><option value="production">Produktionsmottagare</option></select>
+        <button id="sendTestMail" class="button" type="button">Skicka testmail</button>
+        <p id="testMailStatus" role="status"></p><iframe id="testMailPreview" title="Kassörsmeddelande – test" sandbox="" hidden style="width:100%;height:440px;background:white"></iframe>
+      </div>
+      <div class="setting" id="adminSecurityPanel" hidden>
+        <h3>Användare och säkerhet</h3>
+        <p>Bjud in en ny användare. Välj den lägsta behörighet personen behöver.</p>
+        <label for="inviteEmail">E-postadress</label><input id="inviteEmail" type="email" required autocomplete="off">
+        <label for="inviteRole">Behörighet</label><select id="inviteRole"><option value="viewer">Läsbehörighet</option><option value="cashier">Kassör</option><option value="tester">Drift/test</option><option value="admin">Administratör</option><option value="superuser">Superuser (SU)</option></select>
+        <button id="inviteStaff" class="button" type="button">Skicka inbjudan</button>
+        <p id="inviteStatus" role="status"></p>
+        <h3>Säkerhetslogg</h3><p>De senaste 100 händelserna, högst 90 dagar. Tider visas i UTC.</p>
+        <button id="loadAudit" class="button" type="button">Visa säkerhetslogg</button>
+        <div id="auditEntries" role="status" style="overflow-wrap:anywhere"></div>
+      </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="js/admin-settings.js"></script>
+</body>
+</html>

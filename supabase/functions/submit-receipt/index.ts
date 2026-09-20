@@ -1,8 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.4";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.57.4";
 import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
 import { corsHeaders, isAllowedOrigin } from "./cors.js";
-import { resolveDeliveryRecipient, resolveEmailSettings } from "./email-config.js";
+import { resolveDeliveryRecipient, resolveEmailSettings, resolveCopyRecipient } from "./email-config.js";
+import { sendReceiptEmail } from "./receipt-email.js";
 import { clientAddress, enforceRateLimit, RateLimitError } from "./rate-limit.js";
 
 const defaultAllowedTypes = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/heic", "image/heif", "application/pdf"];
@@ -14,8 +15,6 @@ const wrapText = (value: string, max = 88) => { const words = value.replace(/[\r
 const pdfSafeText = (value: string) => value.normalize("NFC").replace(/[–—]/g, "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/…/g, "...").replace(/[^\x20-\x7E\u00A0-\u00FF]/gu, "?");
 const formatAmount = (amount: number | null) => amount === null ? "" : new Intl.NumberFormat("sv-SE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + " kr";
 const formatNumber = (value: number) => new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 2 }).format(value);
-const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]!));
-const toBase64 = (bytes: Uint8Array) => { let result = ""; for (let i = 0; i < bytes.length; i += 32768) result += String.fromCharCode(...bytes.subarray(i, i + 32768)); return btoa(result); };
 const modeLabel = (mode: string) => mode === "travel" ? "Endast milersättning" : mode === "combined" ? "Kvitton + milersättning" : "Endast kvitton";
 const onlyDigits = (value: string) => value.replace(/\D/g, "");
 const isKnownClearingNumber = (value: string) => value.length === 4 && CLEARING_RANGES.some(([from, to]) => Number(value) >= from && Number(value) <= to);
@@ -28,7 +27,7 @@ const submissionReference = (name: string, date: Date, id: string) => {
 const positiveNumber = (value: unknown, fallback: number) => typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
 const boundedNumber = (value: unknown, fallback: number, maximum: number) => Math.min(positiveNumber(value, fallback), maximum);
 const boundedOpacity = (value: unknown, fallback: number) => Math.min(Math.max(typeof value === "number" && Number.isFinite(value) ? value : fallback, 0.01), 0.15);
-async function runtimeSettings(client: ReturnType<typeof createClient>) {
+async function runtimeSettings(client: SupabaseClient) {
   const defaults = {
     ...resolveEmailSettings(),
     travelRatePerKm: 2.5,
@@ -60,24 +59,6 @@ async function runtimeSettings(client: ReturnType<typeof createClient>) {
 type TravelDetails = { enabled: boolean; km: number | null; description: string; amount: number; calculation: string };
 type BankDetails = { clearingNumber: string; accountNumber: string };
 
-async function sendReceiptEmail(input: { submissionMode: string; senderName: string; senderEmail: string; eventTag: string; otherInfo: string; receiptNames: string[]; receiptAmounts: Array<number | null>; receiptTotal: number; amountTotal: number; travel: TravelDetails; bank: BankDetails; submittedAt: Date; pdfBytes: Uint8Array }, recipient: string, senderCopy = false) {
-  const apiKey = Deno.env.get("RESEND_API_KEY");
-  const from = Deno.env.get("RECEIPT_EMAIL_FROM");
-  if (!apiKey || !from) return { sent: false, error: "E-posttjänsten är ännu inte konfigurerad." };
-  const rows = input.receiptNames.map((name, index) => `<tr><td style="padding:8px;border-bottom:1px solid #e7e3d8">${escapeHtml(name)}</td><td style="padding:8px;border-bottom:1px solid #e7e3d8;text-align:right">${escapeHtml(formatAmount(input.receiptAmounts[index])) || "—"}</td></tr>`).join("");
-  const timestamp = new Intl.DateTimeFormat("sv-SE", { dateStyle: "long", timeStyle: "short", timeZone: "Europe/Stockholm" }).format(input.submittedAt);
-  const receiptTotalRow = input.submissionMode !== "travel" ? `<tr><td style="padding:10px 8px">Summa kvitton</td><td style="padding:10px 8px;text-align:right">${escapeHtml(formatAmount(input.receiptTotal))}</td></tr>` : "";
-  const travelRows = input.travel.enabled ? `<tr><td style="padding:10px 8px">Milersättning<br><small>${escapeHtml(input.travel.description)} · ${escapeHtml(input.travel.calculation)}</small></td><td style="padding:10px 8px;text-align:right">${escapeHtml(formatAmount(input.travel.amount))}</td></tr>` : "";
-  const title = modeLabel(input.submissionMode);
-  const intro = senderCopy ? `Här är din kopia av underlaget som skickades in ${escapeHtml(timestamp)}.` : `Nytt underlag inskickat ${escapeHtml(timestamp)} av ${escapeHtml(input.senderName)} (${escapeHtml(input.senderEmail)}).`;
-  const accountForRecipient = senderCopy ? maskAccountNumber(input.bank.accountNumber) : input.bank.accountNumber;
-  const bankRow = `<p><strong>Konto för utbetalning:</strong><br>Clearing ${escapeHtml(input.bank.clearingNumber)} · Konto ${escapeHtml(accountForRecipient)}</p>`;
-  const html = `<!doctype html><html lang="sv"><body style="margin:0;background:#faf8f3;color:#1a2e2a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif"><div style="max-width:640px;margin:auto;padding:28px 18px"><div style="background:#fff;border:1px solid #d8d3c4;border-radius:16px;padding:24px"><p style="margin:0 0 8px;color:#2d6a4f;font-weight:700;text-transform:uppercase">Idrottsveteranerna</p><h1 style="margin:0 0 16px;font-size:26px">${senderCopy ? "Kopia på inskickat underlag" : "Nytt inskickat underlag"}</h1><p>${intro}</p><p><strong>Typ av underlag:</strong> ${escapeHtml(title)}</p><table style="width:100%;border-collapse:collapse;margin:20px 0"><tbody>${rows}${receiptTotalRow}${travelRows}<tr><td style="padding:10px 8px;font-weight:700">Totalt</td><td style="padding:10px 8px;text-align:right;font-weight:700">${escapeHtml(formatAmount(input.amountTotal)) || "—"}</td></tr></tbody></table>${bankRow}${input.eventTag ? `<p><strong>Tillfälle:</strong> ${escapeHtml(input.eventTag)}</p>` : ""}${input.otherInfo ? `<p><strong>Övrig information:</strong><br>${escapeHtml(input.otherInfo).replace(/\n/g, "<br>")}</p>` : ""}<p style="margin-top:24px;color:#6b7871;font-size:13px">Automatiskt meddelande från IDV:s ersättningsapp.</p></div></div></body></html>`;
-  const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [recipient], subject: `${senderCopy ? "Kopia: " : ""}${title} – Idrottsveteranerna`, html, attachments: [{ filename: "inskickat-underlag.pdf", content: toBase64(input.pdfBytes) }] }) });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) { console.error("receipt email failed", recipient, response.status, result); return { sent: false, error: senderCopy ? "Kopian kunde inte skickas, men underlaget är inskickat." : "Underlaget sparades, men kunde inte mejlas till mail@torbjornzimmerman.se." }; }
-  return { sent: true, id: typeof result?.id === "string" ? result.id : null };
-}
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
@@ -87,7 +68,7 @@ Deno.serve(async (req: Request) => {
     const url = Deno.env.get("SUPABASE_URL"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !serviceKey) return respond({ error: "Tjänsten är inte konfigurerad." }, 503, origin);
     const settings = await runtimeSettings(createClient(url, serviceKey, { auth: { persistSession: false } }));
-    return respond({ ok: true, email_configured: Boolean(settings.ccSelfEnabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RECEIPT_EMAIL_FROM")), settings: { travel_rate_per_km: settings.travelRatePerKm, max_travel_km: settings.maxTravelKm, max_receipts: settings.maxReceipts, max_file_size_mb: settings.maxFileSizeMb, max_total_upload_mb: settings.maxTotalUploadMb, allowed_mime_types: settings.allowedTypes, cc_self_enabled: settings.ccSelfEnabled, receipt_email_to: settings.receiptEmailTo, email_delivery_mode: settings.emailDeliveryMode, email_test_recipient: settings.emailTestRecipient } }, 200, origin);
+    return respond({ ok: true, email_configured: Boolean(resolveDeliveryRecipient(settings) && settings.ccSelfEnabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RECEIPT_EMAIL_FROM")), settings: { travel_rate_per_km: settings.travelRatePerKm, max_travel_km: settings.maxTravelKm, max_receipts: settings.maxReceipts, max_file_size_mb: settings.maxFileSizeMb, max_total_upload_mb: settings.maxTotalUploadMb, allowed_mime_types: settings.allowedTypes, cc_self_enabled: settings.ccSelfEnabled, receipt_email_to: settings.receiptEmailTo, email_delivery_mode: settings.emailDeliveryMode, email_test_recipient: settings.emailTestRecipient } }, 200, origin);
   }
   if (req.method !== "POST") return respond({ error: "Metoden stöds inte." }, 405, origin);
   const reply = (body: unknown, status = 200) => respond(body, status, origin);
@@ -141,13 +122,13 @@ Deno.serve(async (req: Request) => {
     const address = clientAddress(req.headers);
     if (address !== "unknown") await enforceRateLimit(supabase, { scope: "ip", value: address, windowSeconds: settings.rateLimitWindowSeconds, maxRequests: settings.rateLimitRequests, pepper: limiterPepper });
     await enforceRateLimit(supabase, { scope: "email", value: senderEmail, windowSeconds: settings.rateLimitWindowSeconds, maxRequests: settings.rateLimitRequests, pepper: limiterPepper });
-    const submittedAt = new Date(), receiptTotal = receiptAmounts.reduce((sum, amount) => sum + (amount ?? 0), 0), amountTotal = receiptTotal + travelAmount;
+    const submittedAt = new Date(), receiptTotal = receiptAmounts.reduce<number>((sum, amount) => sum + (amount ?? 0), 0), amountTotal = receiptTotal + travelAmount;
     const calculation = needsTravel ? `${formatNumber(travelKm!)} km × ${formatNumber(settings.travelRatePerKm)} kr = ${formatAmount(travelAmount)}` : "";
     const travelNote = travelDescription || "Milersättning";
     const travel: TravelDetails = { enabled: needsTravel, km: needsTravel ? travelKm : null, description: needsTravel ? travelNote : "", amount: needsTravel ? travelAmount : 0, calculation };
     const travelSummary = needsTravel ? `Milersättning\nResa: ${travelNote}\nKilometer: ${formatNumber(travelKm!)} km\nBeräkning: ${calculation}\nGodkänt belopp: ${formatAmount(travelAmount)}` : "";
-    const storedOtherInfo = [`Typ av underlag: ${modeLabel(submissionMode)}`, otherInfo, travelSummary].filter(Boolean).join("\n\n");
-    const { data: submission, error: submissionError } = await supabase.from("receipt_submissions").insert({ sender_name: senderName, sender_email: senderEmail, bank_clearing_number: clearingNumber, bank_account_number: accountNumber, event_tag: eventTag, other_info: storedOtherInfo, amount_total: amountTotal || null, receipt_total: needsReceipts ? (receiptTotal || null) : null, travel_km: needsTravel ? travelKm : null, travel_description: needsTravel ? travelDescription : null, travel_amount: needsTravel ? travelAmount : null, cc_self: false }).select("id").single();
+    const storedOtherInfo = [settings.emailDeliveryMode === "test" ? "TESTUNDERLAG – ska inte betalas ut." : "",`Typ av underlag: ${modeLabel(submissionMode)}`, otherInfo, travelSummary].filter(Boolean).join("\n\n");
+    const { data: submission, error: submissionError } = await supabase.from("receipt_submissions").insert({ is_test: settings.emailDeliveryMode === "test", sender_name: senderName, sender_email: senderEmail, bank_clearing_number: clearingNumber, bank_account_number: accountNumber, event_tag: eventTag, other_info: storedOtherInfo, amount_total: amountTotal || null, receipt_total: needsReceipts ? (receiptTotal || null) : null, travel_km: needsTravel ? travelKm : null, travel_description: needsTravel ? travelDescription : null, travel_amount: needsTravel ? travelAmount : null, cc_self: false }).select("id").single();
     if (submissionError) throw submissionError;
     const uploadedPaths: string[] = [];
     let finalPdfBytes: Uint8Array;
@@ -261,21 +242,27 @@ Deno.serve(async (req: Request) => {
       const finalPages = finalPdf.getPages();
       finalPages.forEach((page, index) => drawTrace(page, index + 1, finalPages.length));
       if (fileRows.length) { const { error: filesError } = await supabase.from("receipt_files").insert(fileRows); if (filesError) throw filesError; }
+      if (settings.emailDeliveryMode === "test") for (const page of finalPdf.getPages()) {
+        page.drawRectangle({x:0,y:page.getHeight()-18,width:page.getWidth(),height:18,color:rgb(1,0.95,0.8)});
+        page.drawText("TESTUNDERLAG - SKA INTE BETALAS UT", {x:12, y:page.getHeight()-12, size:Math.min(9,(page.getWidth()-24)/24), font:footerFont, color:rgb(0.7,0,0)});
+      };
       const finalPdfPath = `${submission.id}/sammanstallt-underlag.pdf`; finalPdfBytes = new Uint8Array(await finalPdf.save());
       const { error: finalUploadError } = await supabase.storage.from("receipt-files").upload(finalPdfPath, finalPdfBytes, { contentType: "application/pdf", upsert: false }); if (finalUploadError) throw finalUploadError;
       uploadedPaths.push(finalPdfPath);
       const { error: updateError } = await supabase.from("receipt_submissions").update({ final_pdf_path: finalPdfPath }).eq("id", submission.id); if (updateError) throw updateError;
     } catch (error) { if (uploadedPaths.length) await supabase.storage.from("receipt-files").remove(uploadedPaths); await supabase.from("receipt_submissions").delete().eq("id", submission.id); throw error; }
-    const emailInput = { submissionMode, senderName, senderEmail, eventTag, otherInfo, receiptNames, receiptAmounts, receiptTotal, amountTotal, travel, bank: { clearingNumber, accountNumber }, submittedAt, pdfBytes: finalPdfBytes! };
+    const emailInput = { submissionId: submission.id, isTest: settings.emailDeliveryMode === "test", submissionMode, senderName, senderEmail, eventTag, otherInfo, receiptNames, receiptAmounts, receiptTotal, amountTotal, travel, bank: { clearingNumber, accountNumber }, submittedAt, pdfBytes: finalPdfBytes! };
     const deliveryRecipient = resolveDeliveryRecipient(settings);
-    const deliveryResult = deliveryRecipient ? await sendReceiptEmail(emailInput, deliveryRecipient) : { sent: false, error: "E-post är avstängt i backend-konfigurationen." };
+    const mailConfig = { apiKey: Deno.env.get("RESEND_API_KEY"), from: Deno.env.get("RECEIPT_EMAIL_FROM") };
+    const copyRecipient = resolveCopyRecipient(settings, senderEmail, ccSelf);
+    const deliveryResult = deliveryRecipient ? await sendReceiptEmail(emailInput, deliveryRecipient, false, mailConfig) : { sent: false, error: "E-post är avstängt i backend-konfigurationen." };
     let copyResult: { sent: boolean; error?: string; id?: string | null } = { sent: false };
-    if (ccSelf && settings.ccSelfEnabled) {
-      copyResult = await sendReceiptEmail(emailInput, senderEmail, true);
-      if (copyResult.sent) await supabase.from("receipt_submissions").update({ cc_self: true }).eq("id", submission.id);
+    if (copyRecipient) {
+      copyResult = await sendReceiptEmail(emailInput, copyRecipient, true, mailConfig);
+      if (copyResult.sent && copyRecipient === senderEmail) await supabase.from("receipt_submissions").update({ cc_self: true }).eq("id", submission.id);
     }
     const { data: signedPdf } = await supabase.storage.from("receipt-files").createSignedUrl(`${submission.id}/sammanstallt-underlag.pdf`, 900);
-    return reply({ ok: true, submission_id: submission.id, submission_mode: submissionMode, final_pdf_url: signedPdf?.signedUrl ?? null, delivery_mode: settings.emailDeliveryMode, delivery_recipient: deliveryRecipient, delivery_sent: deliveryResult.sent, delivery_error: deliveryResult.error ?? null, copy_requested: ccSelf && settings.ccSelfEnabled, copy_sent: copyResult.sent, copy_error: copyResult.error ?? null });
+    return reply({ ok: true, submission_id: submission.id, submission_mode: submissionMode, final_pdf_url: signedPdf?.signedUrl ?? null, delivery_mode: settings.emailDeliveryMode, delivery_recipient: deliveryRecipient, delivery_sent: deliveryResult.sent, delivery_error: deliveryResult.error ?? null, copy_requested: ccSelf && settings.ccSelfEnabled, copy_redirected: Boolean(copyRecipient && settings.emailDeliveryMode === "test"), copy_sent: copyResult.sent, copy_error: copyResult.error ?? null });
   } catch (error) {
     if (error instanceof RateLimitError) return reply({ error: error.message, retry_after_seconds: error.retryAfterSeconds }, 429);
     console.error("submit-receipt failed", error);

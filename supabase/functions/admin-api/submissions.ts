@@ -3,7 +3,7 @@ export class SubmissionValidationError extends Error{}
 
 export async function listSubmissions(client:any,status?:string|null){
   if(status&&!ALLOWED_STATUS.has(status))throw new SubmissionValidationError('Ogiltigt statusfilter.');
-  let query=client.from('receipt_submissions').select('id,created_at,sender_name,sender_email,event_tag,amount_total,receipt_total,travel_km,travel_description,travel_amount,status,status_updated_at,handled_by,admin_note,final_pdf_path,archived_at,archived_by').order('created_at',{ascending:false}).limit(500);
+  let query=client.from('receipt_submissions').select('id,is_test,created_at,sender_name,sender_email,event_tag,amount_total,receipt_total,travel_km,travel_description,travel_amount,status,status_updated_at,handled_by,admin_note,final_pdf_path,archived_at,archived_by').order('created_at',{ascending:false}).limit(500);
   if(status==='archived'){
     query=query.not('archived_at','is',null);
     const {data:retentionSetting}=await client.from('app_settings').select('value').eq('key','retention_days').maybeSingle();

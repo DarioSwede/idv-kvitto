@@ -80,7 +80,7 @@ test('proxy fails closed on timeout, malformed JSON and unknown modes', async ()
     async () => { throw new Error('timeout with sensitive details'); },
     async () => new Response('not JSON'),
     async () => Response.json({}),
-    async () => Response.json(ready('invalid')),
+    async () => Response.json({...ready('test'), settings:{...ready('test').settings,email_delivery_mode:'invalid'}}),
   ]) {
     const result = await readEmailStatus(request(), fetchStatus);
     assert.equal(result.status, 502);

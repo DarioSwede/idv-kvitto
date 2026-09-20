@@ -1,20 +1,26 @@
-// Shared by receipt delivery and the authenticated admin status route.
+// Missing, invalid or unavailable settings must never enable delivery.
+export const EMAIL_MODES = new Set(['production', 'test', 'disabled']);
+export function validEmail(value) {
+  return typeof value === 'string' && value.trim().length <= 254 &&
+    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/.test(value.trim());
+}
+const email = value => validEmail(value) ? value.trim().toLowerCase() : '';
 export function resolveEmailSettings(values = {}) {
-  const email = (value, fallback) => typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? value : fallback;
   return {
-    ccSelfEnabled: typeof values.cc_self_enabled === 'boolean' ? values.cc_self_enabled : true,
-    receiptEmailTo: email(values.receipt_email_to, 'betala@idrottsveteranerna.se'),
-    emailDeliveryMode: typeof values.email_delivery_mode === 'string' ? values.email_delivery_mode : 'production',
-    emailTestRecipient: email(values.email_test_recipient, 'mail@torbjornzimmerman.se'),
+    ccSelfEnabled: values.cc_self_enabled === true,
+    receiptEmailTo: email(values.receipt_email_to),
+    emailDeliveryMode: EMAIL_MODES.has(values.email_delivery_mode) ? values.email_delivery_mode : 'disabled',
+    emailTestRecipient: email(values.email_test_recipient),
   };
 }
-
 export function resolveDeliveryRecipient(settings) {
-  const mode = settings.emailDeliveryMode || 'production';
-  const testRecipient = typeof settings.emailTestRecipient === 'string' ? settings.emailTestRecipient.trim() : '';
-  const productionRecipient = typeof settings.receiptEmailTo === 'string' ? settings.receiptEmailTo.trim() : '';
-
-  if (mode === 'disabled') return null;
-  if (mode === 'test') return testRecipient || productionRecipient || null;
-  return productionRecipient || testRecipient || null;
+  const production = email(settings.receiptEmailTo);
+  const test = email(settings.emailTestRecipient);
+  if (settings.emailDeliveryMode === 'production') return production || null;
+  if (settings.emailDeliveryMode === 'test' && test && test !== production) return test;
+  return null;
+}
+export function resolveCopyRecipient(settings, senderEmail, requested) {
+  if (!requested || !settings.ccSelfEnabled || !resolveDeliveryRecipient(settings)) return null;
+  return settings.emailDeliveryMode === 'test' ? resolveDeliveryRecipient(settings) : email(senderEmail) || null;
 }

@@ -11,8 +11,8 @@ export function emailStatus(rows, { apiKey, from }) {
       email_test_recipient: settings.emailTestRecipient,
     },
     delivery_configured: configured,
-    copy_available: configured && settings.ccSelfEnabled,
-    delivery_enabled: settings.emailDeliveryMode !== 'disabled',
+    copy_available: configured && settings.ccSelfEnabled && Boolean(resolveDeliveryRecipient(settings)),
+    delivery_enabled: Boolean(resolveDeliveryRecipient(settings)),
     effective_recipient: resolveDeliveryRecipient(settings),
   };
 }

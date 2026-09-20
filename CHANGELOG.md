@@ -1,5 +1,29 @@
 # Versionshistorik
 
+## 2026.09.20.4
+- Milersättning ändras endast av SU på inställningssidan. Inkorgens överflödiga självlänk tas bort.
+- Formulärets startsida får en tydlig länk till administrationens inloggning.
+
+## 2026.09.20.3
+- Separat SU-skyddad inställningssida. Admin/kassör kan hantera underlag och ändra milersättning.
+- Sessionskontroller fyller inte säkerhetsloggen. Gallring av gamla arkiverade underlag återställd.
+- Databasmigration stänger äldre direktbehörigheter till inställningar. Ingen automatisk tilldelning av SU.
+
+## 2026.09.20.2
+- Fristående inloggningsskyddad administration med inställningar som helsidesvy, endast för admin.
+- Servern nekar övriga roller både läsning och ändring av inställningar. Det publika kvittoformuläret är fortsatt öppet.
+
+## 2026.09.20.1
+- Rättad tom adminlista så inställningarna öppnas utan JavaScript-fel.
+- Admininbjudan med serverkontrollerad roll, säker kontoverifiering och lösenordsval.
+- Serververifierad inloggning och säkerhetslogg med adminåtkomst och 90 dagars retention.
+
+## 2026.09.16.1
+- Lokal kandidat: separat admin-login med serververifierad roll och säker ärenderetur.
+- Fail-safe e-poststyrning, säkra testkopior, separat adminskyddat testmail och gemensam kassörsmall.
+- Testmärkning i formulär, mejl, PDF och adminlista. Kräver ny migration och backend före frontendpublicering.
+- Inbjudningar och full auditlogg återstår; se docs/auth-email-checkpoint.md.
+
 ## Ej publicerat – kontrollcentrets e-poststatus
 - Visar leveransläge och mottagare via lokal server och autentiserat admin-API.
 - Skiljer Resends serverkonfiguration från egen kopia och verifierad leverans.
@@ -70,7 +94,9 @@
 - Ger den inskickade PDF-sammanställningen en kompaktare styrelselik layout med fullständigt ärende-ID och vita, streckade informationsrutor.
 
 ## 2026.09.10.2
-- Versionsnummer bumpat av versionshanteraren.
+- Rättad tom adminlista så inställningarna öppnas utan JavaScript-fel.
+- Admininbjudan med serverkontrollerad roll, säker kontoverifiering och lösenordsval.
+- Serververifierad inloggning och säkerhetslogg med adminåtkomst och 90 dagars retention.
 
 ## 2026.09.10.1
 - Samlar det nya modulära kvitto- och reseräkningsflödet i en verifierad releasekandidat.
