@@ -16,8 +16,8 @@ test('audit uses bounded allowlisted fields, never body/credentials or untrusted
   assert.equal(entry.user_id,uid);assert.equal(entry.request_id,requestId);
   assert.equal(JSON.stringify(entry).includes('secret'),false);
 });
-test('non-admin cannot fetch audit or invite even with forged body role',async()=>{
-  for(const role of ['viewer','cashier','tester',undefined]){
+test('non-SU cannot fetch audit or invite even with forged body role',async()=>{
+  for(const role of ['admin','viewer','cashier','tester',undefined]){
     await assert.rejects(listAudit({},role),e=>e.status===403);
     await assert.rejects(inviteStaff({},{role,body:{email:'test@example.org',role:'admin'}}),e=>e.status===403);
   }
@@ -28,13 +28,13 @@ test('invitation defaults to viewer, fixes callback and never overwrites members
     assert.equal(email,'test@example.org');assert.equal(options.redirectTo,INVITE_REDIRECT);
     return {data:{user:{id:uid}}};
   }}},from:table=>{assert.equal(table,'admin_users');return {insert:async row=>{granted=row;return {};}};}};
-  const result=await inviteStaff(client,{role:'admin',body:{email:'TEST@example.org',redirectTo:'https://evil.example'}});
+  const result=await inviteStaff(client,{role:'superuser',body:{email:'TEST@example.org',redirectTo:'https://evil.example'}});
   assert.equal(result.invited,true);assert.deepEqual(granted,{user_id:uid,role:'viewer'});
 });
 test('invitation blocks invalid input and reports partial delivery without granting access',async()=>{
-  for(const body of [{email:'invalid'},{email:'a@example.org',role:'owner'}])await assert.rejects(inviteStaff({},{role:'admin',body}));
+  for(const body of [{email:'invalid'},{email:'a@example.org',role:'owner'}])await assert.rejects(inviteStaff({},{role:'superuser',body}));
   const client={auth:{admin:{inviteUserByEmail:async()=>({data:{user:{id:uid}}})}},from:()=>({insert:async()=>({error:new Error('db unavailable')})})};
-  await assert.rejects(inviteStaff(client,{role:'admin',body:{email:'a@example.org'}}),/behörigheten kunde inte tilldelas/);
+  await assert.rejects(inviteStaff(client,{role:'superuser',body:{email:'a@example.org'}}),/behörigheten kunde inte tilldelas/);
 });
 test('invitation callback removes tokens immediately and rejects non-invite sessions',()=>{
   let clean;
@@ -69,9 +69,9 @@ test('unavailable audit never releases authenticated session',async()=>{
   const deps=loginDeps({auditFails:true});await assert.rejects(loginStaff(loginRequest(),deps));assert.deepEqual(deps.revoked,[]);
 });
 
-test('settings authorization rejects every non-admin role on the server',()=>{
-  for(const role of ['viewer','cashier','tester','owner',null,undefined])assert.throws(()=>requireSettingsAdmin(role),error=>error.status===403);
-  assert.doesNotThrow(()=>requireSettingsAdmin('admin'));
+test('settings authorization rejects every non-SU role on the server',()=>{
+  for(const role of ['admin','viewer','cashier','tester','owner',null,undefined])assert.throws(()=>requireSettingsAdmin(role),error=>error.status===403);
+  assert.doesNotThrow(()=>requireSettingsAdmin('superuser'));
 });
 
 test('refreshed sessions retain expiry so a later refresh remains possible',async(t)=>{

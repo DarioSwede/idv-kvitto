@@ -1,5 +1,14 @@
 # Versionshistorik
 
+## 2026.09.20.4
+- Milersättning ändras endast av SU på inställningssidan. Inkorgens överflödiga självlänk tas bort.
+- Formulärets startsida får en tydlig länk till administrationens inloggning.
+
+## 2026.09.20.3
+- Separat SU-skyddad inställningssida. Admin/kassör kan hantera underlag och ändra milersättning.
+- Sessionskontroller fyller inte säkerhetsloggen. Gallring av gamla arkiverade underlag återställd.
+- Databasmigration stänger äldre direktbehörigheter till inställningar. Ingen automatisk tilldelning av SU.
+
 ## 2026.09.20.2
 - Fristående inloggningsskyddad administration med inställningar som helsidesvy, endast för admin.
 - Servern nekar övriga roller både läsning och ändring av inställningar. Det publika kvittoformuläret är fortsatt öppet.

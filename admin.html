@@ -4,238 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IDV Admin</title>
-  <style>
-    :root {
-      --bg: #f4f4f0;
-      --panel: #ffffff;
-      --panel-alt: #f8f8f5;
-      --line: #dfe4dd;
-      --text: #1b2d2a;
-      --muted: #5d6e66;
-      --brand: #2f6f5a;
-      --brand-soft: #eaf4ef;
-      --new: #d97706;
-      --new-soft: #fff2e1;
-      --progress: #d4a315;
-      --progress-soft: #fff7d8;
-      --done: #2c8a5e;
-      --done-soft: #ebf8ef;
-      --blue: #245d8d;
-      --warning: #b86f14;
-      --success: #28724a;
-      --danger: #8d2d2d;
-      --shadow: 0 12px 30px rgba(24, 31, 28, 0.08);
-    }
-
-    body.dark-theme {
-      --bg: #20252b;
-      --panel: #2b3138;
-      --panel-alt: #252b31;
-      --line: #46515b;
-      --text: #edf2f0;
-      --muted: #aeb9b5;
-      --brand: #69bd98;
-      --brand-soft: #25483b;
-      --new-soft: #573b24;
-      --progress-soft: #514821;
-      --done-soft: #254b38;
-      --shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
-    body { display: block; }
-    .sidebar {
-      position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 18px; min-height: 68px; padding: 10px max(16px, calc((100vw - 1440px) / 2)); background: rgba(255,255,255,.78); color: var(--text); border-bottom: 1px solid rgba(211,223,215,.7); box-shadow: 0 4px 16px rgba(25, 61, 43, .05); backdrop-filter: blur(14px);
-    }
-    body.is-scrolled .sidebar { background: rgba(255,255,255,.58); box-shadow: 0 3px 12px rgba(25, 61, 43, .035); }
-    .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; white-space: nowrap; }
-    .brand-logo { width: 42px; height: 42px; object-fit: contain; }
-    .brand-copy { display: grid; gap: 2px; }
-    .brand-title { font-weight: 750; }
-    .brand-version { color: var(--muted); font-size: 11px; font-weight: 500; }
-    .nav { display: flex; gap: 6px; }
-    .nav-btn {
-      border: 1px solid #4b9278; background: linear-gradient(180deg, #5eb08d, #2f6f5a); color: white; min-width: 42px; min-height: 42px; padding: 9px 12px; border-radius: 999px; text-align: left; font-size: 14px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.48), 0 4px 8px rgba(42,107,94,.2); transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
-    }
-    .nav-btn.active { background: linear-gradient(180deg, #69bd98, #347e64); border-color: #2f6f5a; color: white; font-weight: 700; }
-    .nav-btn:hover, .button:hover, .item-action:hover, .view-button:hover, .filter-stat:hover { filter: brightness(1.06); transform: translateY(-1px); }
-    .nav-btn:active { transform: scale(.97); box-shadow: none; }
-    .nav-btn:focus-visible,.filter-stat:focus-visible { outline: 3px solid #2f8a62; outline-offset: 2px; }
-    .theme-switch { display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 3px 6px 3px 4px; border: 1px solid #c6cdd2; border-radius: 999px; background: linear-gradient(180deg, #f9fafb, #e4e8eb); color: #45515b; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 5px 10px rgba(40,48,56,.16); transition: transform .15s ease, filter .15s ease, background .2s ease; }
-    .theme-switch:hover { filter: brightness(1.04); transform: translateY(-1px); }
-    .theme-switch-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #e7a822; font-size: 19px; box-shadow: 0 2px 5px rgba(40,48,56,.2); }
-    .theme-switch-label { min-width: 42px; font-size: 11px; font-weight: 800; text-align: left; }
-    body.dark-theme .theme-switch { background: linear-gradient(180deg, #3f4650, #242a31); border-color: #697580; color: #f2f4f5; }
-    body.dark-theme .theme-switch-icon { order: 2; background: #20252b; color: #d9e2ea; }
-    body.dark-theme .theme-switch-label { order: 1; text-align: right; }
-    body.dark-theme .sidebar { background: rgba(43,49,56,.88); border-bottom-color: rgba(100,113,123,.55); }
-    body.dark-theme.is-scrolled .sidebar { background: rgba(43,49,56,.68); }
-    body.dark-theme .pdf-preview { background: linear-gradient(180deg, #20262c, #2b3138); }
-    body.dark-theme .pdf-preview iframe, body.dark-theme .setting input, body.dark-theme .setting select, body.dark-theme .connection-grid input, body.dark-theme textarea { background: #1e242a; color: var(--text); }
-    body.dark-theme .item-action, body.dark-theme .layout-switch { background: linear-gradient(180deg, #3a434b, #2b3239); color: var(--text); border-color: #59656e; }
-    body.dark-theme .item-action.status-progress, body.dark-theme .item-action.status-done, body.dark-theme .item-action.status-new { background: #30373e; color: var(--muted); }
-    body.dark-theme .submission-item.active { background: #244438; border-color: #5b9a7c; }
-    body.dark-theme .sidebar .filter-stat[data-status="all"] { color: #bfe8d1; background: linear-gradient(180deg, #315744, #243f33); border-color: #5b9a7c; }
-    body.dark-theme .sidebar .filter-stat[data-status="archived"] { color: #c0c9c6; background: #343b42; border-color: #59636b; }
-    .main {
-      max-width: 1440px; min-width: 0; min-height: calc(100vh - 68px); margin: 0 auto; padding: 12px 20px 20px; display: grid; gap: 12px;
-    }
-    .topbar {
-      display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
-    }
-    .header-title h1 { margin: 0; font-size: clamp(1.4rem, 2vw, 2rem); }
-    .header-title p { margin: 6px 0 0; color: var(--muted); }
-    .status-pill {
-      padding: 8px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--brand-soft); color: var(--brand); border: 1px solid rgba(47,111,90,0.2);
-    }
-    .stats { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
-    .card {
-      background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 18px;
-    }
-    .stat { display: flex; align-items: center; gap: 7px; }
-    .stat-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-    .stat-value { font-weight: 800; font-size: 1rem; }
-    .layout {
-      display: grid; grid-template-columns: minmax(320px, 0.85fr) minmax(460px, 1.35fr); gap: 20px; align-items: start; min-height: calc(100vh - 40px);
-    }
-    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .list-header h2, .panel-header h2 { margin: 0; font-size: 1.15rem; }
-    .list-header-actions { display: flex; align-items: center; gap: 8px; }
-    .refresh-button { padding: 7px 11px; font-size: 12px; }
-    .filters { display: none; }
-    .chip {
-      border: 1px solid var(--line); background: var(--panel-alt); color: var(--text); border-radius: 999px; padding: 6px 10px; font-size: 12px; cursor: pointer;
-    }
-    .chip.active { background: var(--brand-soft); border-color: rgba(47,111,90,0.2); color: var(--brand); }
-    .submission-list { display: grid; gap: 12px; }
-    .submission-item {
-      background: var(--panel-alt); border: 1px solid var(--line); border-left-width: 4px; border-radius: 14px; padding: 14px 15px 14px 12px; display: grid; gap: 8px; cursor: pointer;
-    }
-    .submission-item.status-new { border-color: #f4d2b0; border-left-color: var(--new); }
-    .submission-item.status-progress { border-color: #f4e1a2; border-left-color: var(--progress); }
-    .submission-item.status-done { border-color: #c9ebd8; border-left-color: var(--done); }
-    .submission-item.status-archived { border-color: #c7cbd0; border-left-color: #68727b; }
-    .submission-item.status-new.active { border-color: #e8a04d; border-left-color: var(--new); box-shadow: inset 0 0 0 1px rgba(217,119,6,0.18); }
-    .submission-item.status-progress.active { border-color: #d7b63d; border-left-color: var(--progress); box-shadow: inset 0 0 0 1px rgba(212,163,21,0.2); }
-    .submission-item.status-done.active { border-color: #7dbf94; border-left-color: var(--done); box-shadow: inset 0 0 0 1px rgba(44,138,94,0.2); }
-    .submission-item.active { position: relative; background: #edf7f1; border-color: #86bda0; box-shadow: inset 0 0 0 1px rgba(47,111,90,0.12), 0 5px 14px rgba(47,111,90,0.1); }
-    .submission-item.selected { border-color: rgba(44,138,94,0.45); box-shadow: inset 0 0 0 1px rgba(44,138,94,0.12); }
-    .submission-check { width: 18px; height: 18px; accent-color: var(--new); cursor: pointer; }
-    .submission-item.active { border-color: rgba(47,111,90,0.5); box-shadow: inset 0 0 0 1px rgba(47,111,90,0.2); }
-    .item-actions { display: flex; justify-content: flex-end; gap: 8px; }
-    .item-action { border: 1px solid #b8cfc2; border-radius: 999px; padding: 7px 12px; background: linear-gradient(180deg, #ffffff, #edf3ef); color: var(--muted); font-size: 12px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 7px rgba(30,44,36,.14); transition: transform .15s ease, filter .15s ease, box-shadow .15s ease; }
-    .item-action.status-progress,
-    .item-action.status-done,
-    .item-action.status-new { border-color: var(--line); color: var(--muted); background: white; }
-    .item-action.status-active.status-new { border-color: #cf3c3c; color: #fff; background: linear-gradient(180deg, #f46b61, #d63e3e); box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 7px rgba(176,44,44,.25); }
-    .item-action.status-active.status-progress { border-color: #d97a15; color: #fff; background: linear-gradient(180deg, #f5a34e, #db7614); box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 7px rgba(172,91,9,.25); }
-    .item-action.status-active.status-done { border-color: #2c9362; color: #fff; background: linear-gradient(180deg, #68bf85, #2f925f); box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 7px rgba(29,117,72,.24); }
-    .submission-item.active { box-shadow: inset 0 0 0 1px rgba(47,111,90,0.12), 0 5px 14px rgba(47,111,90,0.1); }
-    .item-action.status-active { font-weight: 800; box-shadow: inset 0 0 0 1px currentColor; }
-    .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .muted { color: var(--muted); }
-    .badge {
-      display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
-    }
-    .badge.new { background: var(--new-soft); color: var(--new); }
-    .badge.progress { background: var(--progress-soft); color: var(--progress); }
-    .badge.done { background: var(--done-soft); color: var(--done); }
-    #selectedBadge { display: none; }
-    .detail-panel { display: grid; align-content: start; gap: 18px; position: sticky; top: 20px; min-height: calc(100vh - 40px); }
-    .pdf-preview {
-      height: clamp(520px, 76vh, 820px); border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, #edf1ee 0%, #f9faf8 100%); display: grid; place-items: center; position: relative; overflow: hidden;
-    }
-    .pdf-preview iframe { width: 100%; height: 100%; border: 0; background: white; }
-    .pdf-preview-message { color: var(--muted); font-size: 13px; }
-    .pdf-preview:has(iframe:not([hidden]))::before { display: none; }
-    .pdf-preview::before {
-      content: "PDF-preview"; position: absolute; inset: 20px; border: 2px dashed rgba(47,111,90,0.25); border-radius: 14px; display: grid; place-items: center; color: var(--brand); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-    }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
-    .actions .button { min-height: 42px; }
-    .button {
-      border: 1px solid transparent; border-radius: 999px; padding: 10px 16px; font-weight: 700; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 4px 9px rgba(30,44,36,.14); transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
-    }
-    .button.primary { background: var(--brand); color: white; }
-    .button.secondary { background: var(--panel-alt); border: 1px solid var(--line); color: var(--text); }
-    .button.warning { background: #fff4df; color: var(--warning); border: 1px solid rgba(184,109,20,0.2); }
-    .button.danger { background: #fdecec; color: var(--danger); border: 1px solid rgba(141,45,45,0.2); }
-    textarea {
-      width: 100%; min-height: 100px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--panel-alt); color: var(--text); font: inherit;
-    }
-    .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(200px, 1fr)); gap: 14px; }
-    .setting { border: 1px solid var(--line); border-radius: 12px; background: var(--panel-alt); padding: 12px; }
-    .setting label { display: block; font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.07em; margin-bottom: 8px; }
-    .setting input, .setting select { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: white; font: inherit; }
-    .muted-row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
-    .empty-state { padding: 18px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); background: var(--panel-alt); }
-    .connection-card { display: grid; gap: 14px; }
-    .connection-grid { display: grid; grid-template-columns: 1.4fr 1.4fr 1fr 1fr auto; gap: 10px; align-items: end; }
-    .connection-grid label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
-    .connection-grid input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: white; font: inherit; }
-    .connection-status { color: var(--muted); font-size: 13px; }
-    .bulk-actions { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .bulk-actions[hidden] { display: none; }
-    .bulk-label { color: var(--muted); font-size: 13px; }
-    .bulk-progress { flex: 1; min-width: 180px; display: grid; gap: 5px; }
-    .bulk-progress[hidden] { display: none; }
-    .bulk-progress-track { height: 7px; overflow: hidden; border-radius: 999px; background: #f0dede; }
-    .bulk-progress-bar { width: 0; height: 100%; background: var(--danger); transition: width .2s ease; }
-    .bulk-progress-text { color: var(--muted); font-size: 12px; }
-    .sidebar .card { box-shadow: none; }
-    .sidebar .stat { min-height: 40px; padding: 8px 11px; border-color: #cedbd2; background: #fff; color: var(--text); cursor: pointer; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease, background .15s ease; }
-    .sidebar .filter-stat[hidden] { display: none; }
-    .sidebar .filter-stat:hover { box-shadow: 0 6px 14px rgba(25, 61, 43, .13); transform: translateY(-2px); }
-    .sidebar .filter-stat:active { transform: translateY(0) scale(.98); box-shadow: none; }
-    .sidebar .filter-stat.active { box-shadow: inset 0 -2px 0 currentColor; }
-    .sidebar .stat-label { color: inherit; }
-    .sidebar .filter-stat[data-status="new"] { color: #fff; background: linear-gradient(180deg, #f46b61, #d63e3e); border-color: #cf3c3c; box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 8px rgba(176,44,44,.24); }
-    .sidebar .filter-stat[data-status="in_progress"] { color: #fff; background: linear-gradient(180deg, #f5a34e, #db7614); border-color: #d97a15; box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 8px rgba(172,91,9,.24); }
-    .sidebar .filter-stat[data-status="done"] { color: #fff; background: linear-gradient(180deg, #68bf85, #2f925f); border-color: #2c9362; box-shadow: inset 0 1px 0 rgba(255,255,255,.38), 0 3px 8px rgba(29,117,72,.23); }
-    .sidebar .filter-stat[data-status="archived"] { color: #50615a; background: #f0f3f1; border-color: #d3dbd6; }
-    .sidebar .filter-stat[data-status="all"] { color: #245d4a; background: linear-gradient(180deg, #f7fff9, #e4f3e9); border: 1px solid #76a98f; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 7px rgba(47,111,90,.15); }
-    .sidebar .filter-stat[data-status="new"] { border-radius: 999px; }
-    .sidebar .filter-stat[data-status="all"] { border-radius: 999px; }
-    .layout-switch { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; padding: 4px 8px 4px 10px; border: 1px solid #b8cfc2; border-radius: 999px; background: linear-gradient(180deg, #ffffff, #edf3ef); color: var(--muted); font-size: 12px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 7px rgba(30,44,36,.1); }
-    .layout-switch-track { position: relative; width: 34px; height: 19px; border-radius: 999px; background: #8fa197; box-shadow: inset 0 1px 2px rgba(27,45,42,.2); }
-    .layout-switch-thumb { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(27,45,42,.25); transition: transform .18s ease; }
-    .layout-switch[aria-checked="true"] { color: var(--brand); }
-    .layout-switch[aria-checked="true"] .layout-switch-track { background: var(--brand); }
-    .layout-switch[aria-checked="true"] .layout-switch-thumb { transform: translateX(15px); }
-    [hidden] { display: none !important; }
-    #settingsPanel { display: none; position: static; width: 100%; box-sizing: border-box; margin: 0; }
-    #settingsPanel.open { display: block; }
-    .account-bar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
-    .account-actions { display:flex; gap:12px; align-items:center; }
-    .account-actions a { color:var(--brand); }
-    .admin-page-title { margin:0 0 6px; font-size:24px; }
-    .settings-backdrop { display: none; }
-    .settings-hint { color: var(--muted); font-size: 12px; }
-    .submission-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .submission-date { color: var(--muted); font-size: 12px; line-height: 1.35; }
-    .compact-summary { display: none; }
-    .submission-email { color: var(--blue); text-decoration: none; }
-    .submission-email:hover { text-decoration: underline; }
-    .submission-list.compact { gap: 7px; }
-    .submission-list.compact .submission-item { display: block; padding: 10px 14px; }
-    .submission-list.compact .submission-meta, .submission-list.compact .submission-item > .row, .submission-list.compact .item-actions { display: none; }
-    .submission-list.compact .compact-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 14px; }
-    .submission-list.compact .compact-summary strong:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .submission-list.compact .compact-summary span { color: var(--muted); font-size: 12px; white-space: nowrap; }
-    .submission-list.compact .compact-summary strong:last-child { min-width: 82px; text-align: right; white-space: nowrap; }
-    @media (max-width: 900px) {
-      .sidebar { flex-wrap: wrap; align-items: center; }
-      .stats { order: 3; width: 100%; overflow-x: auto; padding-bottom: 2px; }
-      .main { padding: 16px; }
-      #settingsPanel { width:100%; }
-      .layout, .settings-grid, .connection-grid { grid-template-columns: 1fr; }
-      .topbar { flex-direction: column; align-items: flex-start; }
-      .detail-panel { position: static; }
-      .layout { min-height: auto; }
-      .detail-panel { min-height: auto; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles/admin.css">
 </head>
 <body>
   <aside class="sidebar">
@@ -247,8 +16,7 @@
       </div>
     </div>
     <nav class="nav">
-      <button class="nav-btn active" data-view="inbox">Inkorg</button>
-      <button class="nav-btn" data-view="settings" hidden type="button" aria-label="Inställningar" title="Inställningar">⚙ <span>Inställningar</span></button>
+      <a class="nav-btn" data-view="settings" href="admin-settings.html" hidden>Inställningar</a>
     </nav>
     <button id="themeSwitch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Byt till mörkt läge" title="Byt tema">
       <span class="theme-switch-icon" aria-hidden="true">☀</span>
@@ -318,95 +86,25 @@
 
         <div>
           <label class="muted" for="adminNote">Adminnotering</label>
-          <textarea id="adminNote" placeholder="Skriv kort kommentar eller anteckning...">Kvitten ser komplett ut. Bankuppgifter kontrollerade.</textarea>
+          <textarea id="adminNote" placeholder="Skriv kort kommentar eller anteckning..."></textarea>
         </div>
       </div>
     </section>
 
-    <section id="settingsPanel" class="card" aria-hidden="true">
-      <div class="list-header">
-        <h2>Inställningar</h2>
-        <button id="saveSettingsButton" class="button primary">Spara inställningar</button>
-      </div>
-      <p class="settings-hint">Endast administratörer kan se och ändra inställningarna. Ändra värdena och välj Spara inställningar.</p>
-      <div class="settings-grid">
-        <div class="setting">
-          <label for="deliveryMode">E-post och testläge</label>
-          <select id="deliveryMode">
-            <option value="test">Test</option>
-            <option value="production">Produktion</option>
-            <option value="disabled">Avstängd</option>
-          </select>
-        </div>
-        <div class="setting">
-          <label for="testRecipient">Testmottagare</label>
-          <input id="testRecipient" value="mail@torbjornzimmerman.se">
-        </div>
-        <div class="setting">
-          <label for="productionRecipient">Produktionsmottagare</label>
-          <input id="productionRecipient" value="betala@idrottsveteranerna.se">
-        </div>
-        <div class="setting">
-          <label for="statusFilter">Din serververifierade roll</label>
-          <select id="statusFilter" disabled>
-            <option value="admin">admin</option>
-            <option value="cashier">cashier</option>
-            <option value="tester">tester</option>
-            <option value="viewer">viewer</option>
-          </select>
-        </div>
-        <div class="setting">
-          <label for="retentionDays">Behåll arkiverade (dagar)</label>
-          <input id="retentionDays" type="number" min="1" max="3650" value="365">
-        </div>
-        <div class="setting">
-          <label for="travelRatePerMil">Ersättning per mil (kr)</label>
-          <input id="travelRatePerMil" type="number" min="0.01" max="10000" step="0.01" value="25">
-        </div>
-        <div class="setting">
-          <label for="pdfWatermarkEnabled">Bakgrundslogotyp i PDF</label>
-          <select id="pdfWatermarkEnabled">
-            <option value="true">På</option>
-            <option value="false">Av</option>
-          </select>
-        </div>
-        <div class="setting">
-          <label for="pdfWatermarkOpacity">Bakgrundslogotypens styrka (%)</label>
-          <input id="pdfWatermarkOpacity" type="number" min="1" max="15" step="1" value="4">
-        </div>
-      </div>
-      <div class="settings-grid" style="margin-top:20px">
-      <div class="setting" id="testMailPanel">
-        <h3>Skicka testmail</h3>
-        <p>Skickar endast till adressen nedan. Testet ändrar inte mottagarinställningarna. Avstängd blockerar även testmail.</p>
-        <label for="testMailAddress">Mottagare för detta test</label><input id="testMailAddress" type="email" placeholder="namn@example.org">
-        <label for="testMailKind">Meddelandet ska motsvara</label><select id="testMailKind"><option value="system">Neutralt systemtest</option><option value="test">Testmottagare</option><option value="production">Produktionsmottagare</option></select>
-        <button id="sendTestMail" class="button" type="button">Skicka testmail</button>
-        <p id="testMailStatus" role="status"></p><iframe id="testMailPreview" title="Kassörsmeddelande – test" sandbox="" hidden style="width:100%;height:440px;background:white"></iframe>
-      </div>
-      <div class="setting" id="adminSecurityPanel" hidden>
-        <h3>Användare och säkerhet</h3>
-        <p>Bjud in en ny användare. Välj den lägsta behörighet personen behöver.</p>
-        <label for="inviteEmail">E-postadress</label><input id="inviteEmail" type="email" required autocomplete="off">
-        <label for="inviteRole">Behörighet</label><select id="inviteRole"><option value="viewer">Läsbehörighet</option><option value="cashier">Kassör</option><option value="tester">Drift/test</option><option value="admin">Administratör</option></select>
-        <button id="inviteStaff" class="button" type="button">Skicka inbjudan</button>
-        <p id="inviteStatus" role="status"></p>
-        <h3>Säkerhetslogg</h3><p>De senaste 100 händelserna, högst 90 dagar. Tider visas i UTC.</p>
-        <button id="loadAudit" class="button" type="button">Visa säkerhetslogg</button>
-        <div id="auditEntries" role="status" style="overflow-wrap:anywhere"></div>
-      </div>
-      </div>
-    </section>
   </main>
 
   <script type="module">
-    import {setupAdminSecurity} from './js/admin-security.js';
     import {verifiedSession, loginUrl, signOut, ADMIN_API} from './js/admin-auth.js';
     let verified;
     try { verified = await verifiedSession(); }
     catch { location.replace(loginUrl()); }
     if (!verified) { location.replace(loginUrl()); throw new Error('Inloggning krävs.'); }
 
+    const canManage = ['superuser','admin','cashier'].includes(verified.identity.role);
+    if (new URLSearchParams(location.search).get('view') === 'settings') {
+      location.replace(new URL(verified.identity.role === 'superuser' ? 'admin-settings.html' : 'admin.html',location.href));
+      throw new Error('Öppnar rätt sida.');
+    }
     const statusClass = {
       new: 'new',
       in_progress: 'progress',
@@ -426,22 +124,12 @@
     let authSession;
     const list = document.getElementById('submissionList');
     const listTitle = document.getElementById('listTitle');
-    const settingsPanel = document.getElementById('settingsPanel');
     const selectedBadge = document.getElementById('selectedBadge');
     const pdfPreviewMessage = document.getElementById('pdfPreviewMessage');
     const pdfFrame = document.getElementById('pdfFrame');
     const openPdfButton = document.getElementById('openPdfButton');
     const printPdfButton = document.getElementById('printPdfButton');
     const downloadPdfButton = document.getElementById('downloadPdfButton');
-    const deliveryMode = document.getElementById('deliveryMode');
-    const testRecipient = document.getElementById('testRecipient');
-    const productionRecipient = document.getElementById('productionRecipient');
-    const statusFilter = document.getElementById('statusFilter');
-    const retentionDays = document.getElementById('retentionDays');
-    const travelRatePerMil = document.getElementById('travelRatePerMil');
-    const pdfWatermarkEnabled = document.getElementById('pdfWatermarkEnabled');
-    const pdfWatermarkOpacity = document.getElementById('pdfWatermarkOpacity');
-    const saveSettingsButton = document.getElementById('saveSettingsButton');
     const signOutButton = document.getElementById('signOutButton');
     const connectionStatus = document.getElementById('connectionStatus');
     const brandVersion = document.getElementById('brandVersion');
@@ -552,20 +240,6 @@
     }
 
     async function refreshFromApi() {
-      if (verified.identity.role === 'admin') {
-      const settingsRes = await fetch(`${adminApiBase}/settings`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
-      if (!settingsRes.ok) throw new Error(`Inställningar kunde inte hämtas (${settingsRes.status}).`);
-      const settingsJson = await settingsRes.json();
-      const normalizedSettings = {...normalizeSettings(settingsJson.settings || settingsJson || {}), role:verified.identity.role};
-      deliveryMode.value = normalizedSettings.emailDeliveryMode;
-      testRecipient.value = normalizedSettings.emailTestRecipient;
-      productionRecipient.value = normalizedSettings.receiptEmailTo;
-      retentionDays.value = normalizedSettings.retentionDays;
-      travelRatePerMil.value = normalizedSettings.travelRatePerMil;
-      pdfWatermarkEnabled.value = String(normalizedSettings.pdfWatermarkEnabled);
-      pdfWatermarkOpacity.value = normalizedSettings.pdfWatermarkOpacity;
-      statusFilter.value = normalizedSettings.role;
-      }
       updateOverview();
 
       const submissionsRes = await fetch(`${adminApiBase}/submissions`, { headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }) });
@@ -639,20 +313,6 @@
       if (activeFilter !== 'all' && counts[activeFilter] === 0) activeFilter = counts.all ? 'all' : 'archived';
     }
 
-    function normalizeSettings(settings = {}) {
-      if (Array.isArray(settings)) settings = Object.fromEntries(settings.map((setting) => [setting.key, setting.value]));
-      return {
-        emailDeliveryMode: settings.email_delivery_mode || settings.emailDeliveryMode || 'disabled',
-        emailTestRecipient: settings.email_test_recipient ?? settings.emailTestRecipient ?? '',
-        receiptEmailTo: settings.receipt_email_to ?? settings.receiptEmailTo ?? '',
-        retentionDays: Number(settings.retention_days || settings.retentionDays || 365),
-        travelRatePerMil: Number(settings.travel_rate_per_km || settings.travelRatePerKm || 2.5) * 10,
-        pdfWatermarkEnabled: typeof settings.pdf_watermark_enabled === 'boolean' ? settings.pdf_watermark_enabled : settings.pdfWatermarkEnabled !== false,
-        pdfWatermarkOpacity: Number(settings.pdf_watermark_opacity ?? settings.pdfWatermarkOpacity ?? 0.04) * 100,
-        role: verified.identity.role
-      };
-    }
-
     function savePersistedState() {
       // Do not retain financial or personal data in localStorage.
       localStorage.removeItem('idv-admin-state');
@@ -719,7 +379,7 @@
             <a class="submission-email" href="${emailHref}" aria-label="E-posta ${safeEmail}">${safeEmail}</a>
             <span>${safeEventTag}</span>
           </div>
-          <div class="item-actions">
+          <div class="item-actions" ${canManage ? '' : 'hidden'}>
             <button class="item-action status-submission status-new ${submission.status === 'new' ? 'status-active' : ''}" type="button" data-status="new" data-index="${originalIndex}">Inkommen</button>
             <button class="item-action status-submission status-progress ${submission.status === 'in_progress' ? 'status-active' : ''}" type="button" data-status="in_progress" data-index="${originalIndex}">Pågår</button>
             <button class="item-action status-submission status-done ${submission.status === 'done' ? 'status-active' : ''}" type="button" data-status="done" data-index="${originalIndex}">Klar</button>
@@ -763,6 +423,7 @@
     }
 
     async function archiveSubmission(index) {
+      if (!canManage) return;
       const submission = submissions[index];
       if (!submission || !window.confirm(`${submission.status === 'archived' ? 'Återställ' : 'Arkivera'} underlaget ${shortId(submission.id)}?`)) return;
       try {
@@ -874,27 +535,8 @@
       button.addEventListener('click', () => applyFilter(button.dataset.status));
     });
 
-    function showAdminView(view) {
-      const settings = view === 'settings' && verified.identity.role === 'admin';
-      settingsPanel.classList.toggle('open', settings);
-      settingsPanel.setAttribute('aria-hidden', String(!settings));
-      document.querySelector('#inboxView').hidden = settings;
-      document.querySelector('.stats').hidden = settings;
-      document.querySelectorAll('.nav-btn[data-view]').forEach(button => {
-        const active = button.dataset.view === (settings ? 'settings' : 'inbox');
-        button.classList.toggle('active', active);
-        if (active) button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
-      });
-      const url = new URL(location.href);
-      if (settings) url.searchParams.set('view','settings'); else url.searchParams.delete('view');
-      history.replaceState(null,'',url);
-      window.scrollTo({top:0});
-    }
-    document.querySelectorAll('.nav-btn[data-view]').forEach(button => {
-      button.addEventListener('click', () => showAdminView(button.dataset.view));
-    });
-
     async function updateStatus(status, index = selectedIndex) {
+      if (!canManage) return;
       if (!submissions[index]) return;
       selectedIndex = index;
       const submission = submissions[index];
@@ -919,20 +561,11 @@
 
     async function bootstrap() {
       authSession = verified.session;
-      document.querySelector('[data-view="settings"]').hidden = verified.identity.role !== 'admin';
+      document.querySelector('[data-view="settings"]').hidden = verified.identity.role !== 'superuser';
       supabaseClient = {supabaseKey:verified.connection.anonKey};
       adminApiBase = ADMIN_API;
-      setupAdminSecurity({role:verified.identity.role,request:async(resource,options={})=>{
-        const response=await fetch(`${adminApiBase}/${resource}`,{...options,headers:applyConnectionHeaders({'Content-Type':'application/json'})});
-        const result=await response.json();
-        if(!response.ok)throw new Error(result.error||'Begäran kunde inte genomföras.');
-        return result;
-      }});
       submissions = [];
       signOutButton.hidden = false;
-      statusFilter.value = verified.identity.role;
-      document.querySelector('#testMailPanel').hidden = verified.identity.role !== 'admin';
-      for (const element of [deliveryMode,testRecipient,productionRecipient]) element.disabled = verified.identity.role !== 'admin';
       try {
         await refreshFromApi();
         const id = new URLSearchParams(location.search).get('submission');
@@ -946,66 +579,14 @@
           }
           if (index >= 0) { selectedIndex = index; renderList(); updateSelection(); await loadPdfPreview(submissions[index]); }
         }
-        setConnectionStatus(`Ansluten som ${verified.connection.email}.`, true);
+        setConnectionStatus(`Ansluten som ${verified.connection.email} · ${verified.identity.role === "superuser" ? "Superuser (SU)" : verified.identity.role === "cashier" ? "Kassör" : verified.identity.role}.`, true);
         document.documentElement.style.visibility = 'visible';
-        showAdminView(new URLSearchParams(location.search).get('view'));
       } catch (error) {
         document.documentElement.style.visibility = 'visible';
         submissions = []; renderList();
         setConnectionStatus(error.message);
       }
     }
-
-    document.querySelector('#sendTestMail').addEventListener('click', async event => {
-      const address = document.querySelector('#testMailAddress');
-      if (!address.value || !address.reportValidity()) return;
-      const output = document.querySelector('#testMailStatus');
-      event.target.disabled = true;
-      try {
-        const response = await fetch(`${adminApiBase}/test-mail`, {
-          method:'POST', headers:applyConnectionHeaders({'Content-Type':'application/json'}),
-          body:JSON.stringify({recipient:address.value, kind:document.querySelector('#testMailKind').value})
-        });
-        const payload = await response.json();
-        if (!response.ok || !payload.sent) throw new Error(payload.error || 'Testmailet kunde inte skickas.');
-        output.textContent = `Testmail skickat till ${address.value}.`;
-        const frame = document.querySelector('#testMailPreview');
-        frame.srcdoc = payload.preview.html; frame.hidden = false;
-      } catch (error) { output.textContent = error.message; }
-      finally { event.target.disabled = false; }
-    });
-
-    saveSettingsButton.addEventListener('click', async () => {
-      if (verified.identity.role !== 'admin') return;
-      if (adminApiBase && authSession) {
-        const updates = [
-          ['email_test_recipient', testRecipient.value.trim()],
-          ['receipt_email_to', productionRecipient.value.trim()],
-          ['email_delivery_mode', deliveryMode.value],
-          ['retention_days', Number(retentionDays.value)],
-          ['travel_rate_per_km', Number(travelRatePerMil.value) / 10],
-          ['pdf_watermark_enabled', pdfWatermarkEnabled.value === 'true'],
-          ['pdf_watermark_opacity', Number(pdfWatermarkOpacity.value) / 100]
-        ];
-        try {
-          for (const [key, value] of updates) {
-            const response = await fetch(`${adminApiBase}/settings`, {
-              method: 'PATCH',
-              headers: applyConnectionHeaders({ 'Content-Type': 'application/json' }),
-              body: JSON.stringify({ key, value })
-            });
-            if (!response.ok) throw new Error(`Inställningen ${key} kunde inte sparas (${response.status}).`);
-          }
-          savePersistedState();
-          window.alert('Inställningarna sparades i Supabase.');
-          return;
-        } catch (error) {
-          setConnectionStatus(error.message);
-          return;
-        }
-      }
-      setConnectionStatus('Inloggning krävs för att spara.');
-    });
 
     refreshSubmissionsButton.addEventListener('click', async () => {
       if (!authSession) {

@@ -1,10 +1,11 @@
 import {test,expect} from '@playwright/test';
 const id='12345678-1234-1234-1234-123456789abc';
-async function api(page,{role='admin',meStatus=200}={}) {
+async function api(page,{role='superuser',meStatus=200}={}) {
   await page.route('https://ohwalxqwtxtlldalsclj.supabase.co/**',async route=>{
     const url=new URL(route.request().url());
     if(url.pathname.endsWith('/admin-api/login'))return route.fulfill({json:{access_token:'fake-session',expires_at:Math.floor(Date.now()/1000)+3600}});
     if(url.pathname.endsWith('/me'))return route.fulfill({status:meStatus,json:{role,user_id:'test-user'}});
+    if(url.pathname.endsWith('/travel-rate'))return route.fulfill({json:{rate_per_km:2.5}});
     if(url.pathname.endsWith('/settings'))return route.fulfill({json:{role,settings:[{key:'email_delivery_mode',value:'test'},{key:'email_test_recipient',value:'test@example.org'}]}});
     if(url.pathname.endsWith('/submissions'))return route.fulfill({json:{submissions:[{id,sender_name:'Testperson',sender_email:'example@example.org',status:'new',is_test:true}]}});
     if(url.pathname.endsWith('/pdf'))return route.fulfill({json:{url:'about:blank'}});
@@ -28,7 +29,7 @@ test('admin always starts at login and preserves the requested case after server
   await expect(page).toHaveURL(new RegExp(`admin.html\\?submission=${id}$`));
   await expect(page.locator('#connectionStatus')).toContainText('Ansluten som');
   await expect(page.locator('#submissionList')).toContainText('[TEST] Testperson');
-  await expect(page.locator('#statusFilter')).toBeDisabled();
+  await expect(page.locator('#mileagePanel')).toHaveCount(0);
   expect(await page.evaluate(()=>localStorage.getItem('idv-admin-state'))).toBeNull();
 });
 test('valid password without staff authorization never opens admin',async({page})=>{
@@ -45,7 +46,8 @@ test('empty admin list still opens settings without a runtime error',async({page
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');
   await login(page);
   await expect(page.locator('#connectionStatus')).toContainText('Ansluten som');
-  await expect(page.locator('#submissionList')).toContainText('Inga inskickade underlag');
+  await expect(page).toHaveURL(/admin-settings.html$/);
+  await expect(page.locator('#submissionList')).toHaveCount(0);
   await expect(page.locator('#inboxView')).toBeHidden();
   expect(await page.locator('#settingsPanel').evaluate(el=>getComputedStyle(el).position)).toBe('static');
   await expect(page.locator('#settingsPanel')).toBeVisible();
@@ -70,7 +72,7 @@ test('explicit testmail uses selected address and renders sandboxed preview',asy
   await expect(page.locator('#testMailStatus')).toContainText('skickat till chosen@example.org');
   await expect(page.locator('#testMailPreview')).toHaveAttribute('sandbox','');
 });
-for (const role of ['viewer','cashier','tester']) test(`${role} cannot open or fetch settings`,async({page})=>{
+for (const role of ['admin','viewer','cashier','tester']) test(`${role} cannot open or fetch settings`,async({page})=>{
   await api(page,{role});
   let settingsRequests=0;
   await page.route('**/admin-api/settings',route=>{settingsRequests++;return route.fulfill({status:403,json:{error:'Admin krävs'}});});
@@ -89,7 +91,7 @@ test('logout revokes server refresh session and returns to separate login',async
   await expect(page).toHaveURL(/admin-login.html$/);
   expect(await page.evaluate(()=>sessionStorage.getItem('idv-admin-session'))).toBeNull();
 });
-test('admin can invite least-privilege staff and read safely rendered audit entries',async({page})=>{
+test('SU can invite least-privilege staff and read safely rendered audit entries',async({page})=>{
   await api(page);
   await page.route('**/admin-api/invite',async route=>{
     expect(route.request().postDataJSON()).toEqual({email:'new@example.org',role:'viewer'});
@@ -133,4 +135,43 @@ test('public receipt form remains accessible without admin login',async({page})=
   await page.getByRole('link',{name:'Till det publika kvittoformuläret'}).click();
   await expect(page.getByRole('heading',{name:'Ansök om ersättning'})).toBeVisible();
   expect(await page.evaluate(()=>sessionStorage.getItem('idv-admin-session'))).toBeNull();
+});
+
+for(const role of ['admin','cashier'])test(`${role} sees neither mileage settings nor a redundant inbox link`,async({page})=>{
+  await api(page,{role});
+  await page.goto('/admin.html');await login(page);
+  await expect(page.locator('#connectionStatus')).toContainText('Ansluten som');
+  await expect(page.locator('#travelRatePerMil')).toHaveCount(0);
+  await expect(page.getByRole('link',{name:'Inkorg',exact:true})).toHaveCount(0);
+  await expect(page.locator('[data-view="settings"]')).toBeHidden();
+  await page.goto('/admin-settings.html');await expect(page).toHaveURL(/admin.html$/);
+});
+test('public form offers a separate admin login without requiring login to start an application',async({page})=>{
+  await page.goto('/index.html');
+  await expect(page.getByRole('button',{name:'Starta ansökan'})).toBeVisible();
+  await page.getByRole('link',{name:'Logga in till administrationen'}).click();
+  await expect(page).toHaveURL(/admin-login.html$/);
+  await expect(page.locator('#loginForm')).toBeVisible();
+});
+test('SU updates mileage in settings and returns to inbox',async({page})=>{
+  await api(page);const updates=[];
+  await page.route('**/admin-api/settings',async route=>{
+    if(route.request().method()==='PATCH'){updates.push(route.request().postDataJSON());return route.fulfill({json:{setting:route.request().postDataJSON()}});}
+    return route.fulfill({json:{settings:[{key:'travel_rate_per_km',value:2.5}]}});
+  });
+  await page.goto('/admin-settings.html');await login(page);
+  await expect(page.locator('#travelRatePerMil')).toHaveValue('25');
+  await page.locator('#travelRatePerMil').fill('30');await page.locator('#saveSettingsButton').click();
+  await expect(page.locator('#connectionStatus')).toHaveText('Inställningarna sparades.');
+  expect(updates).toContainEqual({key:'travel_rate_per_km',value:3});
+  await page.getByRole('link',{name:'Inkorg',exact:true}).click();await expect(page).toHaveURL(/admin.html$/);
+});
+test('standalone settings require login before settings data is requested',async({page})=>{
+  await api(page);let requested=0;
+  await page.route('**/admin-api/settings',route=>{requested++;return route.fulfill({json:{settings:[]}});});
+  await page.goto('/admin-settings.html');
+  await expect(page).toHaveURL(/admin-login.html\?returnTo=/);expect(requested).toBe(0);
+  await login(page);await expect(page).toHaveURL(/admin-settings.html$/);
+  await expect(page.locator('#statusFilter')).toHaveValue('superuser');
+  await expect(page.locator('#statusFilter')).toBeDisabled();expect(requested).toBe(1);
 });

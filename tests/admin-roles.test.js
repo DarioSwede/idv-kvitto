@@ -12,5 +12,5 @@ test('supports cashier and tester roles', () => {
 });
 
 test('lists the allowed admin roles', () => {
-  assert.deepEqual([...ADMIN_ROLES].sort(), ['admin', 'cashier', 'tester', 'viewer']);
+  assert.deepEqual([...ADMIN_ROLES].sort(), ['admin', 'cashier', 'superuser', 'tester', 'viewer']);
 });

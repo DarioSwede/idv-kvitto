@@ -35,24 +35,24 @@ test('strict single-address validation rejects header injection and lists', () =
   for(const value of ['a@example.org\nBcc:b@example.org','Name <a@example.org>','a@example.org,b@example.org','a@localhost','a@-example.org']) assert.equal(validEmail(value),false);
   assert.equal(validEmail(' person+test@example.org '),true);
 });
-test('email-setting writes require real admin role and valid values', () => {
-  for(const role of ['viewer','cashier','tester',undefined]) assert.ok(emailSettingError('email_delivery_mode','test',role));
-  assert.ok(emailSettingError('email_delivery_mode','other','admin'));
-  assert.ok(emailSettingError('receipt_email_to','invalid','admin'));
-  assert.equal(emailSettingError('email_test_recipient','','admin'),null);
-  assert.equal(emailSettingError('email_delivery_mode','disabled','admin'),null);
+test('email-setting writes require real SU role and valid values', () => {
+  for(const role of ['admin','viewer','cashier','tester',undefined]) assert.ok(emailSettingError('email_delivery_mode','test',role));
+  assert.ok(emailSettingError('email_delivery_mode','other','superuser'));
+  assert.ok(emailSettingError('receipt_email_to','invalid','superuser'));
+  assert.equal(emailSettingError('email_test_recipient','','superuser'),null);
+  assert.equal(emailSettingError('email_delivery_mode','disabled','superuser'),null);
 });
 const rows = mode => [{key:'email_delivery_mode',value:mode}];
-test('testmail is admin-only and disabled blocks even explicit tests', async () => {
-  for(const role of ['viewer','tester','cashier',null]) {
+test('testmail is SU-only and disabled blocks even explicit tests', async () => {
+  for(const role of ['admin','viewer','tester','cashier',null]) {
     await assert.rejects(deliverTestMail({role,body:{recipient:'me@example.org',kind:'system'},rows:rows('test'),config:{},send:()=>assert.fail('No provider call')}),error=>error.status===403);
   }
-  for(const mode of ['disabled',undefined,'invalid']) await assert.rejects(deliverTestMail({role:'admin',body:{recipient:'me@example.org',kind:'test'},rows:rows(mode),config:{},send:()=>assert.fail('No provider call')}));
+  for(const mode of ['disabled',undefined,'invalid']) await assert.rejects(deliverTestMail({role:'superuser',body:{recipient:'me@example.org',kind:'test'},rows:rows(mode),config:{},send:()=>assert.fail('No provider call')}));
 });
 test('each testmail type uses only the explicit recipient, shared template and no real data', async () => {
   for(const kind of ['system','test','production']) {
     let count=0;
-    const result=await deliverTestMail({role:'admin',body:{recipient:'Me@example.org',kind},rows:rows('test'),config:{apiKey:'server-only',from:'sender@example.org'},send:async(url,request)=>{
+    const result=await deliverTestMail({role:'superuser',body:{recipient:'Me@example.org',kind},rows:rows('test'),config:{apiKey:'server-only',from:'sender@example.org'},send:async(url,request)=>{
       count++;
       assert.equal(url,'https://api.resend.com/emails');
       const body=JSON.parse(request.body);
@@ -84,8 +84,10 @@ test('provider failures do not leak provider response or secrets', async () => {
 test('returnTo is restricted to local admin with a validated case identifier', () => {
   const base='https://example.org/idv-kvitto/admin-login.html';
   const home='https://example.org/idv-kvitto/admin.html';
+  assert.equal(safeReturnTo('admin.html?submission=12345678-1234-1234-1234-123456789abc',base),home+'?submission=12345678-1234-1234-1234-123456789abc');
+  assert.equal(safeReturnTo('admin-settings.html?redirect=https://evil.org#secret',base),'https://example.org/idv-kvitto/admin-settings.html');
   for(const input of ['https://evil.org/admin.html','//evil.org/admin.html','javascript:alert(1)','/other/admin.html','../admin.html','https://user:pass@example.org/idv-kvitto/admin.html','admin.html?redirect=https://evil.org#access_token=secret']) assert.equal(safeReturnTo(input,base),home);
-  assert.equal(safeReturnTo('admin.html?submission=12345678-1234-1234-1234-123456789abc&view=settings',base),`${home}?submission=12345678-1234-1234-1234-123456789abc&view=settings`);
+  assert.equal(safeReturnTo('admin.html?submission=12345678-1234-1234-1234-123456789abc&view=settings',base),'https://example.org/idv-kvitto/admin-settings.html');
 });
 test('login accepts only public key types, never service-role or secret keys', () => {
   const jwt=role=>`header.${Buffer.from(JSON.stringify({role})).toString('base64url')}.signature`;

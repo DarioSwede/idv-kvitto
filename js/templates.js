@@ -3,6 +3,7 @@ export function applyTemplates(html,versionMeta={}){
   html=html.replace("const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'","const ENDPOINT=window.__idvSubmitEndpoint||'https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'");
   html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','');
   const welcome=`<section class="welcome" id="welcome" aria-labelledby="welcomeTitle">
+<nav class="welcome-access" aria-label="Administration"><a href="admin-login.html">Logga in till administrationen</a></nav>
 <img class="welcome-logo" src="idv-mark.png" alt="Idrottsveteranerna">
 <div class="welcome-kicker">Idrottsveteranerna</div>
 <h1 id="welcomeTitle">Ansök om ersättning</h1>

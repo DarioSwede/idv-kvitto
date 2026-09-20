@@ -6,10 +6,11 @@ export function safeReturnTo(value, locationHref) {
   const fallback = new URL('admin.html', locationHref);
   try {
     const url = new URL(value || 'admin.html', locationHref);
-    if (url.origin !== fallback.origin || url.pathname !== fallback.pathname || url.username || url.password) return fallback.href;
+    const settings = new URL('admin-settings.html', locationHref);
+    if (url.origin !== fallback.origin || ![fallback.pathname,settings.pathname].includes(url.pathname) || url.username || url.password) return fallback.href;
+    if (url.pathname === settings.pathname || url.searchParams.get('view') === 'settings') return settings.href;
     const id = url.searchParams.get('submission');
     if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || '')) fallback.searchParams.set('submission', id);
-    if (url.searchParams.get('view') === 'settings') fallback.searchParams.set('view', 'settings');
     return fallback.href;
   } catch { return fallback.href; }
 }
@@ -61,7 +62,7 @@ export async function verifiedSession(fetcher = fetch) {
   if (response.status === 401 || response.status === 403) { clearAuth(); return null; }
   if (!response.ok) throw new Error('Behörigheten kunde inte verifieras. Försök igen.');
   const identity = await response.json();
-  if (!['admin','cashier','tester','viewer'].includes(identity.role)) { clearAuth(); return null; }
+  if (!['superuser','admin','cashier','tester','viewer'].includes(identity.role)) { clearAuth(); return null; }
   return {...saved, session, identity};
 }
 export async function signOut() {

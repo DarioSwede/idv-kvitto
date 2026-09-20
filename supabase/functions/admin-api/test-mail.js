@@ -16,7 +16,7 @@ export function testMessage(kind, now = new Date()) {
   };
 }
 export async function deliverTestMail({role, body, rows, config, send = fetch}) {
-  if (role !== 'admin') throw new Response(JSON.stringify({error:'Adminbehörighet krävs.'}), {status:403});
+  if (role !== 'superuser') throw new Response(JSON.stringify({error:'SU-behörighet krävs.'}), {status:403});
   if (!validEmail(body?.recipient)) throw new MailValidationError('Ange en giltig e-postadress.');
   const settings = resolveEmailSettings(Object.fromEntries(rows.map(row => [row.key, row.value])));
   if (settings.emailDeliveryMode === 'disabled') throw new MailValidationError('E-post är avstängd. Välj Test eller Produktion och spara först.');

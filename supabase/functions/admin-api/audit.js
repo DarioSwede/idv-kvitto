@@ -21,7 +21,7 @@ export async function writeAudit(client, req, details) {
 }
 
 export async function listAudit(client, role) {
-  if (role !== 'admin') throw new Response(JSON.stringify({error:'Adminbehörighet krävs.'}), {status:403});
+  if (role !== 'superuser') throw new Response(JSON.stringify({error:'SU-behörighet krävs.'}), {status:403});
   const cutoff = new Date(Date.now()-AUDIT_RETENTION_DAYS*86400000).toISOString();
   const {data,error} = await client.from('receipt_admin_audit')
     .select('id,created_at,user_id,event_type,success,request_id,target_id,method,path,user_agent,ip_address,country,auth_method')

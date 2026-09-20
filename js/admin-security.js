@@ -1,8 +1,8 @@
 // DOM-only presentation; every operation is authorized again by admin-api.
 export function setupAdminSecurity({role,request}) {
   const panel=document.querySelector('#adminSecurityPanel');
-  panel.hidden=role!=='admin';
-  if(role!=='admin')return;
+  panel.hidden=role!=='superuser';
+  if(role!=='superuser')return;
   const status=document.querySelector('#inviteStatus');
   document.querySelector('#inviteStaff').addEventListener('click',async event=>{
     const email=document.querySelector('#inviteEmail');

@@ -58,7 +58,7 @@ test('signed-out control center explains login and opens admin without preview i
   expect(statusCalls).toBe(0);
 });
 
-test('admin login on control origin survives same-tab return without preview server', async ({page}) => {
+test('SU login on control origin survives same-tab return without preview server', async ({page}) => {
   // Serve this checkout through interception so an existing user control server is untouched.
   const {readFile} = await import('node:fs/promises');
   await page.route('http://localhost:43920/**', async route => {
@@ -75,7 +75,7 @@ test('admin login on control origin survives same-tab return without preview ser
   await page.route(/^https:\/\//, async route => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith('/admin-api/login')) return route.fulfill({status: 200, json: {access_token: 'fake-login-token'}});
-    if (path.endsWith('/me')) return route.fulfill({json: {user_id:'test', role:'admin'}});
+    if (path.endsWith('/me')) return route.fulfill({json: {user_id:'test', role:'superuser'}});
     if (path.endsWith('/settings')) return route.fulfill({json: {settings: []}});
     if (path.endsWith('/submissions')) return route.fulfill({json: {submissions: [{id: 'demo', sender_name: 'Demo', status: 'new'}]}});
     await route.abort();

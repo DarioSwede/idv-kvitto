@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Logga in – IDV Kvitto</title>
 <style>body{font-family:system-ui;background:#faf8f3;color:#1a2e2a;margin:0;padding:24px}main{max-width:420px;margin:8vh auto;background:white;padding:32px;border:1px solid #d8d3c4;border-radius:16px}label{display:block;margin:20px 0 6px}input,button{font:inherit;box-sizing:border-box;padding:12px;width:100%;border:1px solid #b7bdb5;border-radius:8px}button{margin-top:24px;background:#265a43;color:white;cursor:pointer}p{line-height:1.5}#status{min-height:24px}small{color:#5e6d65}</style></head>
-<body><main><h1>Kvittoadministration</h1><p>Logga in för att hantera kvitton. Inställningar är endast tillgängliga för administratörer.</p>
+<body><main><h1>Kvittoadministration</h1><p>Logga in för att hantera kvitton. Inställningar är endast tillgängliga för superuser (SU).</p>
 <form id="loginForm">
 <details id="connectionSetup"><summary>Anslutningsinställning</summary><label for="publicKey">Publik Supabase-nyckel</label><input id="publicKey" autocomplete="off" spellcheck="false"><small>Använd publishable/anon. Aldrig service_role eller secret.</small></details>
 <label for="email">E-post</label><input id="email" type="email" autocomplete="username" required>
