@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## Nästa version
+- Testmejl och kvittomejl visar säkra feltyper för nekad nyckel, overifierad avsändardomän, testmottagarbegränsning och kvot. Feltexten påstår inte längre att ett testunderlag har sparats.
+
 ## 2026.09.20.5
 - En gammal sparad publik nyckel kan inte längre blockera inloggning eller kontoaktivering efter nyckelrotation.
 - Inloggningen visar endast e-post och lösenord. Publik anslutningsnyckel hämtas automatiskt från konfigurationen.
