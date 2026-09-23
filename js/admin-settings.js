@@ -1,5 +1,6 @@
 import {verifiedSession,loginUrl,signOut,ADMIN_API} from './admin-auth.js';
 import {setupAdminSecurity} from './admin-security.js';
+import {setupAdminSessionTimeout} from './admin-session-timeout.js';
 
 let verified;
 try { verified=await verifiedSession(); } catch { location.replace(loginUrl()); }
@@ -23,8 +24,9 @@ async function request(resource,options={}) {
   return result;
 }
 field('signOutButton').addEventListener('click',async()=>{
-  try { await signOut(); } finally { location.replace(new URL('admin-login.html',location.href)); }
+  try { await signOut('manual_logout'); } finally { location.replace(new URL('admin-login.html',location.href)); }
 });
+setupAdminSessionTimeout({onTimeout:async reason=>{status.textContent='Du loggas ut efter 30 minuters inaktivitet…';try{await signOut(reason);}finally{location.replace(new URL('admin-login.html?reason=idle',location.href));}}});
 setupAdminSecurity({role:verified.identity.role,request});
 document.documentElement.style.visibility='visible';
 try {

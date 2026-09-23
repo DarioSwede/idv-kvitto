@@ -22,6 +22,20 @@ test('non-SU cannot fetch audit or invite even with forged body role',async()=>{
     await assert.rejects(inviteStaff({},{role,body:{email:'test@example.org',role:'admin'}}),e=>e.status===403);
   }
 });
+test('audit resolves only authentication identities, never receipt target ids',async()=>{
+  const receiptId='22345678-1234-1234-1234-123456789abc';
+  const lookedUp=[];
+  const rows=[
+    {created_at:'2026-09-23T12:00:00Z',event_type:'login',success:true,severity:'low',user_id:uid,target_id:null},
+    {created_at:'2026-09-23T12:01:00Z',event_type:'receipt-submitted',success:true,severity:'low',user_id:null,target_id:receiptId},
+  ];
+  const client={
+    auth:{admin:{getUserById:async id=>{lookedUp.push(id);return {data:{user:{email:'admin@example.org'}}};}}},
+    from:()=>({select:()=>({gte:()=>({order:()=>({limit:async()=>({data:rows})})})})}),
+  };
+  await listAudit(client,'superuser');
+  assert.deepEqual(lookedUp,[uid]);
+});
 test('invitation defaults to viewer, fixes callback and never overwrites membership',async()=>{
   let granted;
   const client={auth:{admin:{inviteUserByEmail:async(email,options)=>{
@@ -53,6 +67,13 @@ function loginDeps({badPassword=false,role='viewer',auditFails=false}={}){
   return {client,authClient,pepper:'test',requestId,events,revoked};
 }
 const loginRequest=()=>new Request('https://example.org/admin-api/login',{method:'POST',body:JSON.stringify({email:'test@example.org',password:'never-log-me'})});
+test('malformed login attempts are rate limited before audit insertion',async()=>{
+  let inserts=0;
+  const client={rpc:async()=>({data:{allowed:false,retry_after_seconds:60}}),from:()=>({insert:async()=>{inserts++;return {};}})};
+  const req=new Request('https://example.org/admin-api/login',{method:'POST',body:JSON.stringify({email:'invalid',password:''})});
+  await assert.rejects(loginStaff(req,{client,authClient:{},pepper:'test',requestId}));
+  assert.equal(inserts,0);
+});
 test('login only returns session after current membership and successful audit',async()=>{
   const deps=loginDeps();const session=await loginStaff(loginRequest(),deps);
   assert.equal(session.access_token,'fake');assert.equal(deps.events.at(-1).success,true);assert.equal(deps.events[0].event_type,'login');
@@ -66,7 +87,7 @@ test('wrong password and removed membership fail closed and audit failure',async
   }
 });
 test('unavailable audit never releases authenticated session',async()=>{
-  const deps=loginDeps({auditFails:true});await assert.rejects(loginStaff(loginRequest(),deps));assert.deepEqual(deps.revoked,[]);
+  const deps=loginDeps({auditFails:true});await assert.rejects(loginStaff(loginRequest(),deps));assert.deepEqual(deps.revoked,['fake']);
 });
 
 test('settings authorization rejects every non-SU role on the server',()=>{

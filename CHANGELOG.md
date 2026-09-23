@@ -2,6 +2,9 @@
 
 ## Nästa version
 - Testmejl och kvittomejl visar säkra feltyper för nekad nyckel, overifierad avsändardomän, testmottagarbegränsning och kvot. Feltexten påstår inte längre att ett testunderlag har sparats.
+- Säkerhetsloggen visar begripliga svenska händelser, verifierad användaridentitet, svensk tid och risknivå från grönt till rött.
+- Inskickade underlag, behörighetsändringar, manuell utloggning och automatisk utloggning efter 30 minuters inaktivitet loggas.
+- Inställningssidan får en tydlig väg tillbaka till administrationen.
 
 ## 2026.09.20.5
 - En gammal sparad publik nyckel kan inte längre blockera inloggning eller kontoaktivering efter nyckelrotation.

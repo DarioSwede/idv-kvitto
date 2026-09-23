@@ -97,11 +97,17 @@ test('SU can invite least-privilege staff and read safely rendered audit entries
     expect(route.request().headers().authorization).toBe('Bearer fake-session');
     await route.fulfill({json:{invited:true}});
   });
-  await page.route('**/admin-api/audit',route=>route.fulfill({json:{entries:[{created_at:'2026-09-20T12:00:00Z',event_type:'<script>alert(1)</script>',success:true,user_id:'user',request_id:'request'}]}}));
+  await page.route('**/admin-api/audit',route=>route.fulfill({json:{entries:[
+    {created_at:'2026-09-20T12:00:00Z',event_type:'login',success:true,severity:'low',actor_name:'Test Admin',actor_email:'admin@example.org'},
+    {created_at:'2026-09-20T12:05:00Z',event_type:'login',success:false,severity:'critical',actor_email:'attack@example.org',detail_code:'rate_limited'},
+    {created_at:'2026-09-20T12:10:00Z',event_type:'<script>alert(1)</script>',success:true,user_id:'user',request_id:'request'}
+  ]}}));
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
   await page.locator('#inviteEmail').fill('new@example.org');await page.locator('#inviteStaff').click();
   await expect(page.locator('#inviteStatus')).toContainText('Inbjudan skickad');
   await page.locator('#loadAudit').click();await expect(page.locator('#auditEntries')).toContainText('<script>alert(1)</script>');
+  await expect(page.locator('#auditEntries')).toContainText('Test Admin · admin@example.org');
+  await expect(page.locator('.audit-entry.audit-critical')).toContainText('Blockerat efter många misslyckade försök');
   await expect(page.locator('#auditEntries script')).toHaveCount(0);
 });
 test('invitation callback clears URL credentials and sets password after role verification',async({page})=>{
@@ -163,7 +169,8 @@ test('SU updates mileage in settings and returns to inbox',async({page})=>{
   await page.locator('#travelRatePerMil').fill('30');await page.locator('#saveSettingsButton').click();
   await expect(page.locator('#connectionStatus')).toHaveText('Inställningarna sparades.');
   expect(updates).toContainEqual({key:'travel_rate_per_km',value:3});
-  await page.getByRole('link',{name:'Inkorg',exact:true}).click();await expect(page).toHaveURL(/admin.html$/);
+  const back=page.getByRole('link',{name:/Till administrationen/}).first();
+  await expect(back).toBeVisible();await back.click();await expect(page).toHaveURL(/admin.html$/);
 });
 test('standalone settings require login before settings data is requested',async({page})=>{
   await api(page);let requested=0;
@@ -174,7 +181,7 @@ test('standalone settings require login before settings data is requested',async
   await expect(page.locator('#statusFilter')).toHaveValue('superuser');
   await expect(page.locator('#statusFilter')).toBeDisabled();
   await expect(page.locator('#saveSettingsButton')).toBeEnabled();
-  expect(requested).toBe(1);
+  await expect.poll(()=>requested).toBe(1);
 });
 
 for(const invitation of [false,true])test(`rotated public key recovers ${invitation?'invitation activation':'login'} without manual configuration`,async({page})=>{

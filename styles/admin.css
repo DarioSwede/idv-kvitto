@@ -230,4 +230,25 @@
       .detail-panel { min-height: auto; }
     }
 
-.nav-btn { text-decoration:none; display:inline-flex; align-items:center; }
+    .nav-btn { text-decoration:none; display:inline-flex; align-items:center; }
+
+    .audit-legend { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px; }
+    .audit-legend span, .audit-severity { display:inline-flex; align-items:center; border-radius:999px; padding:4px 9px; font-size:11px; font-weight:800; }
+    .audit-list { display:grid; gap:10px; margin-top:14px; }
+    .audit-entry { --audit:#28724a; --audit-bg:#eef8f2; border:1px solid var(--line); border-left:7px solid var(--audit); border-radius:12px; padding:12px 14px; background:var(--audit-bg); color:var(--text); }
+    .audit-entry-head { display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--audit); }
+    .audit-meta, .audit-actor, .audit-subject, .audit-target, .audit-detail { margin-top:5px; line-height:1.35; }
+    .audit-meta { color:var(--muted); font-size:12px; }
+    .audit-actor, .audit-subject, .audit-target { font-size:14px; }
+    .audit-detail { font-weight:700; color:var(--audit); }
+    .audit-low, .audit-entry.audit-low .audit-severity { color:#17653f; background:#dff3e7; }
+    .audit-medium, .audit-entry.audit-medium .audit-severity { color:#805d00; background:#fff0b8; }
+    .audit-high, .audit-entry.audit-high .audit-severity { color:#9b4c00; background:#ffe0bd; }
+    .audit-critical, .audit-entry.audit-critical .audit-severity { color:#9a2020; background:#ffd2d2; }
+    .audit-entry.audit-medium { --audit:#9a7200; --audit-bg:#fff9e8; }
+    .audit-entry.audit-high { --audit:#c45f00; --audit-bg:#fff3e8; }
+    .audit-entry.audit-critical { --audit:#b52525; --audit-bg:#fff0f0; }
+    body.dark-theme .audit-entry { --audit-bg:#24322c; }
+    body.dark-theme .audit-entry.audit-medium { --audit-bg:#373321; }
+    body.dark-theme .audit-entry.audit-high { --audit-bg:#3d2c21; }
+    body.dark-theme .audit-entry.audit-critical { --audit-bg:#3d2428; }

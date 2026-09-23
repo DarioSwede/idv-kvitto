@@ -32,11 +32,12 @@ return async(req:Request)=>{
   let auditUserId:string|null=null;
   const url=new URL(req.url);
   const route=url.pathname.split('/').filter(Boolean).at(-1);
-  const event=route==='travel-rate'?'settings':route;
-  const auditable=['access','test-mail','settings','submission','archive','invite','logout','audit'].includes(event||'');
+  const event=route==='travel-rate'?'settings':route==='invite'?'permission-change':route;
+  const auditable=['access','test-mail','settings','submission','archive','permission-change','logout','audit'].includes(event||'');
   let auditClient:ReturnType<typeof serviceClient>|undefined;
-  const record=async(success:boolean|null,targetId:string|null=null)=>{
-    if(auditable && auditClient)await writeAudit(auditClient,req,{event,userId:auditUserId,success,requestId,targetId});
+  let auditIdentity:any=null;
+  const record=async(success:boolean|null,targetId:string|null=null,extra:any={})=>{
+    if(auditable && auditClient)await writeAudit(auditClient,req,{event,userId:auditUserId,actorEmail:auditIdentity?.email,actorRole:auditIdentity?.role,success,requestId,targetId,...extra});
   };
   try{
     auditClient=serviceClient();
@@ -46,6 +47,7 @@ return async(req:Request)=>{
     }
     const {client,user,role}=await requireStaff(req);
     auditUserId=user.id;
+    auditIdentity={...user,role};
     const parts=url.pathname.split('/').filter(Boolean);
     const resource=parts.at(-2)==='admin-api'?parts.at(-1):parts.at(-1);
 
@@ -58,16 +60,17 @@ return async(req:Request)=>{
       await enforceRateLimit(client,{scope:'email',value:`admin-invite:${user.id}`,windowSeconds:3600,maxRequests:5,pepper:getEnv('RATE_LIMIT_PEPPER')||getEnv('SUPABASE_SERVICE_ROLE_KEY')!});
       const settings=await listSettings(client);
       if(!['test','production'].includes(settings.find((row:any)=>row.key==='email_delivery_mode')?.value))throw new InvitationError('E-post är avstängd. Aktivera e-post innan du skickar en inbjudan.');
-      await record(null);
-      const result=await inviteStaff(client,{role,body:await req.json()});
-      await record(true,result.user_id);return reply(result);
+      const body=await req.json();
+      const result=await inviteStaff(client,{role,body});
+      await record(true,result.user_id,{targetEmail:body.email,targetRole:result.role,severity:'medium',detailCode:'role_assigned'});return reply(result);
     }
     if(req.method==='POST'&&resource==='logout'){
+      let detailCode='manual_logout';
+      try { const body=await req.json(); if(['manual_logout','idle_timeout','session_expired'].includes(body?.reason))detailCode=body.reason; } catch { /* optional body */ }
       const token=req.headers.get('authorization')!.replace(/^Bearer /i,'');
-      await record(null);
       const {error}=await client.auth.admin.signOut(token,'local');
       if(error)throw new Error('Utloggningen kunde inte genomföras.');
-      await record(true);return reply({signed_out:true});
+      await record(true,null,{detailCode,severity:detailCode==='manual_logout'?'low':'medium'});return reply({signed_out:true});
     }
     if(req.method==='POST'&&resource==='test-mail'){
       requireSettingsAdmin(role);
@@ -131,7 +134,7 @@ return async(req:Request)=>{
     }
     return reply({error:'Okänd admin-route.'},404);
   }catch(error){
-    try{if(auditClient && auditUserId)await record(false);}catch{console.error('admin-api audit write failed',requestId);}
+    try{if(auditClient && auditUserId)await record(false,null,{severity:event==='permission-change'?'high':'medium'});}catch{console.error('admin-api audit write failed',requestId);}
     if(error instanceof Response)return withCors(error);
     if(error instanceof RateLimitError)return reply({error:error.message},429);
     if(error instanceof InvitationError||error instanceof MailValidationError||error instanceof SettingValidationError||error instanceof SubmissionValidationError)return reply({error:error.message},400);

@@ -18,6 +18,7 @@ const saved = storedAuth();
 const key = DEFAULT_PUBLIC_KEY;
 email.value = saved?.connection.email || '';
 const returnTo = safeReturnTo(new URLSearchParams(location.search).get('returnTo'), location.href);
+if(new URLSearchParams(location.search).get('reason')==='idle')status.textContent='Du loggades ut automatiskt efter 30 minuters inaktivitet.';
 form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!publicKeyOnly(key)) { status.textContent = 'Inloggningen är inte korrekt konfigurerad. Kontakta ansvarig.'; return; }
