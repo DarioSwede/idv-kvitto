@@ -66,7 +66,7 @@ test('wrong password and removed membership fail closed and audit failure',async
   }
 });
 test('unavailable audit never releases authenticated session',async()=>{
-  const deps=loginDeps({auditFails:true});await assert.rejects(loginStaff(loginRequest(),deps));assert.deepEqual(deps.revoked,[]);
+  const deps=loginDeps({auditFails:true});await assert.rejects(loginStaff(loginRequest(),deps));assert.deepEqual(deps.revoked,['fake']);
 });
 
 test('settings authorization rejects every non-SU role on the server',()=>{

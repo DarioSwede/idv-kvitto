@@ -95,6 +95,7 @@
 
   <script type="module">
     import {verifiedSession, loginUrl, signOut, ADMIN_API} from './js/admin-auth.js';
+    import {setupAdminSessionTimeout} from './js/admin-session-timeout.js';
     let verified;
     try { verified = await verifiedSession(); }
     catch { location.replace(loginUrl()); }
@@ -607,8 +608,12 @@
       verifiedSession().then(session => { if (!session) location.replace(loginUrl()); else if (session.identity.role !== verified.identity.role) { location.reload(); } else { authSession=session.session; if (!refreshSubmissionsButton.disabled) refreshSubmissionsButton.click(); } }).catch(() => setConnectionStatus('Behörigheten kunde inte verifieras.'));
     }, 30000);
     signOutButton.addEventListener('click', async () => {
-      try { await signOut(); } finally { location.replace(new URL('admin-login.html', location.href)); }
+      try { await signOut('manual_logout'); } finally { location.replace(new URL('admin-login.html', location.href)); }
     });
+    setupAdminSessionTimeout({onTimeout:async reason=>{
+      setConnectionStatus('Du loggas ut efter 30 minuters inaktivitet…');
+      try { await signOut(reason); } finally { location.replace(new URL('admin-login.html?reason=idle',location.href)); }
+    }});
 
     if (location.port === '43920' && ['localhost', '127.0.0.1'].includes(location.hostname)) {
       const controlLink = document.createElement('a');

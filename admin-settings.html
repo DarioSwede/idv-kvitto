@@ -15,7 +15,7 @@
         <div id="brandVersion" class="brand-version">Laddar version...</div>
       </div>
     </div>
-    <nav class="nav"><a class="nav-btn" href="admin.html">Inkorg</a><a class="nav-btn active" href="admin-settings.html" aria-current="page">Inställningar</a></nav>
+    <nav class="nav"><a class="nav-btn" href="admin.html">← Till administrationen</a><a class="nav-btn active" href="admin-settings.html" aria-current="page">Inställningar</a></nav>
     <button id="themeSwitch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Byt till mörkt läge" title="Byt tema">
       <span class="theme-switch-icon" aria-hidden="true">☀</span>
       <span class="theme-switch-label">Ljust</span>
@@ -25,7 +25,7 @@
   <main class="main">
     <header class="account-bar">
       <div><h1 class="admin-page-title">Inställningar</h1><div class="connection-status" id="connectionStatus" role="status">Verifierar SU-behörighet…</div></div>
-      <div class="account-actions"><a href="index.html">Öppna kvittoformuläret</a><button id="signOutButton" class="button secondary" type="button">Logga ut</button></div>
+      <div class="account-actions"><a class="button secondary" href="admin.html">← Till administrationen</a><a href="index.html">Öppna kvittoformuläret</a><button id="signOutButton" class="button secondary" type="button">Logga ut</button></div>
     </header>
     <section id="settingsPanel" class="card open" aria-hidden="false">
       <div class="list-header">
@@ -96,7 +96,8 @@
         <label for="inviteRole">Behörighet</label><select id="inviteRole"><option value="viewer">Läsbehörighet</option><option value="cashier">Kassör</option><option value="tester">Drift/test</option><option value="admin">Administratör</option><option value="superuser">Superuser (SU)</option></select>
         <button id="inviteStaff" class="button" type="button">Skicka inbjudan</button>
         <p id="inviteStatus" role="status"></p>
-        <h3>Säkerhetslogg</h3><p>De senaste 100 händelserna, högst 90 dagar. Tider visas i UTC.</p>
+        <h3>Säkerhetslogg</h3><p>De senaste 100 händelserna, högst 90 dagar. Datum och tid visas i svensk tid. Färgen visar händelsens säkerhetsstatus.</p>
+        <div class="audit-legend" aria-label="Förklaring till säkerhetsstatus"><span class="audit-low">OK</span><span class="audit-medium">Observera</span><span class="audit-high">Varning</span><span class="audit-critical">Kritiskt</span></div>
         <button id="loadAudit" class="button" type="button">Visa säkerhetslogg</button>
         <div id="auditEntries" role="status" style="overflow-wrap:anywhere"></div>
       </div>

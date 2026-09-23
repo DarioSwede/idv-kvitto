@@ -65,11 +65,11 @@ export async function verifiedSession(fetcher = fetch) {
   if (!['superuser','admin','cashier','tester','viewer'].includes(identity.role)) { clearAuth(); return null; }
   return {...saved, session, identity};
 }
-export async function signOut() {
+export async function signOut(reason='manual_logout') {
   const saved = storedAuth();
   try {
     if (saved?.session?.access_token) {
-      const response = await fetch(`${ADMIN_API}/logout`, {method:'POST',headers:{apikey:saved.connection.anonKey, Authorization:`Bearer ${saved.session.access_token}`}});
+      const response = await fetch(`${ADMIN_API}/logout`, {method:'POST',headers:{apikey:saved.connection.anonKey, Authorization:`Bearer ${saved.session.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({reason})});
       if (!response.ok && response.status !== 401) throw new Error('Serverutloggningen kunde inte bekräftas.');
     }
   } finally { clearAuth(); }
