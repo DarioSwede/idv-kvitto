@@ -181,7 +181,7 @@ test('standalone settings require login before settings data is requested',async
   await expect(page.locator('#statusFilter')).toHaveValue('superuser');
   await expect(page.locator('#statusFilter')).toBeDisabled();
   await expect(page.locator('#saveSettingsButton')).toBeEnabled();
-  expect(requested).toBe(1);
+  await expect.poll(()=>requested).toBe(1);
 });
 
 for(const invitation of [false,true])test(`rotated public key recovers ${invitation?'invitation activation':'login'} without manual configuration`,async({page})=>{
