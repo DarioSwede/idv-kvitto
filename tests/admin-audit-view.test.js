@@ -22,9 +22,10 @@ test('permission and receipt events expose only useful human-readable context',(
   const permission=auditPresentation({created_at:'2026-09-23T20:10:06Z',event_type:'permission-change',success:true,severity:'medium',actor_email:'su@example.org',target_email:'new@example.org',target_role:'cashier',detail_code:'role_assigned'});
   assert.equal(permission.label,'Behörighet tilldelad');
   assert.equal(permission.target,'new@example.org · Kassör');
-  const receipt=auditPresentation({created_at:'2026-09-23T20:10:06Z',event_type:'receipt-submitted',success:true,severity:'low',actor_name:'Demo Person',actor_email:'demo@example.org',detail_code:'receipt_received'});
+  const receipt=auditPresentation({created_at:'2026-09-23T20:10:06Z',event_type:'receipt-submitted',success:true,severity:'low',subject_name:'Demo Person',subject_email:'demo@example.org',detail_code:'receipt_received'});
   assert.equal(receipt.label,'Nytt underlag inskickat');
-  assert.equal(receipt.actor,'Demo Person · demo@example.org');
+  assert.equal(receipt.actor,'');
+  assert.equal(receipt.subject,'Demo Person · demo@example.org');
 });
 
 test('legacy started rows are hidden when the same request has a final result',()=>{

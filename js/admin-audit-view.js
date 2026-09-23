@@ -15,11 +15,12 @@ const ROLES={superuser:'Superuser (SU)',admin:'Administratör',cashier:'Kassör'
 
 export function auditPresentation(entry,locale='sv-SE'){
   const when=new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'medium',timeZone:'Europe/Stockholm'}).format(new Date(entry.created_at));
-  const actor=[entry.actor_name,entry.actor_email].filter(Boolean).join(' · ') || (entry.user_id ? `Användare ${entry.user_id}` : 'Ej identifierad');
+  const subject=[entry.subject_name,entry.subject_email].filter(Boolean).join(' · ');
+  const actor=[entry.actor_name,entry.actor_email].filter(Boolean).join(' · ') || (entry.user_id ? `Användare ${entry.user_id}` : subject ? '' : 'Ej identifierad');
   const target=[entry.target_email,entry.target_role ? ROLES[entry.target_role]||entry.target_role : null].filter(Boolean).join(' · ');
   const outcome=entry.success===null?'Påbörjad':entry.success?'Lyckades':'Misslyckades';
   const severity=['low','medium','high','critical'].includes(entry.severity)?entry.severity:(entry.event_type==='login'&&entry.success===false?'high':'low');
-  return {when,actor,target,outcome,severity,status:STATUS[severity],label:LABELS[entry.event_type]||entry.event_type,detail:DETAILS[entry.detail_code]||''};
+  return {when,actor,subject,target,outcome,severity,status:STATUS[severity],label:LABELS[entry.event_type]||entry.event_type,detail:DETAILS[entry.detail_code]||''};
 }
 
 export function compactAuditEntries(entries){
@@ -37,8 +38,9 @@ export function renderAuditEntries(entries,documentRef=document){
     const badge=documentRef.createElement('span');badge.className='audit-severity';badge.textContent=view.status;
     head.append(title,badge);
     const meta=documentRef.createElement('div');meta.className='audit-meta';meta.textContent=`${view.when} · ${view.outcome}`;
-    const actor=documentRef.createElement('div');actor.className='audit-actor';actor.textContent=`Vem: ${view.actor}`;
-    item.append(head,meta,actor);
+    item.append(head,meta);
+    if(view.actor){const actor=documentRef.createElement('div');actor.className='audit-actor';actor.textContent=`Vem: ${view.actor}`;item.append(actor);}
+    if(view.subject){const subject=documentRef.createElement('div');subject.className='audit-subject';subject.textContent=`Uppgivet av (ej verifierat): ${view.subject}`;item.append(subject);}
     if(view.target){const target=documentRef.createElement('div');target.className='audit-target';target.textContent=`Gäller: ${view.target}`;item.append(target);}
     if(view.detail){const detail=documentRef.createElement('div');detail.className='audit-detail';detail.textContent=view.detail;item.append(detail);}
     list.append(item);

@@ -13,6 +13,8 @@ alter table public.receipt_admin_audit
   add column actor_email text check (actor_email is null or length(actor_email) <= 320),
   add column actor_name text check (actor_name is null or length(actor_name) <= 200),
   add column actor_role text check (actor_role is null or actor_role in ('superuser','admin','cashier','tester','viewer')),
+  add column subject_email text check (subject_email is null or length(subject_email) <= 320),
+  add column subject_name text check (subject_name is null or length(subject_name) <= 200),
   add column target_email text check (target_email is null or length(target_email) <= 320),
   add column target_role text check (target_role is null or target_role in ('superuser','admin','cashier','tester','viewer')),
   add column detail_code text check (detail_code is null or detail_code in (

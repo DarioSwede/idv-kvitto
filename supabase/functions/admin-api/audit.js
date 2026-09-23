@@ -8,13 +8,14 @@ const clean = (value,max) => typeof value === 'string' ? value.replace(/[\x00-\x
 const email = value => { const normalized=clean(value,320)?.toLowerCase(); return normalized && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) ? normalized : null; };
 
 // Never copy bodies, query strings, credentials or arbitrary metadata into the log.
-export function auditEntry(req, {event, userId = null, success, requestId, targetId = null, actorEmail = null, actorName = null, actorRole = null, targetEmail = null, targetRole = null, detailCode = null, severity = 'low'}) {
+export function auditEntry(req, {event, userId = null, success, requestId, targetId = null, actorEmail = null, actorName = null, actorRole = null, subjectEmail = null, subjectName = null, targetEmail = null, targetRole = null, detailCode = null, severity = 'low'}) {
   if (!EVENTS.has(event) || (success !== null && typeof success !== 'boolean')) throw new Error('Invalid audit event');
   if (!UUID.test(requestId || '') || !SEVERITIES.has(severity)) throw new Error('Invalid audit context');
   return {
     event_type:event, user_id:UUID.test(userId || '') ? userId : null, success,
     request_id:requestId, target_id:UUID.test(targetId || '') ? targetId : null,
     actor_email:email(actorEmail), actor_name:clean(actorName,200), actor_role:ROLES.has(actorRole) ? actorRole : null,
+    subject_email:email(subjectEmail), subject_name:clean(subjectName,200),
     target_email:email(targetEmail), target_role:ROLES.has(targetRole) ? targetRole : null,
     detail_code:DETAILS.has(detailCode) ? detailCode : null, severity,
     method:req.method, path:`/admin-api/${event === 'access' ? 'me' : event}`,
@@ -33,11 +34,14 @@ export async function listAudit(client, role) {
   if (role !== 'superuser') throw new Response(JSON.stringify({error:'SU-behörighet krävs.'}), {status:403});
   const cutoff = new Date(Date.now()-AUDIT_RETENTION_DAYS*86400000).toISOString();
   const {data,error} = await client.from('receipt_admin_audit')
-    .select('id,created_at,user_id,event_type,success,request_id,target_id,actor_email,actor_name,actor_role,target_email,target_role,detail_code,severity,method,path,user_agent,ip_address,country,auth_method')
+    .select('id,created_at,user_id,event_type,success,request_id,target_id,actor_email,actor_name,actor_role,subject_email,subject_name,target_email,target_role,detail_code,severity,method,path,user_agent,ip_address,country,auth_method')
     .gte('created_at',cutoff).order('created_at',{ascending:false}).limit(100);
   if (error) throw new Error('Säkerhetsloggen kunde inte hämtas.');
   const entries=data || [];
-  const ids=[...new Set(entries.flatMap(row=>[row.user_id,row.target_id]).filter(Boolean))];
+  const ids=[...new Set(entries.flatMap(row=>[
+    row.user_id,
+    ['permission-change','invite'].includes(row.event_type) ? row.target_id : null,
+  ]).filter(Boolean))];
   const identities=new Map();
   await Promise.all(ids.map(async id=>{
     try {

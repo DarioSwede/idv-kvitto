@@ -1,20 +1,27 @@
 import {validEmail} from '../submit-receipt/email-config.js';
 import {verifyStaff} from './staff.js';
 import {writeAudit} from './audit.js';
-import {enforceRateLimit} from '../submit-receipt/rate-limit.js';
+import {clientAddress,enforceRateLimit} from '../submit-receipt/rate-limit.js';
 
 // Isolated public Auth client: never authenticate the service-role database client.
 export async function loginStaff(req, {client,authClient,pepper,requestId}) {
   const body = await req.json();
   if (!validEmail(body?.email) || typeof body.password !== 'string' || !body.password || body.password.length > 1024) {
+    await enforceRateLimit(client,{scope:'admin-login-invalid',value:clientAddress(req.headers),windowSeconds:600,maxRequests:10,pepper});
     await writeAudit(client,req,{event:'login',actorEmail:typeof body?.email==='string'?body.email:null,success:false,requestId,severity:'high',detailCode:'invalid_credentials'});
     throw new Response(JSON.stringify({error:'Kontrollera e-post och lösenord.'}),{status:400});
   }
   const email = body.email.trim().toLowerCase();
+  await enforceRateLimit(client,{scope:'admin-login-address',value:clientAddress(req.headers),windowSeconds:600,maxRequests:30,pepper});
   try {
     await enforceRateLimit(client,{scope:'email',value:`admin-login:${email}`,windowSeconds:600,maxRequests:10,pepper});
   } catch(error) {
-    await writeAudit(client,req,{event:'login',actorEmail:email,success:false,requestId,severity:'critical',detailCode:'rate_limited'});
+    let firstNotice=false;
+    try {
+      await enforceRateLimit(client,{scope:'admin-login-block-notice',value:email,windowSeconds:600,maxRequests:1,pepper});
+      firstNotice=true;
+    } catch { /* one critical audit entry per address and window */ }
+    if(firstNotice)await writeAudit(client,req,{event:'login',actorEmail:email,success:false,requestId,severity:'critical',detailCode:'rate_limited'});
     throw error;
   }
   let session;

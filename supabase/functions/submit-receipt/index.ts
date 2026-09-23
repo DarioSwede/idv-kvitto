@@ -264,7 +264,7 @@ Deno.serve(async (req: Request) => {
     }
     const { data: signedPdf } = await supabase.storage.from("receipt-files").createSignedUrl(`${submission.id}/sammanstallt-underlag.pdf`, 900);
     try {
-      await writeAudit(supabase,req,{event:"receipt-submitted",actorEmail:senderEmail,actorName:senderName,success:true,requestId:crypto.randomUUID(),targetId:submission.id,severity:"low",detailCode:"receipt_received"});
+      await writeAudit(supabase,req,{event:"receipt-submitted",subjectEmail:senderEmail,subjectName:senderName,success:true,requestId:crypto.randomUUID(),targetId:submission.id,severity:"low",detailCode:"receipt_received"});
     } catch(error) { console.error("submission audit write failed",error); }
     return reply({ ok: true, submission_id: submission.id, submission_mode: submissionMode, final_pdf_url: signedPdf?.signedUrl ?? null, delivery_mode: settings.emailDeliveryMode, delivery_recipient: deliveryRecipient, delivery_sent: deliveryResult.sent, delivery_error: deliveryResult.error ?? null, copy_requested: ccSelf && settings.ccSelfEnabled, copy_redirected: Boolean(copyRecipient && settings.emailDeliveryMode === "test"), copy_sent: copyResult.sent, copy_error: copyResult.error ?? null });
   } catch (error) {

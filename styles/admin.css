@@ -237,9 +237,9 @@
     .audit-list { display:grid; gap:10px; margin-top:14px; }
     .audit-entry { --audit:#28724a; --audit-bg:#eef8f2; border:1px solid var(--line); border-left:7px solid var(--audit); border-radius:12px; padding:12px 14px; background:var(--audit-bg); color:var(--text); }
     .audit-entry-head { display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--audit); }
-    .audit-meta, .audit-actor, .audit-target, .audit-detail { margin-top:5px; line-height:1.35; }
+    .audit-meta, .audit-actor, .audit-subject, .audit-target, .audit-detail { margin-top:5px; line-height:1.35; }
     .audit-meta { color:var(--muted); font-size:12px; }
-    .audit-actor, .audit-target { font-size:14px; }
+    .audit-actor, .audit-subject, .audit-target { font-size:14px; }
     .audit-detail { font-weight:700; color:var(--audit); }
     .audit-low, .audit-entry.audit-low .audit-severity { color:#17653f; background:#dff3e7; }
     .audit-medium, .audit-entry.audit-medium .audit-severity { color:#805d00; background:#fff0b8; }
