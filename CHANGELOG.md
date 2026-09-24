@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.24.1
+- IDV-loggan visas på admininloggningen och i inbjudningsmejlet.
+- Inbjudningsmejlet har en enda innehållsruta och ämnesraden "Du är inbjuden till IDV kvittoadmin".
+
 ## Nästa version
 - Testmejl och kvittomejl visar säkra feltyper för nekad nyckel, overifierad avsändardomän, testmottagarbegränsning och kvot. Feltexten påstår inte längre att ett testunderlag har sparats.
 - Säkerhetsloggen visar begripliga svenska händelser, verifierad användaridentitet, svensk tid och risknivå från grönt till rött.
