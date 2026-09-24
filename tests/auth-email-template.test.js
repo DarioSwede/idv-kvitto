@@ -17,6 +17,6 @@ test('invitation template is Swedish, accessible and keeps the secure confirmati
   assert.match(html,/<body bgcolor="#f5f4ed"/);
   assert.match(html,/width="600" bgcolor="#ffffff"/);
   assert.doesNotMatch(html,/content="light dark"/);
-  assert.match(html,/<img src="https:\/\/darioswede\.github\.io\/idv-kvitto\/idv-mark\.png" width="96" alt="Idrottsveteranerna"/);
+  assert.match(html,/<img src="https:\/\/raw\.githubusercontent\.com\/DarioSwede\/idv-kvitto\/main\/idv-mark\.png" width="96" alt="Idrottsveteranerna"/);
   assert.doesNotMatch(html,/\.Data|\.Email|unsubscribe|opt out/i);
 });
