@@ -2,3 +2,7 @@
 # Required for the publishable API key and the signed-out password flow.
 [functions.admin-api]
 verify_jwt = false
+
+[auth.email.template.invite]
+subject = "Du är inbjuden till Kvittoadministrationen"
+content_path = "./supabase/templates/invite.html"

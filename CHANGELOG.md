@@ -5,6 +5,7 @@
 - Säkerhetsloggen visar begripliga svenska händelser, verifierad användaridentitet, svensk tid och risknivå från grönt till rött.
 - Inskickade underlag, behörighetsändringar, manuell utloggning och automatisk utloggning efter 30 minuters inaktivitet loggas.
 - Inställningssidan får en tydlig väg tillbaka till administrationen.
+- Inbjudan till Kvittoadministrationen får en svensk, tillgänglig och varumärkesanpassad e-postmall med tydlig aktiveringsknapp och säkerhetsinformation.
 
 ## 2026.09.20.5
 - En gammal sparad publik nyckel kan inte längre blockera inloggning eller kontoaktivering efter nyckelrotation.

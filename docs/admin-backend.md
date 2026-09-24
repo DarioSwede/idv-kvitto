@@ -45,6 +45,10 @@ Backenddelen är uppdelad så att inlämning, administration och inställningar 
 
 Faktiska e-posthemligheter, API-nycklar och service-role-nycklar ska **inte** göras redigerbara i admin.
 
+## Tillfällig avsändaradress för Auth
+
+Supabase Auth använder tills vidare `darioswede@gmail.com` som SMTP-avsändare via Gmail. Byt till en verifierad adress på Idrottsveteranernas egen domän så snart den finns tillgänglig, återkalla då Google-applösenordet `Supabase Kvittoadministration` och verifiera därefter en ny inbjudan från början till slut. SMTP-lösenordet ska endast anges direkt i Supabase och får inte sparas i repot.
+
 ## Inskick och status
 
 Varje inskick får status:
