@@ -12,6 +12,11 @@ test('invitation template is Swedish, accessible and keeps the secure confirmati
   assert.match(html,/Aktivera konto och välj lösenord/);
   assert.match(html,/role="presentation"/);
   assert.match(html,/>Idrottsveteranerna<\/p>/);
+  assert.match(html,/<meta name="color-scheme" content="light">/);
+  assert.match(html,/<meta name="supported-color-schemes" content="light">/);
+  assert.match(html,/<body bgcolor="#f5f4ed"/);
+  assert.match(html,/width="600" bgcolor="#ffffff"/);
+  assert.doesNotMatch(html,/content="light dark"/);
   assert.doesNotMatch(html,/<img\b|https?:\/\//i);
   assert.doesNotMatch(html,/\.Data|\.Email|unsubscribe|opt out/i);
 });
