@@ -4,37 +4,21 @@ export function fileBaseName(name=''){
   return String(name).replace(/\.[^.]+$/,'').slice(0,200)||'Kvitto';
 }
 
+// Keep the user-visible/submitted receipt faithful to the source photo.
+// OCR has its own derived preprocessing in receipt-ocr.js; destructive
+// background removal here can erase pale thermal text and sunlit paper.
 export function cleanReceiptImage(image){
   const scale=Math.min(1,MAX_IMAGE_SIZE/Math.max(image.width,image.height));
   const canvas=document.createElement('canvas');
-  canvas.width=Math.round(image.width*scale);
-  canvas.height=Math.round(image.height*scale);
-  const context=canvas.getContext('2d');
+  canvas.width=Math.max(1,Math.round(image.width*scale));
+  canvas.height=Math.max(1,Math.round(image.height*scale));
+  const context=canvas.getContext('2d',{alpha:false});
+  context.fillStyle='#fff';
+  context.fillRect(0,0,canvas.width,canvas.height);
+  context.imageSmoothingEnabled=true;
+  context.imageSmoothingQuality='high';
   context.drawImage(image,0,0,canvas.width,canvas.height);
-  const imageData=context.getImageData(0,0,canvas.width,canvas.height);
-  const pixels=imageData.data,width=canvas.width,height=canvas.height;
-  const luminance=index=>.2126*pixels[index]+.7152*pixels[index+1]+.0722*pixels[index+2];
-  let border=0,borderCount=0,center=0,centerCount=0;
-  const step=Math.max(1,Math.floor(Math.min(width,height)/120));
-  for(let y=0;y<height;y+=step)for(let x=0;x<width;x+=step){const light=luminance((y*width+x)*4);if(x<width*.08||x>width*.92||y<height*.08||y>height*.92){border+=light;borderCount+=1}else if(x>width*.3&&x<width*.7&&y>height*.2&&y<height*.8){center+=light;centerCount+=1}}
-  border/=borderCount;center/=centerCount;
-  if(center-border<35||center<145)return canvas;
-  const limit=Math.min(185,border+45),seen=new Uint8Array(width*height),queue=[];
-  let head=0;
-  for(let x=0;x<width;x+=1)queue.push(x,(height-1)*width+x);
-  for(let y=1;y<height-1;y+=1)queue.push(y*width,y*width+width-1);
-  while(head<queue.length){const point=queue[head++];if(seen[point])continue;seen[point]=1;if(luminance(point*4)>limit)continue;const x=point%width,y=Math.floor(point/width);pixels[point*4]=pixels[point*4+1]=pixels[point*4+2]=255;if(x)queue.push(point-1);if(x<width-1)queue.push(point+1);if(y)queue.push(point-width);if(y<height-1)queue.push(point+width)}
-  context.putImageData(imageData,0,0);
-  let minX=width,minY=height,maxX=0,maxY=0;
-  for(let y=0;y<height;y+=2)for(let x=0;x<width;x+=2)if(!seen[y*width+x]){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y)}
-  if(maxX<=minX||maxY<=minY)return canvas;
-  const margin=Math.round(Math.min(width,height)*.01);
-  minX=Math.max(0,minX-margin);minY=Math.max(0,minY-margin);maxX=Math.min(width-1,maxX+margin);maxY=Math.min(height-1,maxY+margin);
-  const output=document.createElement('canvas');
-  output.width=maxX-minX+1;output.height=maxY-minY+1;
-  const outputContext=output.getContext('2d');
-  outputContext.fillStyle='#fff';outputContext.fillRect(0,0,output.width,output.height);outputContext.drawImage(canvas,minX,minY,output.width,output.height,0,0,output.width,output.height);
-  return output;
+  return canvas;
 }
 
 export async function compressPdf(file){
