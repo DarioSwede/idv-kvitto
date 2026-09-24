@@ -7,7 +7,7 @@ const templateUrl=new URL('../supabase/templates/invite.html',import.meta.url);
 test('invitation template is Swedish, accessible and keeps the secure confirmation link',async()=>{
   const html=await readFile(templateUrl,'utf8');
   assert.match(html,/<html lang="sv" dir="ltr">/);
-  assert.match(html,/<title>Du är inbjuden till Kvittoadministrationen<\/title>/);
+  assert.match(html,/<title>Du är inbjuden till IDV kvittoadmin<\/title>/);
   assert.match(html,/href="\{\{ \.ConfirmationURL \}\}"/);
   assert.match(html,/Aktivera konto och välj lösenord/);
   assert.match(html,/role="presentation"/);
@@ -17,6 +17,6 @@ test('invitation template is Swedish, accessible and keeps the secure confirmati
   assert.match(html,/<body bgcolor="#f5f4ed"/);
   assert.match(html,/width="600" bgcolor="#ffffff"/);
   assert.doesNotMatch(html,/content="light dark"/);
-  assert.doesNotMatch(html,/<img\b|https?:\/\//i);
+  assert.match(html,/<img src="https:\/\/darioswede\.github\.io\/idv-kvitto\/idv-mark\.png" width="96" alt="Idrottsveteranerna"/);
   assert.doesNotMatch(html,/\.Data|\.Email|unsubscribe|opt out/i);
 });
