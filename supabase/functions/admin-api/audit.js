@@ -30,6 +30,25 @@ export async function writeAudit(client, req, details) {
   if (error) throw new Error('Säkerhetsloggen kunde inte skrivas.');
 }
 
+async function resolveAuthIdentities(client,ids){
+  const identities=new Map();
+  const wanted=new Set(ids);
+  for(let page=1;wanted.size&&page<=100;page++){
+    const {data,error}=await client.auth.admin.listUsers({page,perPage:1000});
+    if(error)break;
+    const users=data?.users||[];
+    for(const user of users){if(wanted.has(user.id)){identities.set(user.id,{email:user.email||null});wanted.delete(user.id);}}
+    if(users.length<1000)break;
+  }
+  await Promise.all([...wanted].map(async id=>{
+    try{
+      const {data,error}=await client.auth.admin.getUserById(id);
+      if(!error&&data?.user)identities.set(id,{email:data.user.email||null});
+    }catch{/* A deleted identity must not hide the rest of the log. */}
+  }));
+  return identities;
+}
+
 export async function listAudit(client, role) {
   if (role !== 'superuser') throw new Response(JSON.stringify({error:'SU-behörighet krävs.'}), {status:403});
   const cutoff = new Date(Date.now()-AUDIT_RETENTION_DAYS*86400000).toISOString();
@@ -42,15 +61,7 @@ export async function listAudit(client, role) {
     row.user_id,
     ['permission-change','invite'].includes(row.event_type) ? row.target_id : null,
   ]).filter(Boolean))];
-  const identities=new Map();
-  await Promise.all(ids.map(async id=>{
-    try {
-      const {data:userData}=await client.auth.admin.getUserById(id);
-      if(userData?.user)identities.set(id,{email:userData.user.email||null});
-    } catch {
-      // A deleted or temporarily unavailable identity must not hide the rest of the log.
-    }
-  }));
+  const identities=await resolveAuthIdentities(client,ids);
   for(const entry of entries){
     const actor=identities.get(entry.user_id),target=identities.get(entry.target_id);
     entry.actor_email ||= actor?.email || null;
