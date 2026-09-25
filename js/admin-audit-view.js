@@ -8,7 +8,8 @@ const DETAILS={
   invalid_credentials:'Felaktiga inloggningsuppgifter eller saknad behörighet',
   rate_limited:'Blockerat efter många misslyckade försök', manual_logout:'Manuell utloggning',
   idle_timeout:'Automatisk utloggning efter inaktivitet', session_expired:'Sessionen upphörde',
-  invitation_sent:'Inbjudan skickad', role_assigned:'Ny behörighet tilldelad', receipt_received:'Underlaget togs emot'
+  invitation_sent:'Inbjudan skickad', role_assigned:'Ny behörighet tilldelad', role_changed:'Behörighet ändrad',
+  role_removed:'Behörighet borttagen', receipt_received:'Underlaget togs emot'
 };
 const STATUS={low:'OK',medium:'Observera',high:'Varning',critical:'Kritiskt'};
 const ROLES={superuser:'Superuser (SU)',admin:'Administratör',cashier:'Kassör',tester:'Drift/test',viewer:'Läsbehörighet'};

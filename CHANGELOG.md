@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.25.2
+- Inställningarna visar alla användare som har åtkomst till kvittoadministrationen.
+- Superuser kan ändra en annan användares behörighet eller ta bort appåtkomsten utan att radera personens inloggningskonto.
+- Den egna superuser-behörigheten är skyddad mot ändring och borttagning.
+
 ## 2026.09.25.1
 - Befintliga Supabase Auth-användare kan få vald behörighet i kvittoadministrationen utan en ny inbjudan.
 - En redan tilldelad behörighet skrivs aldrig över automatiskt av inbjudningsflödet.

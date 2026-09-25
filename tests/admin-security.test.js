@@ -4,6 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {auditEntry,listAudit} from '../supabase/functions/admin-api/audit.js';
 import {inviteStaff,INVITE_REDIRECT} from '../supabase/functions/admin-api/invitations.js';
+import {listStaff,updateStaffRole,removeStaff} from '../supabase/functions/admin-api/staff-management.js';
 import {loginStaff} from '../supabase/functions/admin-api/login.js';
 import {invitationSession} from '../js/admin-invitation.js';
 const uid='12345678-1234-1234-1234-123456789abc';
@@ -66,6 +67,37 @@ test('invitation blocks invalid input and reports partial delivery without grant
   for(const body of [{email:'invalid'},{email:'a@example.org',role:'owner'}])await assert.rejects(inviteStaff({},{role:'superuser',body}));
   const client={auth:{admin:{inviteUserByEmail:async()=>({data:{user:{id:uid}}})}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})}),insert:async()=>({error:new Error('db unavailable')})})};
   await assert.rejects(inviteStaff(client,{role:'superuser',body:{email:'a@example.org'}}),/behörigheten kunde inte tilldelas/);
+});
+test('SU can list staff with server-resolved email addresses',async()=>{
+  const client={
+    auth:{admin:{getUserById:async id=>({data:{user:{id,email:id===uid?'z@example.org':'a@example.org'}},error:null})}},
+    from:table=>{assert.equal(table,'admin_users');return {select:()=>({order:async()=>({data:[{user_id:uid,role:'superuser',created_at:'2026-09-01'},{user_id:requestId,role:'viewer',created_at:'2026-09-02'}],error:null})})};}
+  };
+  const users=await listStaff(client,{role:'superuser',currentUserId:uid});
+  assert.deepEqual(users.map(user=>[user.email,user.role,user.is_current]),[['a@example.org','viewer',false],['z@example.org','superuser',true]]);
+});
+test('SU can change and remove another membership but never its own',async()=>{
+  const target='22345678-1234-1234-1234-123456789abc';let changed;let removed;
+  const client={
+    auth:{admin:{getUserById:async()=>({data:{user:{email:'target@example.org'}},error:null})}},
+    from:()=>({
+      select:()=>({eq:()=>({maybeSingle:async()=>({data:{role:'viewer'},error:null})})}),
+      update:value=>({eq:async()=>{changed=value;return {error:null};}}),
+      delete:()=>({eq:()=>({select:()=>({maybeSingle:async()=>{removed=true;return {data:{user_id:target},error:null};}})})})
+    })
+  };
+  assert.equal((await updateStaffRole(client,{role:'superuser',currentUserId:uid,body:{user_id:target,role:'cashier'}})).role,'cashier');
+  assert.deepEqual(changed,{role:'cashier'});
+  assert.equal((await removeStaff(client,{role:'superuser',currentUserId:uid,body:{user_id:target}})).removed,true);assert.equal(removed,true);
+  await assert.rejects(updateStaffRole(client,{role:'superuser',currentUserId:uid,body:{user_id:uid,role:'viewer'}}),/egen behörighet/);
+  await assert.rejects(removeStaff(client,{role:'superuser',currentUserId:uid,body:{user_id:uid}}),/egen behörighet/);
+});
+test('non-SU cannot list or modify staff',async()=>{
+  for(const role of ['admin','viewer',undefined]){
+    await assert.rejects(listStaff({},{role,currentUserId:uid}),error=>error.status===403);
+    await assert.rejects(updateStaffRole({},{role,currentUserId:uid,body:{user_id:requestId,role:'viewer'}}),error=>error.status===403);
+    await assert.rejects(removeStaff({},{role,currentUserId:uid,body:{user_id:requestId}}),error=>error.status===403);
+  }
 });
 test('invitation callback removes tokens immediately and rejects non-invite sessions',()=>{
   let clean;

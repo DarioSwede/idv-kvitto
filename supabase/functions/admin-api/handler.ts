@@ -5,6 +5,7 @@ import {requireSettingsAdmin,requireReceiptManager} from './roles.js';
 import {loginStaff} from './login.js';
 import {writeAudit,listAudit} from './audit.js';
 import {inviteStaff,InvitationError} from './invitations.js';
+import {listStaff,updateStaffRole,removeStaff,StaffManagementError} from './staff-management.js';
 import {getTravelRate,listSettings,updateSetting,SettingValidationError} from './settings.ts';
 import {purgeExpiredSubmissions,listSubmissions,getSubmission,updateSubmissionStatus,archiveSubmission,createPdfLink,SubmissionValidationError} from './submissions.ts';
 
@@ -32,7 +33,7 @@ return async(req:Request)=>{
   let auditUserId:string|null=null;
   const url=new URL(req.url);
   const route=url.pathname.split('/').filter(Boolean).at(-1);
-  const event=route==='travel-rate'?'settings':route==='invite'?'permission-change':route;
+  const event=route==='travel-rate'?'settings':['invite','staff'].includes(route||'')?'permission-change':route;
   const auditable=['access','test-mail','settings','submission','archive','permission-change','logout','audit'].includes(event||'');
   let auditClient:ReturnType<typeof serviceClient>|undefined;
   let auditIdentity:any=null;
@@ -63,6 +64,19 @@ return async(req:Request)=>{
       const body=await req.json();
       const result=await inviteStaff(client,{role,body});
       await record(true,result.user_id,{targetEmail:body.email,targetRole:result.role,severity:'medium',detailCode:'role_assigned'});return reply(result);
+    }
+    if(resource==='staff'){
+      requireSettingsAdmin(role);
+      if(req.method==='GET')return reply({users:await listStaff(client,{role,currentUserId:user.id})});
+      const body=await req.json();
+      if(req.method==='PATCH'){
+        const result=await updateStaffRole(client,{role,currentUserId:user.id,body});
+        await record(true,result.user_id,{targetEmail:result.email,targetRole:result.role,severity:'medium',detailCode:'role_changed'});return reply(result);
+      }
+      if(req.method==='DELETE'){
+        const result=await removeStaff(client,{role,currentUserId:user.id,body});
+        await record(true,result.user_id,{targetEmail:result.email,severity:'high',detailCode:'role_removed'});return reply(result);
+      }
     }
     if(req.method==='POST'&&resource==='logout'){
       let detailCode='manual_logout';
@@ -137,7 +151,7 @@ return async(req:Request)=>{
     try{if(auditClient && auditUserId)await record(false,null,{severity:event==='permission-change'?'high':'medium'});}catch{console.error('admin-api audit write failed',requestId);}
     if(error instanceof Response)return withCors(error);
     if(error instanceof RateLimitError)return reply({error:error.message},429);
-    if(error instanceof InvitationError||error instanceof MailValidationError||error instanceof SettingValidationError||error instanceof SubmissionValidationError)return reply({error:error.message},400);
+    if(error instanceof InvitationError||error instanceof StaffManagementError||error instanceof MailValidationError||error instanceof SettingValidationError||error instanceof SubmissionValidationError)return reply({error:error.message},400);
     console.error('admin-api failed',requestId);
     return reply({error:'Adminbegäran kunde inte genomföras.'},500);
   }
