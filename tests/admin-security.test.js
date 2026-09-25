@@ -41,13 +41,30 @@ test('invitation defaults to viewer, fixes callback and never overwrites members
   const client={auth:{admin:{inviteUserByEmail:async(email,options)=>{
     assert.equal(email,'test@example.org');assert.equal(options.redirectTo,INVITE_REDIRECT);
     return {data:{user:{id:uid}}};
-  }}},from:table=>{assert.equal(table,'admin_users');return {insert:async row=>{granted=row;return {};}};}};
+  }}},from:table=>{assert.equal(table,'admin_users');return {select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})}),insert:async row=>{granted=row;return {};}};}};
   const result=await inviteStaff(client,{role:'superuser',body:{email:'TEST@example.org',redirectTo:'https://evil.example'}});
   assert.equal(result.invited,true);assert.deepEqual(granted,{user_id:uid,role:'viewer'});
 });
+test('existing Auth user can receive app access without a second invitation',async()=>{
+  let granted;
+  const client={auth:{admin:{
+    inviteUserByEmail:async()=>({data:{user:null},error:new Error('already registered')}),
+    listUsers:async options=>{assert.deepEqual(options,{page:1,perPage:1000});return {data:{users:[{id:uid,email:'Existing@Example.org'}]},error:null};}
+  }},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})}),insert:async row=>{granted=row;return {error:null};}})};
+  const result=await inviteStaff(client,{role:'superuser',body:{email:'existing@example.org',role:'viewer'}});
+  assert.deepEqual(result,{invited:false,existing:true,user_id:uid,role:'viewer'});
+  assert.deepEqual(granted,{user_id:uid,role:'viewer'});
+});
+test('existing membership is never overwritten by the invitation flow',async()=>{
+  const client={auth:{admin:{
+    inviteUserByEmail:async()=>({data:{user:null},error:new Error('already registered')}),
+    listUsers:async()=>({data:{users:[{id:uid,email:'existing@example.org'}]},error:null})
+  }},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{role:'admin'},error:null})})})})};
+  await assert.rejects(inviteStaff(client,{role:'superuser',body:{email:'existing@example.org',role:'viewer'}}),/redan behörigheten admin/);
+});
 test('invitation blocks invalid input and reports partial delivery without granting access',async()=>{
   for(const body of [{email:'invalid'},{email:'a@example.org',role:'owner'}])await assert.rejects(inviteStaff({},{role:'superuser',body}));
-  const client={auth:{admin:{inviteUserByEmail:async()=>({data:{user:{id:uid}}})}},from:()=>({insert:async()=>({error:new Error('db unavailable')})})};
+  const client={auth:{admin:{inviteUserByEmail:async()=>({data:{user:{id:uid}}})}},from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:null,error:null})})}),insert:async()=>({error:new Error('db unavailable')})})};
   await assert.rejects(inviteStaff(client,{role:'superuser',body:{email:'a@example.org'}}),/behörigheten kunde inte tilldelas/);
 });
 test('invitation callback removes tokens immediately and rejects non-invite sessions',()=>{

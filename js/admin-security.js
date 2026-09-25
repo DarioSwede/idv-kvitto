@@ -13,7 +13,10 @@ export function setupAdminSecurity({role,request}) {
     status.textContent='Skickar inbjudan…';
     try{
       const result=await request('invite',{method:'POST',body:JSON.stringify({email:email.value.trim(),role:document.querySelector('#inviteRole').value})});
-      status.textContent=result.invited?'Inbjudan skickad. Mottagaren väljer lösenord via länken i mejlet.':'Inbjudan kunde inte skickas.';
+      if(result.invited)status.textContent='Inbjudan skickad. Mottagaren väljer lösenord via länken i mejlet.';
+      else if(result.already_member)status.textContent='Användaren har redan den valda behörigheten.';
+      else if(result.existing)status.textContent='Användaren fanns redan och den valda behörigheten har lagts till.';
+      else status.textContent='Inbjudan kunde inte skickas.';
     }catch(error){status.textContent=error.message;}
     finally{document.querySelector('#inviteStaff').disabled=false;}
   });
