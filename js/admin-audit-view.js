@@ -17,7 +17,7 @@ const ROLES={superuser:'Superuser (SU)',admin:'Administratör',cashier:'Kassör'
 export function auditPresentation(entry,locale='sv-SE'){
   const when=new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'medium',timeZone:'Europe/Stockholm'}).format(new Date(entry.created_at));
   const subject=[entry.subject_name,entry.subject_email].filter(Boolean).join(' · ');
-  const actor=[entry.actor_name,entry.actor_email].filter(Boolean).join(' · ') || (entry.user_id ? `Användare ${entry.user_id}` : subject ? '' : 'Ej identifierad');
+  const actor=[entry.actor_name,entry.actor_email].filter(Boolean).join(' · ') || (subject ? '' : 'E-postadress saknas');
   const target=[entry.target_email,entry.target_role ? ROLES[entry.target_role]||entry.target_role : null].filter(Boolean).join(' · ');
   const outcome=entry.success===null?'Påbörjad':entry.success?'Lyckades':'Misslyckades';
   const severity=['low','medium','high','critical'].includes(entry.severity)?entry.severity:(entry.event_type==='login'&&entry.success===false?'high':'low');

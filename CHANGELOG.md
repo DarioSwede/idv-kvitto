@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.25.3
+- Säkerhetsloggen visar verifierade e-postadresser i stället för interna användar-ID:n.
+- Gamla eller raderade identiteter visas som "E-postadress saknas" och exponerar aldrig UUID i gränssnittet.
+
 ## 2026.09.25.2
 - Inställningarna visar alla användare som har åtkomst till kvittoadministrationen.
 - Superuser kan ändra en annan användares behörighet eller ta bort appåtkomsten utan att radera personens inloggningskonto.

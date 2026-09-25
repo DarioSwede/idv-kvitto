@@ -18,6 +18,12 @@ test('rate-limited login is presented as critical brute-force protection',()=>{
   assert.match(view.detail,/många misslyckade försök/);
 });
 
+test('raw user ids are never presented when an old identity lacks email',()=>{
+  const id='5a2a2c4c-18f3-4c15-ac5d-dc97d18e6bdc';
+  const view=auditPresentation({created_at:'2026-09-23T20:10:06Z',event_type:'login',success:true,severity:'low',user_id:id});
+  assert.equal(view.actor,'E-postadress saknas');assert.equal(JSON.stringify(view).includes(id),false);
+});
+
 test('permission and receipt events expose only useful human-readable context',()=>{
   const permission=auditPresentation({created_at:'2026-09-23T20:10:06Z',event_type:'permission-change',success:true,severity:'medium',actor_email:'su@example.org',target_email:'new@example.org',target_role:'cashier',detail_code:'role_assigned'});
   assert.equal(permission.label,'Behörighet tilldelad');

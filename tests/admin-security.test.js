@@ -31,11 +31,14 @@ test('audit resolves only authentication identities, never receipt target ids',a
     {created_at:'2026-09-23T12:01:00Z',event_type:'receipt-submitted',success:true,severity:'low',user_id:null,target_id:receiptId},
   ];
   const client={
-    auth:{admin:{getUserById:async id=>{lookedUp.push(id);return {data:{user:{email:'admin@example.org'}}};}}},
+    auth:{admin:{
+      listUsers:async options=>{assert.deepEqual(options,{page:1,perPage:1000});return {data:{users:[{id:uid,email:'admin@example.org'}]},error:null};},
+      getUserById:async id=>{lookedUp.push(id);return {data:{user:{email:'unexpected@example.org'}}};}
+    }},
     from:()=>({select:()=>({gte:()=>({order:()=>({limit:async()=>({data:rows})})})})}),
   };
-  await listAudit(client,'superuser');
-  assert.deepEqual(lookedUp,[uid]);
+  const entries=await listAudit(client,'superuser');
+  assert.equal(entries[0].actor_email,'admin@example.org');assert.deepEqual(lookedUp,[]);
 });
 test('invitation defaults to viewer, fixes callback and never overwrites membership',async()=>{
   let granted;
