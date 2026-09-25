@@ -2,7 +2,7 @@ export const AUDIT_RETENTION_DAYS = 90;
 const EVENTS = new Set(['login','access','test-mail','settings','submission','archive','invite','logout','audit','receipt-submitted','permission-change']);
 const ROLES = new Set(['superuser','admin','cashier','tester','viewer']);
 const SEVERITIES = new Set(['low','medium','high','critical']);
-const DETAILS = new Set(['invalid_credentials','rate_limited','manual_logout','idle_timeout','session_expired','invitation_sent','role_assigned','receipt_received']);
+const DETAILS = new Set(['invalid_credentials','rate_limited','manual_logout','idle_timeout','session_expired','invitation_sent','role_assigned','role_changed','role_removed','receipt_received']);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const clean = (value,max) => typeof value === 'string' ? value.replace(/[\x00-\x1f\x7f]/g,'').trim().slice(0,max) || null : null;
 const email = value => { const normalized=clean(value,320)?.toLowerCase(); return normalized && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) ? normalized : null; };

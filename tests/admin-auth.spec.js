@@ -8,6 +8,7 @@ async function api(page,{role='superuser',meStatus=200}={}) {
     if(url.pathname.endsWith('/me'))return route.fulfill({status:meStatus,json:{role,user_id:'test-user'}});
     if(url.pathname.endsWith('/travel-rate'))return route.fulfill({json:{rate_per_km:2.5}});
     if(url.pathname.endsWith('/settings'))return route.fulfill({json:{role,settings:[{key:'email_delivery_mode',value:'test'},{key:'email_test_recipient',value:'test@example.org'}]}});
+    if(url.pathname.endsWith('/staff'))return route.fulfill({json:{users:[{user_id:'test-user',email:'test@example.org',role:'superuser',is_current:true}]}});
     if(url.pathname.endsWith('/submissions'))return route.fulfill({json:{submissions:[{id,sender_name:'Testperson',sender_email:'example@example.org',status:'new',is_test:true}]}});
     if(url.pathname.endsWith('/pdf'))return route.fulfill({json:{url:'about:blank'}});
     if(url.pathname.endsWith('/logout'))return route.fulfill({status:204});
@@ -109,6 +110,27 @@ test('SU can invite least-privilege staff and read safely rendered audit entries
   await expect(page.locator('#auditEntries')).toContainText('Test Admin · admin@example.org');
   await expect(page.locator('.audit-entry.audit-critical')).toContainText('Blockerat efter många misslyckade försök');
   await expect(page.locator('#auditEntries script')).toHaveCount(0);
+});
+test('SU can change and remove another users app access',async({page})=>{
+  await api(page);const mutations=[];
+  await page.route('**/admin-api/staff',async route=>{
+    const method=route.request().method();
+    if(method==='GET')return route.fulfill({json:{users:[
+      {user_id:'test-user',email:'test@example.org',role:'superuser',is_current:true},
+      {user_id:id,email:'person@example.org',role:'viewer',is_current:false}
+    ]}});
+    const body=route.request().postDataJSON();mutations.push({method,body});return route.fulfill({json:method==='DELETE'?{removed:true}:{role:body.role}});
+  });
+  await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  const row=page.locator('.staff-row').filter({hasText:'person@example.org'});
+  await row.getByRole('combobox').selectOption('cashier');await row.getByRole('button',{name:'Spara behörighet'}).click();
+  await expect.poll(()=>mutations.length).toBe(1);
+  expect(mutations[0]).toEqual({method:'PATCH',body:{user_id:id,role:'cashier'}});
+  page.once('dialog',dialog=>dialog.accept());await row.getByRole('button',{name:'Ta bort åtkomst'}).click();
+  await expect.poll(()=>mutations.length).toBe(2);
+  expect(mutations[1]).toEqual({method:'DELETE',body:{user_id:id}});
+  const own=page.locator('.staff-row').filter({hasText:'test@example.org'});
+  await expect(own.getByRole('combobox')).toBeDisabled();await expect(own.getByRole('button',{name:'Ta bort åtkomst'})).toBeDisabled();
 });
 test('invitation callback clears URL credentials and sets password after role verification',async({page})=>{
   await api(page);

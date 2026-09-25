@@ -96,6 +96,12 @@
         <label for="inviteRole">Behörighet</label><select id="inviteRole"><option value="viewer">Läsbehörighet</option><option value="cashier">Kassör</option><option value="tester">Drift/test</option><option value="admin">Administratör</option><option value="superuser">Superuser (SU)</option></select>
         <button id="inviteStaff" class="button" type="button">Skicka inbjudan</button>
         <p id="inviteStatus" role="status"></p>
+        <div class="staff-heading">
+          <div><h3>Tillagda användare</h3><p>Ändra behörighet eller ta bort åtkomsten till kvittoadministrationen. Inloggningskontot raderas inte.</p></div>
+          <button id="refreshStaff" class="button secondary" type="button">Uppdatera lista</button>
+        </div>
+        <div id="staffStatus" class="connection-status" role="status">Hämtar användare…</div>
+        <div id="staffList" class="staff-list" aria-live="polite"></div>
         <h3>Säkerhetslogg</h3><p>De senaste 100 händelserna, högst 90 dagar. Datum och tid visas i svensk tid. Färgen visar händelsens säkerhetsstatus.</p>
         <div class="audit-legend" aria-label="Förklaring till säkerhetsstatus"><span class="audit-low">OK</span><span class="audit-medium">Observera</span><span class="audit-high">Varning</span><span class="audit-critical">Kritiskt</span></div>
         <button id="loadAudit" class="button" type="button">Visa säkerhetslogg</button>
