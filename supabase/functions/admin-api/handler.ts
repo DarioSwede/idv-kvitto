@@ -17,6 +17,10 @@ const cors={
   'Cache-Control':'no-store'
 };
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors});
+const inviteRateLimitMessage=(retryAfterSeconds:number)=>{
+  const minutes=Math.max(1,Math.ceil(retryAfterSeconds/60));
+  return `För många inbjudningsförsök. Försök igen om cirka ${minutes} minut${minutes===1?'':'er'}.`;
+};
 async function withCors(response:Response){
   const headers=new Headers(response.headers);
   Object.entries(cors).forEach(([key,value])=>headers.set(key,value));
@@ -58,7 +62,7 @@ return async(req:Request)=>{
     }
     if(req.method==='POST'&&resource==='invite'){
       requireSettingsAdmin(role);
-      await enforceRateLimit(client,{scope:'email',value:`admin-invite:${user.id}`,windowSeconds:3600,maxRequests:5,pepper:getEnv('RATE_LIMIT_PEPPER')||getEnv('SUPABASE_SERVICE_ROLE_KEY')!});
+      await enforceRateLimit(client,{scope:'email',value:`admin-invite:${user.id}`,windowSeconds:600,maxRequests:10,pepper:getEnv('RATE_LIMIT_PEPPER')||getEnv('SUPABASE_SERVICE_ROLE_KEY')!});
       const settings=await listSettings(client);
       if(!['test','production'].includes(settings.find((row:any)=>row.key==='email_delivery_mode')?.value))throw new InvitationError('E-post är avstängd. Aktivera e-post innan du skickar en inbjudan.');
       const body=await req.json();
@@ -150,7 +154,7 @@ return async(req:Request)=>{
   }catch(error){
     try{if(auditClient && auditUserId)await record(false,null,{severity:event==='permission-change'?'high':'medium'});}catch{console.error('admin-api audit write failed',requestId);}
     if(error instanceof Response)return withCors(error);
-    if(error instanceof RateLimitError)return reply({error:error.message},429);
+    if(error instanceof RateLimitError)return reply({error:route==='invite'?inviteRateLimitMessage(error.retryAfterSeconds):error.message},429);
     if(error instanceof InvitationError||error instanceof StaffManagementError||error instanceof MailValidationError||error instanceof SettingValidationError||error instanceof SubmissionValidationError)return reply({error:error.message},400);
     console.error('admin-api failed',requestId);
     return reply({error:'Adminbegäran kunde inte genomföras.'},500);

@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createAdminHandler} from '../supabase/functions/admin-api/handler.ts';
 const uid='12345678-1234-1234-1234-123456789abc';
-function fixture(role='superuser',{storageFails=false}={}) {
+function fixture(role='superuser',{storageFails=false,rateLimited=false}={}) {
   const writes=[];
   const settings=[{key:'travel_rate_per_km',value:2.5},{key:'retention_days',value:365},{key:'email_delivery_mode',value:'disabled'}];
   const old={id:uid,archived_at:'2020-01-01T00:00:00Z',final_pdf_path:'final.pdf',receipt_files:[{storage_path:'receipt.jpg'}]};
   const rows=[old,{id:'recent',archived_at:new Date().toISOString()},{id:'active',archived_at:null}];
-  const client={storage:{from:()=>({remove:async paths=>{writes.push(['storage',paths]);return {error:storageFails?new Error('failed'):null};}})},from:table=>{
+  const client={rpc:async()=>({data:{allowed:!rateLimited,retry_after_seconds:125},error:null}),storage:{from:()=>({remove:async paths=>{writes.push(['storage',paths]);return {error:storageFails?new Error('failed'):null};}})},from:table=>{
     let action='select',patch,key,cutoff,one=false,nonnull=false;
     const result=()=>{
       if(action!=='select') {
@@ -77,4 +77,10 @@ test('failed file removal retains database rows for retry',async()=>{
   const {request,writes}=fixture('superuser',{storageFails:true});
   assert.equal((await request('submissions')).status,500);
   assert.deepEqual(writes,[['storage',['final.pdf','receipt.jpg']]]);
+});
+test('invite throttling uses an invitation-specific message and a useful wait time',async()=>{
+  const {request}=fixture('superuser',{rateLimited:true});
+  const response=await request('invite','POST',{email:'new@example.org',role:'viewer'});
+  assert.equal(response.status,429);
+  assert.deepEqual(await response.json(),{error:'För många inbjudningsförsök. Försök igen om cirka 3 minuter.'});
 });
