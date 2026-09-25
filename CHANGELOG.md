@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.25.1
+- Befintliga Supabase Auth-användare kan få vald behörighet i kvittoadministrationen utan en ny inbjudan.
+- En redan tilldelad behörighet skrivs aldrig över automatiskt av inbjudningsflödet.
+
 ## 2026.09.24.1
 - IDV-loggan visas på admininloggningen och i inbjudningsmejlet.
 - Inbjudningsmejlet har en enda innehållsruta och ämnesraden "Du är inbjuden till IDV kvittoadmin".
