@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.25.4
+- Administratörens inbjudningsspärr använder ett kortare fönster som inte låser testarbete i en hel timme.
+- Vid för många inbjudningsförsök visas rätt händelse och ungefärlig väntetid i stället för "För många inskick".
+
 ## 2026.09.25.3
 - Säkerhetsloggen visar verifierade e-postadresser i stället för interna användar-ID:n.
 - Gamla eller raderade identiteter visas som "E-postadress saknas" och exponerar aldrig UUID i gränssnittet.
