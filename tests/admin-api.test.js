@@ -50,7 +50,7 @@ for(const role of ['admin','cashier']) test(`${role} can handle receipts but can
   assert.equal((await request('settings')).status,403);
   for(const key of ['email_delivery_mode','retention_days','travel_rate_per_km'])assert.equal((await request('settings','PATCH',{key,value:30})).status,403);
   assert.equal((await request('travel-rate','PATCH',{rate_per_km:3,key:'receipt_email_to'})).status,403);
-  for(const route of ['audit','email-status','invite','test-mail'])assert.equal((await request(route,['audit','email-status'].includes(route)?'GET':'POST',['audit','email-status'].includes(route)?null:{})).status,403);
+  for(const route of ['audit','overview','email-status','invite','test-mail'])assert.equal((await request(route,['audit','overview','email-status'].includes(route)?'GET':'POST',['audit','overview','email-status'].includes(route)?null:{})).status,403);
   assert.equal((await request('submission','PATCH',{id:uid,status:'done'})).status,200);
   assert.equal((await request('archive','PATCH',{id:uid,archived:true})).status,200);
   assert.equal(writes.filter(([table])=>table==='app_settings').length,0);

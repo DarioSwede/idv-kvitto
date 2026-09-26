@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## 2026.09.26.1
+- Admininställningarna har fått en kompakt och tydligt grupperad layout med mindre tomrum.
+- Senaste lyckade inloggning och de fem senaste underlagen med avsändarens e-post visas överst.
+- Testmejl, användare och systeminställningar är separerade, medan hela säkerhetsloggen finns kvar utfällbar.
+
 ## 2026.09.25.4
 - Administratörens inbjudningsspärr använder ett kortare fönster som inte låser testarbete i en hel timme.
 - Vid för många inbjudningsförsök visas rätt händelse och ungefärlig väntetid i stället för "För många inskick".

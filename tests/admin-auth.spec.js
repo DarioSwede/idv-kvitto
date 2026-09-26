@@ -8,6 +8,10 @@ async function api(page,{role='superuser',meStatus=200}={}) {
     if(url.pathname.endsWith('/me'))return route.fulfill({status:meStatus,json:{role,user_id:'test-user'}});
     if(url.pathname.endsWith('/travel-rate'))return route.fulfill({json:{rate_per_km:2.5}});
     if(url.pathname.endsWith('/settings'))return route.fulfill({json:{role,settings:[{key:'email_delivery_mode',value:'test'},{key:'email_test_recipient',value:'test@example.org'}]}});
+    if(url.pathname.endsWith('/overview'))return route.fulfill({json:{latest_login:{email:'last@example.org',created_at:'2026-09-25T12:00:00Z'},recent_submissions:[
+      {id,email:'first@example.org',created_at:'2026-09-25T11:00:00Z',status:'new',is_test:false},
+      {id:'second',email:'second@example.org',created_at:'2026-09-24T11:00:00Z',status:'done',is_test:true}
+    ]}});
     if(url.pathname.endsWith('/staff'))return route.fulfill({json:{users:[{user_id:'test-user',email:'test@example.org',role:'superuser',is_current:true}]}});
     if(url.pathname.endsWith('/submissions'))return route.fulfill({json:{submissions:[{id,sender_name:'Testperson',sender_email:'example@example.org',status:'new',is_test:true}]}});
     if(url.pathname.endsWith('/pdf'))return route.fulfill({json:{url:'about:blank'}});
@@ -52,6 +56,22 @@ test('empty admin list still opens settings without a runtime error',async({page
   expect(await page.locator('#settingsPanel').evaluate(el=>getComputedStyle(el).position)).toBe('static');
   await expect(page.locator('#settingsPanel')).toBeVisible();
   expect(errors).toEqual([]);
+});
+test('settings page presents a compact overview with latest login and submissions',async({page})=>{
+  await api(page);await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await expect(page.getByRole('heading',{name:'Adminöversikt'})).toBeVisible();
+  await expect(page.locator('#latestLoginEmail')).toHaveText('last@example.org');
+  await expect(page.locator('#recentSubmissions')).toContainText('first@example.org');
+  await expect(page.locator('#recentSubmissions')).toContainText('second@example.org');
+  await expect(page.locator('.audit-panel')).not.toHaveAttribute('open','');
+  await expect(page.locator('.compact-settings')).toBeVisible();
+});
+test('staff actions stack without horizontal overflow on narrow screens',async({page})=>{
+  await page.setViewportSize({width:700,height:900});await api(page);
+  await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  const actions=page.locator('.staff-actions').first();await expect(actions).toBeVisible();
+  expect(await actions.evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
 });
 test('external returnTo cannot redirect login off site',async({page})=>{
   await api(page);await page.goto('/admin-login.html?returnTo=https://evil.example/');await login(page);
@@ -106,6 +126,7 @@ test('SU can invite least-privilege staff and read safely rendered audit entries
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
   await page.locator('#inviteEmail').fill('new@example.org');await page.locator('#inviteStaff').click();
   await expect(page.locator('#inviteStatus')).toContainText('Inbjudan skickad');
+  await page.locator('.audit-panel summary').click();
   await page.locator('#loadAudit').click();await expect(page.locator('#auditEntries')).toContainText('<script>alert(1)</script>');
   await expect(page.locator('#auditEntries')).toContainText('Test Admin · admin@example.org');
   await expect(page.locator('.audit-entry.audit-critical')).toContainText('Blockerat efter många misslyckade försök');
