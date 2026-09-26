@@ -6,6 +6,7 @@ import {loginStaff} from './login.js';
 import {writeAudit,listAudit} from './audit.js';
 import {inviteStaff,InvitationError} from './invitations.js';
 import {listStaff,updateStaffRole,removeStaff,StaffManagementError} from './staff-management.js';
+import {getAdminOverview} from './overview.js';
 import {getTravelRate,listSettings,updateSetting,SettingValidationError} from './settings.ts';
 import {purgeExpiredSubmissions,listSubmissions,getSubmission,updateSubmissionStatus,archiveSubmission,createPdfLink,SubmissionValidationError} from './submissions.ts';
 
@@ -57,6 +58,10 @@ return async(req:Request)=>{
     const resource=parts.at(-2)==='admin-api'?parts.at(-1):parts.at(-1);
 
     if(req.method==='GET'&&resource==='me'){return reply({user_id:user.id,role});}
+    if(req.method==='GET'&&resource==='overview'){
+      requireSettingsAdmin(role);
+      return reply(await getAdminOverview(client));
+    }
     if(req.method==='GET'&&resource==='audit'){
       const entries=await listAudit(client,role);await record(true);return reply({entries});
     }

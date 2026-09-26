@@ -11,6 +11,8 @@ if (verified.identity.role!=='superuser') {
 }
 const status=document.querySelector('#connectionStatus');
 const field=id=>document.getElementById(id);
+const swedishDate=value=>value?new Intl.DateTimeFormat('sv-SE',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Stockholm'}).format(new Date(value)):'–';
+const submissionStatus={new:'Nytt',in_progress:'Pågår',done:'Klart',archived:'Arkiverat'};
 const controls=['deliveryMode','testRecipient','productionRecipient','retentionDays','travelRatePerMil','pdfWatermarkEnabled','pdfWatermarkOpacity'];
 controls.forEach(id=>field(id).disabled=true);
 field('saveSettingsButton').disabled=true;
@@ -28,7 +30,29 @@ field('signOutButton').addEventListener('click',async()=>{
 });
 setupAdminSessionTimeout({onTimeout:async reason=>{status.textContent='Du loggas ut efter 30 minuters inaktivitet…';try{await signOut(reason);}finally{location.replace(new URL('admin-login.html?reason=idle',location.href));}}});
 setupAdminSecurity({role:verified.identity.role,request});
+field('currentAdminEmail').textContent=verified.connection.email;
 document.documentElement.style.visibility='visible';
+async function loadOverview(){
+  try{
+    const overview=await request('overview');
+    field('latestLoginEmail').textContent=overview.latest_login?.email||'E-postadress saknas';
+    field('latestLoginTime').textContent=overview.latest_login?swedishDate(overview.latest_login.created_at):'Ingen registrerad inloggning';
+    const rows=(overview.recent_submissions||[]).map(item=>{
+      const row=document.createElement('li');
+      const link=document.createElement('a');link.href=`admin.html?submission=${encodeURIComponent(item.id)}`;link.textContent=item.email||'E-postadress saknas';link.title=link.textContent;
+      const meta=document.createElement('span');meta.textContent=`${swedishDate(item.created_at)} · ${submissionStatus[item.status]||item.status||'Okänd status'}`;
+      row.append(link,meta);
+      if(item.is_test){const test=document.createElement('span');test.className='test-label';test.textContent='TEST';row.append(test);}
+      return row;
+    });
+    field('recentSubmissions').replaceChildren(...(rows.length?rows:[document.createTextNode('Inga inskickade underlag.') ]));
+  }catch(error){
+    field('latestLoginEmail').textContent='Kunde inte hämtas';
+    field('latestLoginTime').textContent='';
+    field('recentSubmissions').replaceChildren(document.createTextNode(error.message));
+  }
+}
+loadOverview();
 try {
   const {settings}=await request('settings');
   const values=Object.fromEntries(settings.map(item=>[item.key,item.value]));
