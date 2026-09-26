@@ -66,6 +66,13 @@ test('settings page presents a compact overview with latest login and submission
   await expect(page.locator('.audit-panel')).not.toHaveAttribute('open','');
   await expect(page.locator('.compact-settings')).toBeVisible();
 });
+test('staff actions stack without horizontal overflow on narrow screens',async({page})=>{
+  await page.setViewportSize({width:700,height:900});await api(page);
+  await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  const actions=page.locator('.staff-actions').first();await expect(actions).toBeVisible();
+  expect(await actions.evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+});
 test('external returnTo cannot redirect login off site',async({page})=>{
   await api(page);await page.goto('/admin-login.html?returnTo=https://evil.example/');await login(page);
   await expect(page).toHaveURL(/127.0.0.1:43921\/admin.html$/);
