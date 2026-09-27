@@ -1,6 +1,7 @@
 # Versionshistorik
 
 ## Ej publicerat – SU-användaradministration
+- Adminvyn har en vänstermeny med separata områden för översikt, användare, systeminställningar, testmejl och säkerhetslogg. Loggar hämtas direkt vid menyval.
 - Användarlistan visar aktiveringsstatus; ändring av en annan SU kräver bekräftelse.
 - Rolländring och återkallning kontrollerar SU-behörigheten på nytt i en låst databastransaktion. Eget konto och sista SU skyddas.
 - Äldre adminserver som saknar användarlista eller översikt ger ett tydligt uppdateringsmeddelande. Backend och migration måste publiceras tillsammans efter godkännande.

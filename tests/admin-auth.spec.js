@@ -64,11 +64,14 @@ test('settings page presents a compact overview with latest login and submission
   await expect(page.locator('#recentSubmissions')).toContainText('first@example.org');
   await expect(page.locator('#recentSubmissions')).toContainText('second@example.org');
   await expect(page.locator('.audit-panel')).not.toHaveAttribute('open','');
+  await expect(page.locator('.compact-settings')).toBeHidden();
+  await page.getByRole('link',{name:'Systeminställningar',exact:true}).click();
   await expect(page.locator('.compact-settings')).toBeVisible();
 });
 test('staff actions stack without horizontal overflow on narrow screens',async({page})=>{
   await page.setViewportSize({width:700,height:900});await api(page);
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await page.getByRole('link',{name:'Användare',exact:true}).click();
   const actions=page.locator('.staff-actions').first();await expect(actions).toBeVisible();
   expect(await actions.evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
@@ -85,6 +88,7 @@ test('explicit testmail uses selected address and renders sandboxed preview',asy
     await route.fulfill({json:{sent:true,preview:{html:'<h1>TESTUNDERLAG</h1>'}}});
   });
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await page.getByRole('link',{name:'Testmejl',exact:true}).click();
   await expect(page.locator('#testMailPanel')).toBeVisible();
   await page.locator('#testMailAddress').fill('chosen@example.org');
   await page.locator('#testMailKind').selectOption('production');
@@ -124,9 +128,10 @@ test('SU can invite least-privilege staff and read safely rendered audit entries
     {created_at:'2026-09-20T12:10:00Z',event_type:'<script>alert(1)</script>',success:true,user_id:'user',request_id:'request'}
   ]}}));
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await page.getByRole('link',{name:'Användare',exact:true}).click();
   await page.locator('#inviteEmail').fill('new@example.org');await page.locator('#inviteStaff').click();
   await expect(page.locator('#inviteStatus')).toContainText('Inbjudan skickad');
-  await page.locator('.audit-panel summary').click();
+  await page.getByRole('link',{name:'Säkerhetslogg',exact:true}).click();
   await page.locator('#loadAudit').click();await expect(page.locator('#auditEntries')).toContainText('<script>alert(1)</script>');
   await expect(page.locator('#auditEntries')).toContainText('Test Admin · admin@example.org');
   await expect(page.locator('.audit-entry.audit-critical')).toContainText('Blockerat efter många misslyckade försök');
@@ -143,6 +148,7 @@ test('SU can change and remove another users app access',async({page})=>{
     const body=route.request().postDataJSON();mutations.push({method,body});return route.fulfill({json:method==='DELETE'?{removed:true}:{role:body.role}});
   });
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await page.getByRole('link',{name:'Användare',exact:true}).click();
   const row=page.locator('.staff-row').filter({hasText:'person@example.org'});
   await row.getByRole('combobox').selectOption('cashier');await row.getByRole('button',{name:'Spara behörighet'}).click();
   await expect.poll(()=>mutations.length).toBe(1);
@@ -209,10 +215,11 @@ test('SU updates mileage in settings and returns to inbox',async({page})=>{
   });
   await page.goto('/admin-settings.html');await login(page);
   await expect(page.locator('#travelRatePerMil')).toHaveValue('25');
+  await page.getByRole('link',{name:'Systeminställningar',exact:true}).click();
   await page.locator('#travelRatePerMil').fill('30');await page.locator('#saveSettingsButton').click();
   await expect(page.locator('#connectionStatus')).toHaveText('Inställningarna sparades.');
   expect(updates).toContainEqual({key:'travel_rate_per_km',value:3});
-  const back=page.getByRole('link',{name:/Till administrationen/}).first();
+  const back=page.getByRole('link',{name:/Kvittoadministration/}).first();
   await expect(back).toBeVisible();await back.click();await expect(page).toHaveURL(/admin.html$/);
 });
 test('standalone settings require login before settings data is requested',async({page})=>{
@@ -264,6 +271,7 @@ test('staff activation status is visible and SU demotion requires confirmation',
     ]}});
   });
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await page.getByRole('link',{name:'Användare',exact:true}).click();
   await expect(page.locator('#staffList')).toContainText('Ditt konto · skyddat');
   await expect(page.locator('#staffList')).toContainText('Inväntar aktivering');
   const other=page.locator('.staff-row').filter({hasText:'other@example.org'});
@@ -278,6 +286,25 @@ test('an older backend gives an actionable message for both missing routes',asyn
   await api(page);
   for(const resource of ['staff','overview'])await page.route(`**/admin-api/${resource}`,route=>route.fulfill({status:404,json:{error:'Okänd admin-route.'}}));
   await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
-  await expect(page.locator('#staffStatus')).toContainText('Adminservern behöver uppdateras');
   await expect(page.locator('#recentSubmissions')).toContainText('Adminservern behöver uppdateras');
+  await page.getByRole('link',{name:'Användare',exact:true}).click();
+  await expect(page.locator('#staffStatus')).toContainText('Adminservern behöver uppdateras');
+});
+
+test('category navigation loads audit directly and supports history and deep links',async({page})=>{
+  await api(page);let reads=0;
+  await page.route('**/admin-api/audit',route=>{reads++;return route.fulfill({json:{entries:[]}});});
+  await page.goto('/admin-login.html?returnTo=admin-settings.html');await login(page);
+  expect(reads).toBe(0);
+  await page.getByRole('link',{name:'Användare',exact:true}).click();
+  await expect(page.locator('#adminSecurityPanel')).toBeVisible();
+  await expect(page.locator('.overview-grid')).toBeHidden();
+  await page.getByRole('link',{name:'Säkerhetslogg',exact:true}).click();
+  await expect(page.locator('#auditEntries')).toHaveText('Inga händelser de senaste 90 dagarna.');
+  expect(reads).toBe(1);
+  await expect(page.getByRole('link',{name:'Säkerhetslogg',exact:true})).toHaveAttribute('aria-current','page');
+  await page.goBack();await expect(page.locator('#adminSecurityPanel')).toBeVisible();
+  await page.goto('/admin-settings.html#audit');
+  await expect(page.locator('#auditEntries')).toContainText('Inga händelser');
+  await page.goto('/admin-settings.html#unknown');await expect(page.locator('.overview-grid')).toBeVisible();
 });

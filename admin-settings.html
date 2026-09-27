@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Inställningar – IDV</title>
+  <title>Administration – IDV</title>
   <link rel="stylesheet" href="styles/admin.css">
 </head>
-<body>
+<body class="settings-shell">
   <aside class="sidebar">
     <div class="brand">
       <img class="brand-logo" src="idv-mark.png" alt="Idrottsveteranerna">
@@ -15,7 +15,16 @@
         <div id="brandVersion" class="brand-version">Laddar version...</div>
       </div>
     </div>
-    <nav class="nav"><a class="nav-btn" href="admin.html">← Till administrationen</a><a class="nav-btn active" href="admin-settings.html" aria-current="page">Inställningar</a></nav>
+    <div class="menu-label">ADMINISTRATION</div>
+    <nav class="admin-menu" aria-label="Adminområden">
+      <a href="#overview" data-admin-view="overview" aria-current="page">Översikt</a>
+      <a href="#users" data-admin-view="users">Användare</a>
+      <a href="#settings" data-admin-view="settings">Systeminställningar</a>
+      <a href="#email" data-admin-view="email">Testmejl</a>
+      <a href="#audit" data-admin-view="audit">Säkerhetslogg</a>
+    </nav>
+    <a class="admin-back" href="admin.html">← Kvittoadministration</a>
+
     <button id="themeSwitch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Byt till mörkt läge" title="Byt tema">
       <span class="theme-switch-icon" aria-hidden="true">☀</span>
       <span class="theme-switch-label">Ljust</span>
@@ -24,17 +33,17 @@
   </aside>
   <main class="main">
     <header class="account-bar">
-      <div><h1 class="admin-page-title">Adminöversikt</h1><div class="connection-status" id="connectionStatus" role="status">Verifierar SU-behörighet…</div></div>
-      <div class="account-actions"><a class="button secondary" href="admin.html">← Till administrationen</a><a href="index.html">Öppna kvittoformuläret</a><button id="signOutButton" class="button secondary" type="button">Logga ut</button></div>
+      <div><h1 class="admin-page-title" tabindex="-1">Adminöversikt</h1><div class="connection-status" id="connectionStatus" role="status">Verifierar SU-behörighet…</div></div>
+      <div class="account-actions"><a href="index.html">Öppna kvittoformuläret</a><button id="signOutButton" class="button secondary" type="button">Logga ut</button></div>
     </header>
     <section id="settingsPanel" class="admin-workspace open" aria-hidden="false">
-      <section class="overview-grid" aria-label="Aktuell adminöversikt">
+      <section data-admin-panel="overview" class="overview-grid" aria-label="Aktuell adminöversikt">
         <article class="overview-card overview-account"><span class="eyebrow">Inloggad nu</span><strong id="currentAdminEmail">–</strong><span>Superuser (SU)</span></article>
         <article class="overview-card"><span class="eyebrow">Senaste lyckade inloggning</span><strong id="latestLoginEmail">Hämtar…</strong><time id="latestLoginTime"></time></article>
         <article class="overview-card overview-submissions"><div class="overview-heading"><div><span class="eyebrow">Senaste underlagen</span><strong>Fem senaste inskick</strong></div><a href="admin.html">Visa alla →</a></div><ol id="recentSubmissions" class="recent-submissions"><li>Hämtar…</li></ol></article>
       </section>
 
-      <section class="card settings-card">
+      <section data-admin-panel="settings" class="card settings-card" hidden>
         <div class="section-heading"><div><span class="eyebrow">Konfiguration</span><h2>Systeminställningar</h2><p>Styr e-post, arkivering, milersättning och PDF.</p></div><button id="saveSettingsButton" class="button primary">Spara ändringar</button></div>
         <div class="settings-grid compact-settings">
           <div class="setting"><label for="deliveryMode">E-postläge</label><select id="deliveryMode"><option value="test">Test</option><option value="production">Produktion</option><option value="disabled">Avstängd</option></select></div>
@@ -47,27 +56,26 @@
         </div>
       </section>
 
-      <div class="admin-columns">
-        <section class="card compact-panel" id="testMailPanel">
+
+        <section data-admin-panel="email" class="card compact-panel" id="testMailPanel" hidden>
           <div class="section-heading"><div><span class="eyebrow">Kontroll</span><h2>Skicka testmejl</h2><p>Testar utskicket utan att ändra mottagarinställningarna.</p></div></div>
           <div class="inline-fields"><label>Mottagare<input id="testMailAddress" type="email" placeholder="namn@example.org"></label><label>Typ<select id="testMailKind"><option value="system">Neutralt systemtest</option><option value="test">Testmottagare</option><option value="production">Produktionsmottagare</option></select></label><button id="sendTestMail" class="button" type="button">Skicka</button></div>
           <p id="testMailStatus" class="compact-status" role="status"></p><iframe id="testMailPreview" title="Kassörsmeddelande – test" sandbox="" hidden></iframe>
         </section>
 
-        <section class="card compact-panel" id="adminSecurityPanel" hidden>
+        <section data-admin-panel="users" class="card compact-panel" id="adminSecurityPanel" hidden>
           <div class="section-heading"><div><span class="eyebrow">Behörighet</span><h2>Användare</h2><p>Bjud in med lägsta nödvändiga behörighet.</p></div></div>
           <div class="inline-fields invite-fields"><label>E-postadress<input id="inviteEmail" type="email" required autocomplete="off"></label><label>Behörighet<select id="inviteRole"><option value="viewer">Läsbehörighet</option><option value="cashier">Kassör</option><option value="tester">Drift/test</option><option value="admin">Administratör</option><option value="superuser">Superuser (SU)</option></select></label><button id="inviteStaff" class="button" type="button">Bjud in</button></div>
           <p id="inviteStatus" class="compact-status" role="status"></p>
-          <div class="staff-heading"><div><h3>Tillagda användare</h3><p>Ändra behörighet eller ta bort appåtkomst.</p></div><button id="refreshStaff" class="button secondary" type="button">Uppdatera</button></div>
+          <div class="staff-heading"><div><h3>Registrerade användare</h3><p>Ändra behörighet eller ta bort appåtkomst.</p></div><button id="refreshStaff" class="button secondary" type="button">Uppdatera</button></div>
           <div id="staffStatus" class="connection-status" role="status">Hämtar användare…</div><div id="staffList" class="staff-list" aria-live="polite"></div>
         </section>
-      </div>
 
-      <details class="card audit-panel">
-        <summary><div><span class="eyebrow">Spårbarhet</span><h2>Säkerhetslogg</h2><p>De senaste 100 händelserna, högst 90 dagar.</p></div><span class="summary-action">Visa logg</span></summary>
+      <section data-admin-panel="audit" class="card audit-panel" hidden>
+        <div class="section-heading audit-heading"><div><span class="eyebrow">Spårbarhet</span><h2>Säkerhetslogg</h2><p>De senaste 100 händelserna, högst 90 dagar.</p></div></div>
         <div class="audit-toolbar"><div class="audit-legend" aria-label="Förklaring till säkerhetsstatus"><span class="audit-low">OK</span><span class="audit-medium">Observera</span><span class="audit-high">Varning</span><span class="audit-critical">Kritiskt</span></div><button id="loadAudit" class="button" type="button">Hämta senaste</button></div>
         <div id="auditEntries" role="status" style="overflow-wrap:anywhere"></div>
-      </details>
+      </section>
     </section>
   </main>
   <script type="module" src="js/admin-settings.js"></script>

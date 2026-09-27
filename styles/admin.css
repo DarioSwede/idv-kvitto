@@ -346,3 +346,56 @@
     @media (max-width:820px) {
       .admin-workspace .staff-actions { grid-template-columns:1fr; }
     }
+
+/* Category navigation for the SU workspace; receipt administration is unchanged. */
+.settings-shell { display:grid; grid-template-columns:240px minmax(0,1fr); }
+.settings-shell .sidebar { position:sticky; top:0; height:100dvh; min-height:0; padding:28px 18px; display:flex; flex-direction:column; align-items:stretch; gap:24px; border-right:1px solid var(--line); border-bottom:0; background:var(--panel); box-shadow:none; overflow-y:auto; }
+.settings-shell .brand { white-space:normal; align-items:flex-start; }
+.settings-shell .brand-title { font-size:15px; line-height:1.4; }
+.settings-shell .brand-logo { width:34px; height:40px; }
+.menu-label { font-size:10px; letter-spacing:.14em; font-weight:700; color:var(--muted); margin-top:22px; }
+.admin-menu { display:grid; gap:6px; margin-top:-12px; }
+.admin-menu a { display:block; padding:13px 14px; color:var(--muted); border-radius:9px; text-decoration:none; font-size:14px; font-weight:600; border:1px solid transparent; }
+.admin-menu a:hover { background:var(--panel-alt); color:var(--text); }
+.admin-menu a[aria-current="page"] { color:var(--brand); background:var(--brand-soft); border-color:var(--line); }
+.admin-menu a:focus-visible,.admin-back:focus-visible { outline:3px solid var(--brand); outline-offset:2px; }
+.admin-back { margin-top:auto; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--muted); text-decoration:none; }
+.settings-shell .theme-switch { align-self:flex-start; }
+.settings-shell .main { width:100%; max-width:1400px; min-height:100dvh; padding:34px clamp(20px,3vw,48px); display:block; }
+.settings-shell .account-bar { min-height:0; padding:0 0 26px; margin:0 0 28px; border-bottom:1px solid var(--line); gap:20px; }
+.settings-shell .admin-page-title { font-size:28px; margin:0 0 9px; }
+.settings-shell .admin-page-title:focus { outline:none; }
+.settings-shell [data-admin-panel][hidden] { display:none !important; }
+.settings-shell .overview-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.settings-shell .overview-card { padding:24px; min-height:140px; box-shadow:none; }
+.settings-shell .overview-submissions { grid-column:1/-1; }
+.settings-shell .recent-submissions { grid-template-columns:1fr; gap:0; }
+.settings-shell .recent-submissions li { border:0; border-top:1px solid var(--line); border-radius:0; background:transparent; padding:14px 0; grid-template-columns:minmax(0,1fr) auto; align-items:center; }
+.settings-shell .recent-submissions a { font-size:14px; }
+.settings-shell .recent-submissions span { font-size:12px; }
+.settings-shell .admin-workspace .card { padding:26px; box-shadow:none; }
+.settings-shell .compact-settings { grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:24px; }
+.settings-shell .section-heading p { font-size:14px; line-height:1.5; }
+.settings-shell .inline-fields { margin:14px 0; }
+.settings-shell .staff-heading { margin-top:24px; padding-top:24px; border-top:1px solid var(--line); }
+.settings-shell .staff-row { grid-template-columns:minmax(0,1fr); padding:18px; }
+.settings-shell .staff-actions { grid-template-columns:minmax(150px,1fr) auto auto; }
+.settings-shell .audit-panel { padding:0 !important; }
+.settings-shell .audit-heading { padding:26px; }
+.settings-shell .audit-heading p { color:var(--muted); margin:6px 0 0; }
+.settings-shell .audit-panel .audit-list { grid-template-columns:1fr; }
+@media(min-width:1400px){ .settings-shell .staff-row { grid-template-columns:minmax(220px,1fr) minmax(420px,auto); } }
+@media(max-width:800px){
+  .settings-shell { grid-template-columns:1fr; }
+  .settings-shell .sidebar { position:static; height:auto; padding:18px; gap:18px; border-right:0; border-bottom:1px solid var(--line); }
+  .settings-shell .menu-label { display:none; }
+  .settings-shell .admin-menu { grid-template-columns:repeat(2,minmax(0,1fr)); margin:0; }
+  .settings-shell .admin-back { margin:0; padding-top:12px; }
+  .settings-shell .main { padding:24px 16px; min-height:0; }
+  .settings-shell .account-bar { align-items:flex-start; flex-direction:column; }
+  .settings-shell .overview-grid,.settings-shell .compact-settings,.settings-shell .staff-actions { grid-template-columns:1fr; }
+  .settings-shell .recent-submissions li { grid-template-columns:1fr; }
+  .settings-shell .admin-workspace .card { padding:18px; }
+  .settings-shell .setting-role { grid-column:auto; }
+  .settings-shell .section-heading { flex-wrap:wrap; }
+}
