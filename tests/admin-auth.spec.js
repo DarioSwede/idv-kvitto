@@ -308,3 +308,19 @@ test('category navigation loads audit directly and supports history and deep lin
   await expect(page.locator('#auditEntries')).toContainText('Inga händelser');
   await page.goto('/admin-settings.html#unknown');await expect(page.locator('.overview-grid')).toBeVisible();
 });
+
+for(const expired of [false,true])test(`audit deep link survives ${expired?'expired session':'signed-out'} login`,async({page})=>{
+  await api(page);
+  await page.route('**/admin-api/audit',route=>route.fulfill({json:{entries:[]}}));
+  if(expired)await page.addInitScript(({key,url})=>{
+    if(sessionStorage.getItem('expired-fixture'))return;
+    sessionStorage.setItem('expired-fixture','1');
+    localStorage.setItem('idv-admin-connection',JSON.stringify({url,anonKey:key,email:'test@example.org'}));
+    sessionStorage.setItem('idv-admin-session',JSON.stringify({access_token:'expired',expires_at:1}));
+  },{key:DEFAULT_PUBLIC_KEY,url:SUPABASE_URL});
+  await page.goto('/admin-settings.html#audit');
+  await expect(page.locator('#loginForm')).toBeVisible();
+  await login(page);
+  await expect(page).toHaveURL(/admin-settings.html#audit$/);
+  await expect(page.locator('#auditEntries')).toHaveText('Inga händelser de senaste 90 dagarna.');
+});
