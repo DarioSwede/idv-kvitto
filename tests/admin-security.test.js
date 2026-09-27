@@ -83,11 +83,12 @@ test('SU can change and remove another membership but never its own',async()=>{
   const target='22345678-1234-1234-1234-123456789abc';let changed;let removed;
   const client={
     auth:{admin:{getUserById:async()=>({data:{user:{email:'target@example.org'}},error:null})}},
-    from:()=>({
-      select:()=>({eq:()=>({maybeSingle:async()=>({data:{role:'viewer'},error:null})})}),
-      update:value=>({eq:async()=>{changed=value;return {error:null};}}),
-      delete:()=>({eq:()=>({select:()=>({maybeSingle:async()=>{removed=true;return {data:{user_id:target},error:null};}})})})
-    })
+    rpc:async(name,args)=>{
+      assert.equal(name,'change_receipt_staff');
+      assert.equal(args.actor_id,uid);assert.equal(args.target_id,target);
+      if(args.assigned_role===null)removed=true;else changed={role:args.assigned_role};
+      return {error:null};
+    }
   };
   assert.equal((await updateStaffRole(client,{role:'superuser',currentUserId:uid,body:{user_id:target,role:'cashier'}})).role,'cashier');
   assert.deepEqual(changed,{role:'cashier'});
@@ -169,4 +170,21 @@ test('refreshed sessions retain expiry so a later refresh remains possible',asyn
   await verifiedSession(fetcher);assert.equal(refreshes,1);
   data.set('idv-admin-session',JSON.stringify({...result.session,expires_at:1}));
   await verifiedSession(fetcher);assert.equal(refreshes,2);
+});
+
+test('membership transaction rejects a stale SU identity and fails closed on database errors',async()=>{
+  for(const code of ['42501','22023','XX000']){
+    const client={auth:{admin:{getUserById:async()=>({data:{user:{email:'target@example.org'}}})}},rpc:async()=>({error:{code,message:'private database detail'}})};
+    for(const operation of [updateStaffRole,removeStaff])await assert.rejects(operation(client,{role:'superuser',currentUserId:uid,body:{user_id:requestId,role:'viewer'}}),error=>code==='42501'?error.status===403:!error.message.includes('private database detail'));
+  }
+});
+test('staff list exposes activation status without exposing Auth metadata',async()=>{
+  for(const [identity,status] of [
+    [{},'invited'],[{email_confirmed_at:'2026-09-01'},'confirmed'],
+    [{last_sign_in_at:'2026-09-02'},'active'],[{last_sign_in_at:'2026-09-02',banned_until:'2999-01-01'},'blocked']
+  ]){
+    const client={auth:{admin:{getUserById:async()=>({data:{user:{...identity,email:'person@example.org',user_metadata:{secret:'private'}}}})}},from:()=>({select:()=>({order:async()=>({data:[{user_id:uid,role:'viewer'}]})})})};
+    const [user]=await listStaff(client,{role:'superuser',currentUserId:requestId});
+    assert.equal(user.status,status);assert.equal(JSON.stringify(user).includes('private'),false);
+  }
 });

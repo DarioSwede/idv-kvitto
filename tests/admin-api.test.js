@@ -84,3 +84,20 @@ test('invite throttling uses an invitation-specific message and a useful wait ti
   assert.equal(response.status,429);
   assert.deepEqual(await response.json(),{error:'För många inbjudningsförsök. Försök igen om cirka 3 minuter.'});
 });
+
+for(const role of ['admin','cashier','tester','viewer'])test(`${role} is denied every staff endpoint before user lookup or mutation`,async()=>{
+  const {request,writes}=fixture(role);
+  for(const method of ['GET','PATCH','DELETE']){
+    const response=await request('staff',method,method==='GET'?undefined:{user_id:uid,role:'superuser'});
+    assert.equal(response.status,403);
+  }
+  assert.equal(writes.some(([table])=>table==='admin_users'),false);
+});
+test('current backend routes overview and staff under the deployed function prefix',async()=>{
+  const {handler}=fixture();
+  for(const route of ['overview','staff']){
+    const response=await handler(new Request(`https://example.test/functions/v1/admin-api/${route}`,{headers:{authorization:'Bearer fake'}}));
+    assert.equal(response.status,200);
+    const data=await response.json();assert.ok(route==='staff'?Array.isArray(data.users):Array.isArray(data.recent_submissions));
+  }
+});

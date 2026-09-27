@@ -24,7 +24,13 @@ export async function listStaff(client,{role,currentUserId}){
   if(error)throw new StaffManagementError('Användarlistan kunde inte hämtas.');
   const users=await Promise.all((data||[]).map(async membership=>{
     const identity=await authIdentity(client,membership.user_id);
-    return {user_id:membership.user_id,email:identity.email||'E-post saknas',role:membership.role,created_at:membership.created_at,is_current:membership.user_id===currentUserId};
+    const status=identity.banned_until && new Date(identity.banned_until)>new Date()?'blocked'
+      :identity.last_sign_in_at?'active':identity.email_confirmed_at?'confirmed':'invited';
+    return {
+      user_id:membership.user_id,email:identity.email||'E-post saknas',role:membership.role,
+      created_at:membership.created_at,is_current:membership.user_id===currentUserId,
+      status,last_sign_in_at:identity.last_sign_in_at||null
+    };
   }));
   return users.sort((a,b)=>a.email.localeCompare(b.email,'sv'));
 }
@@ -34,12 +40,8 @@ export async function updateStaffRole(client,{role,currentUserId,body}){
   const userId=requireTarget(body);
   if(userId===currentUserId)throw new StaffManagementError('Du kan inte ändra din egen behörighet.');
   if(!ADMIN_ROLES.has(body?.role))throw new StaffManagementError('Ogiltig behörighet.');
-  const {data:membership,error:lookupError}=await client.from('admin_users').select('role').eq('user_id',userId).maybeSingle();
-  if(lookupError||!membership)throw new StaffManagementError('Användaren har ingen behörighet att ändra.');
   const identity=await authIdentity(client,userId);
-  if(membership.role===body.role)return {user_id:userId,email:identity.email||'E-post saknas',role:membership.role,unchanged:true};
-  const {error}=await client.from('admin_users').update({role:body.role}).eq('user_id',userId);
-  if(error)throw new StaffManagementError('Behörigheten kunde inte ändras.');
+  await changeMembership(client,currentUserId,userId,body.role);
   return {user_id:userId,email:identity.email||'E-post saknas',role:body.role};
 }
 
@@ -48,8 +50,15 @@ export async function removeStaff(client,{role,currentUserId,body}){
   const userId=requireTarget(body);
   if(userId===currentUserId)throw new StaffManagementError('Du kan inte ta bort din egen behörighet.');
   const identity=await authIdentity(client,userId);
-  const {data,error}=await client.from('admin_users').delete().eq('user_id',userId).select('user_id').maybeSingle();
-  if(error)throw new StaffManagementError('Behörigheten kunde inte tas bort.');
-  if(!data)throw new StaffManagementError('Användaren har redan saknat behörighet.');
+  await changeMembership(client,currentUserId,userId,null);
   return {user_id:userId,email:identity.email||'E-post saknas',removed:true};
+}
+
+async function changeMembership(client,actorId,targetId,assignedRole){
+  // Recheck the actor inside the same DB transaction as the write. A previous
+  // requireStaff result may be stale after another SU revokes this actor.
+  const {error}=await client.rpc('change_receipt_staff',{actor_id:actorId,target_id:targetId,assigned_role:assignedRole});
+  if(error?.code==='42501')throw new Response(JSON.stringify({error:'SU-behörighet krävs.'}),{status:403});
+  if(error?.code==='22023')throw new StaffManagementError('Ändringen nekades. Det egna kontot och sista SU skyddas; uppdatera användarlistan.');
+  if(error)throw new StaffManagementError('Behörigheten kunde inte ändras.');
 }

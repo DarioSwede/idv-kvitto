@@ -7,13 +7,14 @@ function staffRow(user,{request,reload,status}){
   const row=document.createElement('div');row.className='staff-row';row.dataset.userId=user.user_id;
   const identity=document.createElement('div');identity.className='staff-identity';
   const email=document.createElement('strong');email.textContent=user.email;
-  const meta=document.createElement('span');meta.textContent=user.is_current?'Ditt konto':'Tillagd användare';
+  const meta=document.createElement('span');meta.textContent=[user.is_current?'Ditt konto · skyddat':null,({active:'Aktiv · har loggat in',confirmed:'Bekräftad · ännu inte inloggad',invited:'Inväntar aktivering',blocked:'Spärrat konto'})[user.status]||'Tillagd användare'].filter(Boolean).join(' · ');
   identity.append(email,meta);
   const select=document.createElement('select');select.setAttribute('aria-label',`Behörighet för ${user.email}`);
   for(const [value,label] of ROLES){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);}
   select.value=user.role;select.disabled=user.is_current;
   const save=document.createElement('button');save.type='button';save.className='button secondary';save.textContent='Spara behörighet';save.disabled=user.is_current;
   save.addEventListener('click',async()=>{
+    if(user.role==='superuser'&&select.value!=='superuser'&&!confirm(`Ändra SU-behörigheten för ${user.email}? Användaren förlorar åtkomst till användaradministrationen.`))return;
     save.disabled=true;status.textContent=`Sparar behörighet för ${user.email}…`;
     try{await request('staff',{method:'PATCH',body:JSON.stringify({user_id:user.user_id,role:select.value})});status.textContent=`Behörigheten för ${user.email} har ändrats.`;await reload();}
     catch(error){status.textContent=error.message;save.disabled=false;}

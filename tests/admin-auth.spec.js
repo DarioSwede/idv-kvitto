@@ -252,3 +252,32 @@ for(const invitation of [false,true])test(`rotated public key recovers ${invitat
   expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('idv-admin-connection')).anonKey)).toBe(DEFAULT_PUBLIC_KEY);
   expect(calls.some(path=>path.endsWith(invitation?'/auth/v1/user':'/login'))).toBe(true);
 });
+
+test('staff activation status is visible and SU demotion requires confirmation',async({page})=>{
+  await api(page);let mutations=0;
+  await page.route('**/admin-api/staff',route=>{
+    if(route.request().method()!=='GET'){mutations++;return route.fulfill({json:{role:'viewer'}});}
+    return route.fulfill({json:{users:[
+      {user_id:'test-user',email:'test@example.org',role:'superuser',is_current:true,status:'active'},
+      {user_id:id,email:'other@example.org',role:'superuser',status:'confirmed'},
+      {user_id:'invited',email:'invited@example.org',role:'viewer',status:'invited'}
+    ]}});
+  });
+  await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await expect(page.locator('#staffList')).toContainText('Ditt konto · skyddat');
+  await expect(page.locator('#staffList')).toContainText('Inväntar aktivering');
+  const other=page.locator('.staff-row').filter({hasText:'other@example.org'});
+  await expect(other).toContainText('Bekräftad · ännu inte inloggad');
+  await other.getByRole('combobox').selectOption('viewer');
+  page.once('dialog',dialog=>dialog.dismiss());await other.getByRole('button',{name:'Spara behörighet'}).click();
+  expect(mutations).toBe(0);
+  page.once('dialog',dialog=>dialog.accept());await other.getByRole('button',{name:'Spara behörighet'}).click();
+  await expect.poll(()=>mutations).toBe(1);
+});
+test('an older backend gives an actionable message for both missing routes',async({page})=>{
+  await api(page);
+  for(const resource of ['staff','overview'])await page.route(`**/admin-api/${resource}`,route=>route.fulfill({status:404,json:{error:'Okänd admin-route.'}}));
+  await page.goto('/admin-login.html?returnTo=admin.html%3Fview%3Dsettings');await login(page);
+  await expect(page.locator('#staffStatus')).toContainText('Adminservern behöver uppdateras');
+  await expect(page.locator('#recentSubmissions')).toContainText('Adminservern behöver uppdateras');
+});
