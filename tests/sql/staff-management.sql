@@ -1,8 +1,18 @@
 -- Run in a disposable database with the admin_users schema and SU migration.
 -- All fixture changes are rolled back.
 begin;
-insert into public.receipt_admin_audit(event_type,success,detail_code) values
- ('permission-change',true,'role_changed'),('permission-change',true,'role_removed');
+-- admin_users.user_id references auth.users(id); the FK needs real rows here first.
+insert into auth.users (
+  instance_id,id,aud,role,email,encrypted_password,
+  email_confirmed_at,created_at,updated_at,raw_app_meta_data,raw_user_meta_data
+) values
+ ('00000000-0000-0000-0000-000000000000','00000000-0000-0000-0000-000000000001','authenticated','authenticated','su1@example.org','x',now(),now(),now(),'{}','{}'),
+ ('00000000-0000-0000-0000-000000000000','00000000-0000-0000-0000-000000000002','authenticated','authenticated','su2@example.org','x',now(),now(),now(),'{}','{}'),
+ ('00000000-0000-0000-0000-000000000000','00000000-0000-0000-0000-000000000003','authenticated','authenticated','viewer@example.org','x',now(),now(),now(),'{}','{}');
+-- request_id/method/path are not-null with no default on receipt_admin_audit.
+insert into public.receipt_admin_audit(event_type,success,detail_code,request_id,method,path) values
+ ('permission-change',true,'role_changed',gen_random_uuid(),'PATCH','/admin-api/staff'),
+ ('permission-change',true,'role_removed',gen_random_uuid(),'DELETE','/admin-api/staff');
 insert into public.admin_users(user_id,role) values
  ('00000000-0000-0000-0000-000000000001','superuser'),
  ('00000000-0000-0000-0000-000000000002','superuser'),
