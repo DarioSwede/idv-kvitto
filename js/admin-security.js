@@ -32,7 +32,7 @@ function staffRow(user,{request,reload,status}){
 
 export function setupAdminSecurity({role,request}) {
   const panel=document.querySelector('#adminSecurityPanel');
-  panel.hidden=role!=='superuser';
+  if(role!=='superuser')panel.hidden=true;
   if(role!=='superuser')return;
   const status=document.querySelector('#inviteStatus');
   const staffStatus=document.querySelector('#staffStatus');

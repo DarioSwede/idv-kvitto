@@ -8,7 +8,10 @@ export function safeReturnTo(value, locationHref) {
     const url = new URL(value || 'admin.html', locationHref);
     const settings = new URL('admin-settings.html', locationHref);
     if (url.origin !== fallback.origin || ![fallback.pathname,settings.pathname].includes(url.pathname) || url.username || url.password) return fallback.href;
-    if (url.pathname === settings.pathname || url.searchParams.get('view') === 'settings') return settings.href;
+    if (url.pathname === settings.pathname || url.searchParams.get('view') === 'settings') {
+      if (['#overview','#users','#settings','#email','#audit'].includes(url.hash)) settings.hash=url.hash;
+      return settings.href;
+    }
     const id = url.searchParams.get('submission');
     if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || '')) fallback.searchParams.set('submission', id);
     return fallback.href;
