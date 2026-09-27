@@ -22,6 +22,7 @@ async function request(resource,options={}) {
   if(response.status===401) { location.replace(loginUrl()); throw new Error('Logga in igen.'); }
   if(response.status===403) { location.replace(new URL('admin.html',location.href)); throw new Error('Behörigheten har ändrats.'); }
   const result=await response.json();
+  if(response.status===404&&['staff','overview'].includes(resource))throw new Error('Adminservern behöver uppdateras för att visa denna information.');
   if(!response.ok)throw new Error(result.error||'Begäran kunde inte genomföras.');
   return result;
 }

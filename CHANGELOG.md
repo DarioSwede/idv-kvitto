@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## Ej publicerat – SU-användaradministration
+- Användarlistan visar aktiveringsstatus; ändring av en annan SU kräver bekräftelse.
+- Rolländring och återkallning kontrollerar SU-behörigheten på nytt i en låst databastransaktion. Eget konto och sista SU skyddas.
+- Äldre adminserver som saknar användarlista eller översikt ger ett tydligt uppdateringsmeddelande. Backend och migration måste publiceras tillsammans efter godkännande.
+
 ## 2026.09.26.1
 - Admininställningarna har fått en kompakt och tydligt grupperad layout med mindre tomrum.
 - Senaste lyckade inloggning och de fem senaste underlagen med avsändarens e-post visas överst.
