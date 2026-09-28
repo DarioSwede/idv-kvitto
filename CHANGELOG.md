@@ -1,5 +1,10 @@
 # Versionshistorik
 
+## Ej publicerat – Tydligare ärendekort
+- Namn och belopp prioriteras, med separata rader för e-post och ändamål samt mindre ärende-ID och datum.
+- Clearingnummer och kontonummer visas från backend med tydlig markering när uppgifter saknas. Admin-API behöver publiceras för att listan ska få kontofälten.
+- Arkivering separeras från statusval; kontonumren kan markeras med ett klick.
+
 ## Ej publicerat – PDF-förhandsvisning
 - Rubriken och hjälptexten i PDF-förhandsvisningen ligger på separata rader med tydligt mellanrum, även när meddelanden radbryts.
 

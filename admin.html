@@ -361,29 +361,26 @@
         return `
         <div class="submission-item status-${statusClass[submission.status] || 'new'} ${originalIndex === selectedIndex ? 'active' : ''} ${selectedSubmissionIds.has(submission.id) ? 'selected' : ''}" data-index="${originalIndex}">
           <div class="submission-meta">
-            <div>
-              <div class="muted" style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase;">Ärende-ID</div>
-              <strong title="${safeId}">${safeShortId}</strong>
-            </div>
-            <div class="submission-date">Inkom<br><strong>${safeReceivedAt}</strong></div>
+            <span title="${safeId}">Ärende ${safeShortId}</span>
+            <span class="submission-date">Inkom ${safeReceivedAt}</span>
           </div>
           <div class="compact-summary" aria-label="Kompakt sammanfattning">
-            <strong>${safeName}</strong>
-            <span>${safeReceivedAt}</span>
-            <strong>${safeAmount}</strong>
+            <strong>${safeName}</strong><span>${safeReceivedAt}</span><strong>${safeAmount}</strong>
           </div>
-          <div class="row">
-            <span>${safeName}</span>
-            <span class="muted">${safeAmount}</span>
-          </div>
-          <div class="row muted">
+          <div class="submission-details">
+            <div class="submission-heading"><strong>${safeName}</strong><strong class="submission-amount">${safeAmount}</strong></div>
             <a class="submission-email" href="${emailHref}" aria-label="E-posta ${safeEmail}">${safeEmail}</a>
-            <span>${safeEventTag}</span>
+            <div class="submission-purpose"><span class="field-label">Ändamål</span><span>${safeEventTag}</span></div>
+            <section class="submission-payment" aria-label="Konto för utbetalning">
+              <div class="field-label">Konto för utbetalning</div>
+              <dl><div><dt>Clearingnummer</dt><dd>${escapeHtml(submission.clearingNumber || 'Saknas')}</dd></div><div><dt>Kontonummer</dt><dd>${escapeHtml(submission.accountNumber || 'Saknas')}</dd></div></dl>
+              ${!submission.clearingNumber || !submission.accountNumber ? '<p class="payment-missing">Kontouppgifter saknas – kontrollera före utbetalning.</p>' : ''}
+            </section>
           </div>
           <div class="item-actions" ${canManage ? '' : 'hidden'}>
-            <button class="item-action status-submission status-new ${submission.status === 'new' ? 'status-active' : ''}" type="button" data-status="new" data-index="${originalIndex}">Inkommen</button>
-            <button class="item-action status-submission status-progress ${submission.status === 'in_progress' ? 'status-active' : ''}" type="button" data-status="in_progress" data-index="${originalIndex}">Pågår</button>
-            <button class="item-action status-submission status-done ${submission.status === 'done' ? 'status-active' : ''}" type="button" data-status="done" data-index="${originalIndex}">Klar</button>
+            <button class="item-action status-submission status-new ${submission.status === 'new' ? 'status-active' : ''}" type="button" aria-pressed="${submission.status === 'new'}" data-status="new" data-index="${originalIndex}">Inkommen</button>
+            <button class="item-action status-submission status-progress ${submission.status === 'in_progress' ? 'status-active' : ''}" type="button" aria-pressed="${submission.status === 'in_progress'}" data-status="in_progress" data-index="${originalIndex}">Pågår</button>
+            <button class="item-action status-submission status-done ${submission.status === 'done' ? 'status-active' : ''}" type="button" aria-pressed="${submission.status === 'done'}" data-status="done" data-index="${originalIndex}">Klar</button>
             <button class="item-action archive-submission" type="button" data-index="${originalIndex}">${submission.status === 'archived' ? 'Återställ' : 'Arkivera'}</button>
           </div>
         </div>

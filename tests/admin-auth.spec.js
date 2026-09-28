@@ -354,3 +354,25 @@ for(const width of [390,1280])test(`staff last login and receipt return link wor
   await expect(page).toHaveURL(/\/admin.html$/);
   await expect(page.locator('#submissionList')).toContainText('[TEST] Testperson');
 });
+
+for(const dark of [false,true])test(`receipt cards group payout details in ${dark?'dark':'light'} mode`,async({page},testInfo)=>{
+  await page.setViewportSize({width:1100,height:1000});await api(page);
+  await page.route('**/admin-api/submissions',route=>route.fulfill({json:{submissions:[
+    {id,sender_name:'Exempelperson',sender_email:'exempel@example.org',event_tag:'Resa till föreningens årsmöte',amount_total:639.5,bank_clearing_number:'0000',bank_account_number:'0000000000',status:'new',created_at:'2026-09-28T10:00:00Z'},
+    {id:'missing',sender_name:'Utan konto',sender_email:'saknas@example.org',status:'new'}
+  ]}}));
+  await page.goto('/admin.html');await login(page);
+  const card=page.locator('.submission-item').first();
+  await expect(card.locator('.submission-heading')).toHaveText('Exempelperson639,5 kr');
+  if(dark)await page.locator('#themeSwitch').click();
+  await expect(page.locator('#themeSwitch')).toHaveAttribute('aria-checked',String(dark));
+  await expect(card.getByRole('region',{name:'Konto för utbetalning'})).toContainText('0000000000');
+  await expect(card.locator('.payment-missing')).toHaveCount(0);
+  await expect(page.locator('.submission-item').nth(1)).toContainText('Kontouppgifter saknas');
+  await expect(card.getByRole('button',{name:'Inkommen',exact:true})).toHaveAttribute('aria-pressed','true');
+  expect(await card.evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  await card.screenshot({path:testInfo.outputPath(`receipt-card-${dark?'dark':'light'}.png`)});
+  await page.locator('.layout-switch').click();
+  await expect(card.locator('.submission-details')).toBeHidden();
+  await expect(card.locator('.compact-summary')).toBeVisible();
+});

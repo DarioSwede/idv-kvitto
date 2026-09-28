@@ -117,7 +117,8 @@
     .submission-item.selected { border-color: rgba(44,138,94,0.45); box-shadow: inset 0 0 0 1px rgba(44,138,94,0.12); }
     .submission-check { width: 18px; height: 18px; accent-color: var(--new); cursor: pointer; }
     .submission-item.active { border-color: rgba(47,111,90,0.5); box-shadow: inset 0 0 0 1px rgba(47,111,90,0.2); }
-    .item-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .item-actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+    .item-actions .archive-submission { margin-left: auto; }
     .item-action { border: 1px solid #b8cfc2; border-radius: 999px; padding: 7px 12px; background: linear-gradient(180deg, #ffffff, #edf3ef); color: var(--muted); font-size: 12px; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 7px rgba(30,44,36,.14); transition: transform .15s ease, filter .15s ease, box-shadow .15s ease; }
     .item-action.status-progress,
     .item-action.status-done,
@@ -214,7 +215,7 @@
     .submission-email:hover { text-decoration: underline; }
     .submission-list.compact { gap: 7px; }
     .submission-list.compact .submission-item { display: block; padding: 10px 14px; }
-    .submission-list.compact .submission-meta, .submission-list.compact .submission-item > .row, .submission-list.compact .item-actions { display: none; }
+    .submission-list.compact .submission-details, .submission-list.compact .submission-meta, .submission-list.compact .submission-item > .row, .submission-list.compact .item-actions { display: none; }
     .submission-list.compact .compact-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 14px; }
     .submission-list.compact .compact-summary strong:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .submission-list.compact .compact-summary span { color: var(--muted); font-size: 12px; white-space: nowrap; }
@@ -400,3 +401,19 @@
   .settings-shell .setting-role { grid-column:auto; }
   .settings-shell .section-heading { flex-wrap:wrap; }
 }
+
+/* Receipt cards: identity first, payout details second, actions last. */
+.submission-meta { color:var(--muted); font-size:11px; flex-wrap:wrap; gap:4px 12px; }
+.submission-date { font-size:11px; }
+.submission-details { display:grid; gap:8px; min-width:0; }
+.submission-heading { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:15px; }
+.submission-heading > strong:first-child { overflow-wrap:anywhere; min-width:0; }
+.submission-amount { white-space:nowrap; font-variant-numeric:tabular-nums; }
+.submission-details .submission-email { color:var(--brand); font-size:12px; overflow-wrap:anywhere; }
+.submission-purpose { display:grid; gap:3px; font-size:13px; overflow-wrap:anywhere; }
+.field-label { font-size:11px; color:var(--muted); font-weight:600; }
+.submission-payment { border-top:1px solid var(--line); padding-top:10px; margin-top:2px; }
+.submission-payment dl { display:flex; flex-wrap:wrap; gap:8px 24px; margin:7px 0 0; }
+.submission-payment dt { color:var(--muted); font-size:11px; }
+.submission-payment dd { margin:3px 0 0; font-size:14px; font-variant-numeric:tabular-nums; user-select:all; overflow-wrap:anywhere; }
+.payment-missing { margin:8px 0 0; color:var(--text); font-size:12px; }
