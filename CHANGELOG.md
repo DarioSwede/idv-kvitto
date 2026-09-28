@@ -1,6 +1,8 @@
 # Versionshistorik
 
 ## Ej publicerat – SU-användaradministration
+- Varje registrerad användare visar senast inloggad direkt efter e-postadressen, från Auth-tidsstämpeln i admin-API:t, i svensk tid. Saknade eller ogiltiga uppgifter visas tydligt.
+- Länken ”Till kvittoöversikten” ligger direkt under logotypen i adminmenyn och leder till kvittolistan.
 - Adminvyn har en vänstermeny med separata områden för översikt, användare, systeminställningar, testmejl och säkerhetslogg. Loggar hämtas direkt vid menyval.
 - Användarlistan visar aktiveringsstatus; ändring av en annan SU kräver bekräftelse.
 - Rolländring och återkallning kontrollerar SU-behörigheten på nytt i en låst databastransaktion. Eget konto och sista SU skyddas.

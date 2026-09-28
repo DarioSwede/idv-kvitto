@@ -185,6 +185,6 @@ test('staff list exposes activation status without exposing Auth metadata',async
   ]){
     const client={auth:{admin:{getUserById:async()=>({data:{user:{...identity,email:'person@example.org',user_metadata:{secret:'private'}}}})}},from:()=>({select:()=>({order:async()=>({data:[{user_id:uid,role:'viewer'}]})})})};
     const [user]=await listStaff(client,{role:'superuser',currentUserId:requestId});
-    assert.equal(user.status,status);assert.equal(JSON.stringify(user).includes('private'),false);
+    assert.equal(user.status,status);assert.equal(user.last_sign_in_at,identity.last_sign_in_at||null);assert.equal(JSON.stringify(user).includes('private'),false);
   }
 });

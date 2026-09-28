@@ -359,7 +359,8 @@
 .admin-menu a:hover { background:var(--panel-alt); color:var(--text); }
 .admin-menu a[aria-current="page"] { color:var(--brand); background:var(--brand-soft); border-color:var(--line); }
 .admin-menu a:focus-visible,.admin-back:focus-visible { outline:3px solid var(--brand); outline-offset:2px; }
-.admin-back { margin-top:auto; padding-top:20px; border-top:1px solid var(--line); font-size:13px; color:var(--muted); text-decoration:none; }
+.admin-back { display:block; padding:12px; border:1px solid var(--line); border-radius:9px; font-size:13px; font-weight:600; color:var(--brand); background:var(--brand-soft); text-decoration:none; }
+.admin-back:hover { color:var(--text); background:var(--panel-alt); }
 .settings-shell .theme-switch { align-self:flex-start; }
 .settings-shell .main { width:100%; max-width:1400px; min-height:100dvh; padding:34px clamp(20px,3vw,48px); display:block; }
 .settings-shell .account-bar { min-height:0; padding:0 0 26px; margin:0 0 28px; border-bottom:1px solid var(--line); gap:20px; }
@@ -390,7 +391,6 @@
   .settings-shell .sidebar { position:static; height:auto; padding:18px; gap:18px; border-right:0; border-bottom:1px solid var(--line); }
   .settings-shell .menu-label { display:none; }
   .settings-shell .admin-menu { grid-template-columns:repeat(2,minmax(0,1fr)); margin:0; }
-  .settings-shell .admin-back { margin:0; padding-top:12px; }
   .settings-shell .main { padding:24px 16px; min-height:0; }
   .settings-shell .account-bar { align-items:flex-start; flex-direction:column; }
   .settings-shell .overview-grid,.settings-shell .compact-settings,.settings-shell .staff-actions { grid-template-columns:1fr; }
