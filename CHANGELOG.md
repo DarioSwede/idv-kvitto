@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## Ej publicerat – PDF-förhandsvisning
+- Rubriken och hjälptexten i PDF-förhandsvisningen ligger på separata rader med tydligt mellanrum, även när meddelanden radbryts.
+
 ## Ej publicerat – SU-användaradministration
 - Varje registrerad användare visar senast inloggad direkt efter e-postadressen, från Auth-tidsstämpeln i admin-API:t, i svensk tid. Saknade eller ogiltiga uppgifter visas tydligt.
 - Länken ”Till kvittoöversikten” ligger direkt under logotypen i adminmenyn och leder till kvittolistan.
