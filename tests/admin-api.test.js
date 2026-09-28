@@ -101,3 +101,16 @@ test('current backend routes overview and staff under the deployed function pref
     const data=await response.json();assert.ok(route==='staff'?Array.isArray(data.users):Array.isArray(data.recent_submissions));
   }
 });
+
+test('receipt list selects stored payout fields without broadening the projection',async()=>{
+  const {listSubmissions}=await import('../supabase/functions/admin-api/submissions.ts');
+  const stored={id:uid,bank_clearing_number:'0000',bank_account_number:'0000000000',private_extra:'not selected'};
+  const client={from:()=>({select:fields=>{
+    assert.ok(!fields.includes('*'));
+    const row=Object.fromEntries(fields.split(',').filter(key=>key in stored).map(key=>[key,stored[key]]));
+    return {order:()=>({limit:async()=>({data:[row]})})};
+  }})};
+  const [row]=await listSubmissions(client);
+  assert.equal(row.bank_clearing_number,'0000');assert.equal(row.bank_account_number,'0000000000');
+  assert.equal(row.private_extra,undefined);
+});
