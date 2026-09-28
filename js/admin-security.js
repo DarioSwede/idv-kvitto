@@ -8,7 +8,15 @@ function staffRow(user,{request,reload,status}){
   const identity=document.createElement('div');identity.className='staff-identity';
   const email=document.createElement('strong');email.textContent=user.email;
   const meta=document.createElement('span');meta.textContent=[user.is_current?'Ditt konto · skyddat':null,({active:'Aktiv · har loggat in',confirmed:'Bekräftad · ännu inte inloggad',invited:'Inväntar aktivering',blocked:'Spärrat konto'})[user.status]||'Tillagd användare'].filter(Boolean).join(' · ');
-  identity.append(email,meta);
+  const lastLogin=document.createElement('span');lastLogin.className='staff-last-login';
+  lastLogin.textContent='Senast inloggad: ';
+  const timestamp=typeof user.last_sign_in_at==='string'&&user.last_sign_in_at.trim()?new Date(user.last_sign_in_at):null;
+  if(timestamp&&!Number.isNaN(timestamp.getTime())){
+    const time=document.createElement('time');time.dateTime=timestamp.toISOString();
+    time.textContent=new Intl.DateTimeFormat('sv-SE',{dateStyle:'short',timeStyle:'short',timeZone:'Europe/Stockholm'}).format(timestamp);
+    lastLogin.append(time,' (svensk tid)');
+  }else lastLogin.append('Uppgift saknas');
+  identity.append(email,lastLogin,meta);
   const select=document.createElement('select');select.setAttribute('aria-label',`Behörighet för ${user.email}`);
   for(const [value,label] of ROLES){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);}
   select.value=user.role;select.disabled=user.is_current;

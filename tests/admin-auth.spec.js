@@ -219,7 +219,7 @@ test('SU updates mileage in settings and returns to inbox',async({page})=>{
   await page.locator('#travelRatePerMil').fill('30');await page.locator('#saveSettingsButton').click();
   await expect(page.locator('#connectionStatus')).toHaveText('Inställningarna sparades.');
   expect(updates).toContainEqual({key:'travel_rate_per_km',value:3});
-  const back=page.getByRole('link',{name:/Kvittoadministration/}).first();
+  const back=page.getByRole('link',{name:/Till kvittoöversikten/}).first();
   await expect(back).toBeVisible();await back.click();await expect(page).toHaveURL(/admin.html$/);
 });
 test('standalone settings require login before settings data is requested',async({page})=>{
@@ -323,4 +323,34 @@ for(const expired of [false,true])test(`audit deep link survives ${expired?'expi
   await login(page);
   await expect(page).toHaveURL(/admin-settings.html#audit$/);
   await expect(page.locator('#auditEntries')).toHaveText('Inga händelser de senaste 90 dagarna.');
+});
+
+for(const width of [390,1280])test(`staff last login and receipt return link work at ${width}px`,async({page})=>{
+  await page.setViewportSize({width,height:900});
+  await api(page);
+  await page.route('**/admin-api/staff',route=>route.fulfill({json:{users:[
+    {user_id:'test-user',email:'test@example.org',role:'superuser',is_current:true,status:'active',last_sign_in_at:'2026-09-28T12:34:00Z'},
+    {user_id:'missing',email:'missing@example.org',role:'viewer',status:'invited',last_sign_in_at:null},
+    {user_id:'invalid',email:'invalid@example.org',role:'cashier',status:'active',last_sign_in_at:'not-a-date'},
+    {user_id:'old',email:'old@example.org',role:'viewer',status:'confirmed'},
+    {user_id:'winter',email:'winter@example.org',role:'viewer',status:'blocked',last_sign_in_at:'2026-01-28T12:34:00Z'}
+  ]}}));
+  await page.goto('/admin-settings.html#users');await login(page);
+  const own=page.locator('.staff-row[data-user-id="test-user"]');
+  await expect(own.locator('.staff-identity > strong + .staff-last-login')).toHaveText('Senast inloggad: 2026-09-28 14:34 (svensk tid)');
+  await expect(own.locator('time')).toHaveAttribute('datetime','2026-09-28T12:34:00.000Z');
+  await expect(own).toContainText('Ditt konto · skyddat · Aktiv · har loggat in');
+  await expect(own.getByRole('combobox')).toBeDisabled();
+  for(const user of ['missing','invalid','old'])await expect(page.locator(`[data-user-id="${user}"] .staff-last-login`)).toHaveText('Senast inloggad: Uppgift saknas');
+  await expect(page.locator('[data-user-id="winter"] time')).toHaveText('2026-01-28 13:34');
+  await expect(page.locator('[data-user-id="winter"]')).toContainText('Spärrat konto');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+  await page.evaluate(()=>scrollTo(0,0));
+  const back=page.getByRole('link',{name:'← Till kvittoöversikten',exact:true});
+  await expect(back).toBeInViewport();
+  await expect(back).toHaveAttribute('href','admin.html');
+  await back.focus();await expect(back).toBeFocused();
+  await back.press('Enter');
+  await expect(page).toHaveURL(/\/admin.html$/);
+  await expect(page.locator('#submissionList')).toContainText('[TEST] Testperson');
 });
