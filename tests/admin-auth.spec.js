@@ -402,7 +402,8 @@ for(const dark of [false,true])test(`receipt cards group payout details in ${dar
 test('short case number is displayed while actions keep the internal UUID',async({page})=>{
   await api(page);
   await page.route('**/admin-api/submissions*',route=>route.fulfill({json:{submissions:[
-    {id,case_number:'2026-0042',sender_name:'Exempelperson',sender_email:'exempel@example.org',status:'new'}
+    {id,case_number:'2026-0042',sender_name:'Exempelperson',sender_email:'exempel@example.org',status:'new'},
+    {id:'remaining-case',case_number:'2026-0043',sender_name:'Annat ärende',sender_email:'annat@example.org',status:'new'}
   ]}}));
   let archiveBody;
   await page.route('**/admin-api/archive',async route=>{
@@ -410,7 +411,7 @@ test('short case number is displayed while actions keep the internal UUID',async
     await route.fulfill({json:{submission:{id,archived_at:'2026-09-29T12:00:00Z'}}});
   });
   await page.goto('/admin.html');await login(page);
-  const card=page.locator('.submission-item').first();
+  const card=page.locator('.submission-item').filter({hasText:'Ärende 2026-0042'});
   await expect(card.locator('.submission-meta')).toContainText('Ärende 2026-0042');
   await expect(card.locator('.submission-meta [title]')).toHaveAttribute('title',id);
   await expect(card.locator('.submission-email')).toHaveAttribute('href',/2026-0042/);
@@ -421,5 +422,10 @@ test('short case number is displayed while actions keep the internal UUID',async
   await card.getByRole('button',{name:'Arkivera',exact:true}).click();
   await expect.poll(()=>archiveBody).toEqual({id,archived:true});
   expect(confirmation).toContain('2026-0042');
+  await expect(card).toHaveCount(0);
+  await page.route('**/admin-api/submissions?status=archived',route=>route.fulfill({json:{submissions:[
+    {id,case_number:'2026-0042',sender_name:'Exempelperson',sender_email:'exempel@example.org',status:'new',archived_at:'2026-09-29T12:00:00Z'}
+  ]}}));
+  await page.locator('.filter-stat[data-status="archived"]').click();
   await expect(card.locator('.submission-meta')).toContainText('Ärende 2026-0042');
 });
