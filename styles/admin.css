@@ -157,6 +157,9 @@
     .button.secondary { background: var(--panel-alt); border: 1px solid var(--line); color: var(--text); }
     .button.warning { background: #fff4df; color: var(--warning); border: 1px solid rgba(184,109,20,0.2); }
     .button.danger { background: #fdecec; color: var(--danger); border: 1px solid rgba(141,45,45,0.2); }
+    .detail-panel.card { padding-bottom: 32px; }
+    .admin-note-field { display: grid; gap: 8px; }
+    .admin-note-field textarea { display: block; }
     textarea {
       width: 100%; min-height: 100px; resize: vertical; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--panel-alt); color: var(--text); font: inherit;
     }
