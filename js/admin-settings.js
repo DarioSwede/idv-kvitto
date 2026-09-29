@@ -14,7 +14,7 @@ const status=document.querySelector('#connectionStatus');
 const field=id=>document.getElementById(id);
 const swedishDate=value=>value?new Intl.DateTimeFormat('sv-SE',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Stockholm'}).format(new Date(value)):'–';
 const submissionStatus={new:'Nytt',in_progress:'Pågår',done:'Klart',archived:'Arkiverat'};
-const controls=['deliveryMode','testRecipient','productionRecipient','retentionDays','travelRatePerMil','pdfWatermarkEnabled','pdfWatermarkOpacity'];
+const controls=['deliveryMode','testRecipient','productionRecipient','retentionDays','travelRatePerMil','adminLoginVisible','pdfWatermarkEnabled','pdfWatermarkOpacity'];
 controls.forEach(id=>field(id).disabled=true);
 field('saveSettingsButton').disabled=true;
 field('statusFilter').value='superuser';
@@ -64,6 +64,7 @@ try {
   field('productionRecipient').value=values.receipt_email_to??'';
   field('retentionDays').value=values.retention_days??365;
   field('travelRatePerMil').value=Number(((values.travel_rate_per_km??2.5)*10).toFixed(2));
+  field('adminLoginVisible').value=String(values.admin_login_visible??true);
   field('pdfWatermarkEnabled').value=String(values.pdf_watermark_enabled??true);
   field('pdfWatermarkOpacity').value=Math.round((values.pdf_watermark_opacity??0.04)*100);
   controls.forEach(id=>field(id).disabled=false);
@@ -79,6 +80,7 @@ field('saveSettingsButton').addEventListener('click',async()=>{
     ['email_delivery_mode',field('deliveryMode').value],
     ['retention_days',Number(field('retentionDays').value)],
     ['travel_rate_per_km',Number(field('travelRatePerMil').value)/10],
+    ['admin_login_visible',field('adminLoginVisible').value==='true'],
     ['pdf_watermark_enabled',field('pdfWatermarkEnabled').value==='true'],
     ['pdf_watermark_opacity',Number(field('pdfWatermarkOpacity').value)/100]
   ];

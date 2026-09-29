@@ -7,7 +7,7 @@ async function api(page,{role='superuser',meStatus=200}={}) {
     if(url.pathname.endsWith('/admin-api/login'))return route.fulfill({json:{access_token:'fake-session',expires_at:Math.floor(Date.now()/1000)+3600}});
     if(url.pathname.endsWith('/me'))return route.fulfill({status:meStatus,json:{role,user_id:'test-user'}});
     if(url.pathname.endsWith('/travel-rate'))return route.fulfill({json:{rate_per_km:2.5}});
-    if(url.pathname.endsWith('/settings'))return route.fulfill({json:{role,settings:[{key:'email_delivery_mode',value:'test'},{key:'email_test_recipient',value:'test@example.org'}]}});
+    if(url.pathname.endsWith('/settings'))return route.fulfill({json:{role,settings:[{key:'email_delivery_mode',value:'test'},{key:'email_test_recipient',value:'test@example.org'},{key:'admin_login_visible',value:true}]}});
     if(url.pathname.endsWith('/overview'))return route.fulfill({json:{latest_login:{email:'last@example.org',created_at:'2026-09-25T12:00:00Z'},recent_submissions:[
       {id,email:'first@example.org',created_at:'2026-09-25T11:00:00Z',status:'new',is_test:false},
       {id:'second',email:'second@example.org',created_at:'2026-09-24T11:00:00Z',status:'done',is_test:true}
@@ -201,11 +201,23 @@ for(const role of ['admin','cashier'])test(`${role} sees neither mileage setting
   await page.goto('/admin-settings.html');await expect(page).toHaveURL(/admin.html$/);
 });
 test('public form offers a separate admin login without requiring login to start an application',async({page})=>{
+  await page.route('**/functions/v1/submit-receipt',route=>route.fulfill({json:{email_configured:false,settings:{admin_login_visible:true}}}));
   await page.goto('/index.html');
   await expect(page.getByRole('button',{name:'Starta ansökan'})).toBeVisible();
-  await page.getByRole('link',{name:'Logga in till administrationen'}).click();
+  const loginLink=page.getByRole('link',{name:'Logga in till administrationen'});
+  await expect(loginLink).toBeVisible();
+  const footerTop=await page.locator('.welcome-footer').evaluate(element=>element.getBoundingClientRect().top);
+  const loginTop=await loginLink.evaluate(element=>element.getBoundingClientRect().top);
+  expect(loginTop).toBeLessThan(footerTop);
+  await loginLink.click();
   await expect(page).toHaveURL(/admin-login.html$/);
   await expect(page.locator('#loginForm')).toBeVisible();
+});
+test('SU can hide the public admin login entry completely',async({page})=>{
+  await page.route('**/functions/v1/submit-receipt',route=>route.fulfill({json:{email_configured:false,settings:{admin_login_visible:false}}}));
+  await page.goto('/index.html');
+  await expect(page.getByRole('button',{name:'Starta ansökan'})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Logga in till administrationen'})).toBeHidden();
 });
 test('SU updates mileage in settings and returns to inbox',async({page})=>{
   await api(page);const updates=[];
@@ -215,10 +227,14 @@ test('SU updates mileage in settings and returns to inbox',async({page})=>{
   });
   await page.goto('/admin-settings.html');await login(page);
   await expect(page.locator('#travelRatePerMil')).toHaveValue('25');
+  await expect(page.locator('#adminLoginVisible')).toHaveValue('true');
   await page.getByRole('link',{name:'Systeminställningar',exact:true}).click();
-  await page.locator('#travelRatePerMil').fill('30');await page.locator('#saveSettingsButton').click();
+  await page.locator('#travelRatePerMil').fill('30');
+  await page.locator('#adminLoginVisible').selectOption('false');
+  await page.locator('#saveSettingsButton').click();
   await expect(page.locator('#connectionStatus')).toHaveText('Inställningarna sparades.');
   expect(updates).toContainEqual({key:'travel_rate_per_km',value:3});
+  expect(updates).toContainEqual({key:'admin_login_visible',value:false});
   const back=page.getByRole('link',{name:/Till kvittoöversikten/}).first();
   await expect(back).toBeVisible();await back.click();await expect(page).toHaveURL(/admin.html$/);
 });

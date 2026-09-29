@@ -4,7 +4,7 @@ import {createAdminHandler} from '../supabase/functions/admin-api/handler.ts';
 const uid='12345678-1234-1234-1234-123456789abc';
 function fixture(role='superuser',{storageFails=false,rateLimited=false}={}) {
   const writes=[];
-  const settings=[{key:'travel_rate_per_km',value:2.5},{key:'retention_days',value:365},{key:'email_delivery_mode',value:'disabled'}];
+  const settings=[{key:'travel_rate_per_km',value:2.5},{key:'retention_days',value:365},{key:'email_delivery_mode',value:'disabled'},{key:'admin_login_visible',value:true}];
   const old={id:uid,archived_at:'2020-01-01T00:00:00Z',final_pdf_path:'final.pdf',receipt_files:[{storage_path:'receipt.jpg'}]};
   const rows=[old,{id:'recent',archived_at:new Date().toISOString()},{id:'active',archived_at:null}];
   const client={rpc:async()=>({data:{allowed:!rateLimited,retry_after_seconds:125},error:null}),storage:{from:()=>({remove:async paths=>{writes.push(['storage',paths]);return {error:storageFails?new Error('failed'):null};}})},from:table=>{
@@ -65,8 +65,10 @@ test('SU can read and update full settings, invalid mileage is rejected server-s
   assert.equal((await request('settings')).status,200);
   assert.equal((await request('settings','PATCH',{key:'retention_days',value:90})).status,200);
   assert.equal((await request('settings','PATCH',{key:'travel_rate_per_km',value:3})).status,200);
+  assert.equal((await request('settings','PATCH',{key:'admin_login_visible',value:false})).status,200);
+  assert.equal((await request('settings','PATCH',{key:'admin_login_visible',value:'false'})).status,400);
   for(const value of [0,-1,'3',null,1001])assert.equal((await request('travel-rate','PATCH',{rate_per_km:value})).status,400);
-  assert.equal(writes.filter(([table])=>table==='app_settings').length,2);
+  assert.equal(writes.filter(([table])=>table==='app_settings').length,3);
 });
 test('listing receipts purges expired archives and both source files and PDF',async()=>{
   const {request,writes}=fixture();

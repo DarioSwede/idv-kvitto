@@ -44,13 +44,14 @@
       </section>
 
       <section data-admin-panel="settings" class="card settings-card" hidden>
-        <div class="section-heading"><div><span class="eyebrow">Konfiguration</span><h2>Systeminställningar</h2><p>Styr e-post, arkivering, milersättning och PDF.</p></div><button id="saveSettingsButton" class="button primary">Spara ändringar</button></div>
+        <div class="section-heading"><div><span class="eyebrow">Konfiguration</span><h2>Systeminställningar</h2><p>Styr e-post, arkivering, milersättning, admininloggning och PDF.</p></div><button id="saveSettingsButton" class="button primary">Spara ändringar</button></div>
         <div class="settings-grid compact-settings">
           <div class="setting"><label for="deliveryMode">E-postläge</label><select id="deliveryMode"><option value="test">Test</option><option value="production">Produktion</option><option value="disabled">Avstängd</option></select></div>
           <div class="setting"><label for="productionRecipient">Produktionsmottagare</label><input id="productionRecipient" value="betala@idrottsveteranerna.se"></div>
           <div class="setting"><label for="testRecipient">Testmottagare</label><input id="testRecipient" value="mail@torbjornzimmerman.se"></div>
           <div class="setting"><label for="travelRatePerMil">Ersättning per mil</label><div class="input-suffix"><input id="travelRatePerMil" type="number" min="0.01" max="10000" step="0.01" value="25"><span>kr</span></div></div>
           <div class="setting"><label for="retentionDays">Behåll arkiverade</label><div class="input-suffix"><input id="retentionDays" type="number" min="1" max="3650" value="365"><span>dagar</span></div></div>
+          <div class="setting"><label for="adminLoginVisible">Admininloggning i publika formuläret</label><select id="adminLoginVisible"><option value="true">Visa längst ned</option><option value="false">Dölj helt</option></select></div>
           <div class="setting setting-pair"><div><label for="pdfWatermarkEnabled">Bakgrundslogotyp i PDF</label><select id="pdfWatermarkEnabled"><option value="true">På</option><option value="false">Av</option></select></div><div><label for="pdfWatermarkOpacity">Styrka</label><div class="input-suffix"><input id="pdfWatermarkOpacity" type="number" min="1" max="15" step="1" value="4"><span>%</span></div></div></div>
           <div class="setting setting-role"><label for="statusFilter">Serververifierad roll</label><select id="statusFilter" disabled><option value="superuser">Superuser (SU)</option><option value="admin">Admin</option><option value="cashier">Kassör</option><option value="tester">Drift/test</option><option value="viewer">Läsbehörighet</option></select></div>
         </div>
