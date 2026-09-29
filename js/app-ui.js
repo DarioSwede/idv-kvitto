@@ -59,6 +59,8 @@ async function initEmailCopy(){
     if(!response.ok)throw new Error('E-poststatus kunde inte hämtas');
     const result=await response.json();
     window.__idvRuntimeSettings=result.settings||{};
+    const adminLoginAccess=document.getElementById('adminLoginAccess');
+    if(adminLoginAccess)adminLoginAccess.hidden=result.settings?.admin_login_visible!==true;
     configureTravelReimbursement(result.settings);
     checkbox.disabled=!result.email_configured;
     checkbox.checked=Boolean(result.email_configured);

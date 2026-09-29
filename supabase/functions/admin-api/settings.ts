@@ -5,7 +5,7 @@ export const EDITABLE_SETTING_KEYS=new Set([
   'allowed_mime_types','ocr_enabled','ocr_retry_enabled','cc_self_enabled','receipt_email_to',
   'email_delivery_mode','email_test_recipient','retention_days'
   ,'submission_rate_limit_requests','submission_rate_limit_window_seconds'
-  ,'pdf_watermark_enabled','pdf_watermark_opacity'
+  ,'admin_login_visible','pdf_watermark_enabled','pdf_watermark_opacity'
 ]);
 export class SettingValidationError extends Error{}
 
@@ -18,6 +18,7 @@ export async function listSettings(client:any){
 export async function updateSetting(client:any,userId:string,key:string,value:unknown,role?:string){
   requireSettingsAdmin(role);
   if(key==='travel_rate_per_km' && (typeof value!=='number'||!Number.isFinite(value)||value<0.001||value>1000))throw new SettingValidationError('Milersättning måste vara mellan 0,01 och 10 000 kr per mil.');
+  if(key==='admin_login_visible' && typeof value!=='boolean')throw new SettingValidationError('Admininloggning måste anges som synlig eller dold.');
   const emailError=emailSettingError(key,value,role);
   if(emailError)throw new SettingValidationError(emailError);
   if(!EDITABLE_SETTING_KEYS.has(key))throw new SettingValidationError('Inställningen kan inte ändras här.');

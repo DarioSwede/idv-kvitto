@@ -3,7 +3,6 @@ export function applyTemplates(html,versionMeta={}){
   html=html.replace("const ENDPOINT='https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'","const ENDPOINT=window.__idvSubmitEndpoint||'https://ohwalxqwtxtlldalsclj.supabase.co/functions/v1/submit-receipt'");
   html=html.replace('<button class="restart" id="restart" type="button">Avbryt<br>och börja om</button>','');
   const welcome=`<section class="welcome" id="welcome" aria-labelledby="welcomeTitle">
-<nav class="welcome-access" aria-label="Administration"><a href="admin-login.html">Logga in till administrationen</a></nav>
 <img class="welcome-logo" src="idv-mark.png" alt="Idrottsveteranerna">
 <div class="welcome-kicker">Idrottsveteranerna</div>
 <h1 id="welcomeTitle">Ansök om ersättning</h1>
@@ -17,6 +16,7 @@ export function applyTemplates(html,versionMeta={}){
 <p class="welcome-processing">Handläggningstiden är 3-5 dagar, men normalt kortare. Utbetalning sker till det bankkonto du uppger. Observera att både clearingnummer och kontonummer krävs.</p>
 <button class="btn welcome-start" id="startApplication" type="button">Starta ansökan</button>
 <p class="welcome-security">🔒 Dina uppgifter skickas krypterat.</p>
+<nav class="welcome-access" id="adminLoginAccess" aria-label="Administration" hidden><a href="admin-login.html">Logga in till administrationen</a></nav>
 <footer class="welcome-footer">
   <a class="privacy-link" href="privacy.html" target="_blank" rel="noopener">Så hanterar vi dina personuppgifter</a>
   <small class="welcome-build-meta">Version ${appVersion} · Byggd av Zimmerman<br>© 2026 Idrottsveteranerna</small>

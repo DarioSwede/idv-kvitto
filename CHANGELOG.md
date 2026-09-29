@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.09.29.1
+- Länken till admininloggningen ligger längst ned på välkomstsidan, ovanför sidfoten.
+- Superuser kan visa eller dölja länken helt under Systeminställningar. Länken förblir dold tills den publika konfigurationen har hämtats.
+
 ## Ej publicerat – Tydligare ärendekort
 - Namn och belopp prioriteras, med separata rader för e-post och ändamål samt mindre ärende-ID och datum.
 - Clearingnummer och kontonummer visas från backend med tydlig markering när uppgifter saknas. Admin-API behöver publiceras för att listan ska få kontofälten.

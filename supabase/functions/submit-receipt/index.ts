@@ -39,10 +39,11 @@ async function runtimeSettings(client: SupabaseClient) {
     allowedTypes: defaultAllowedTypes,
     rateLimitRequests: 5,
     rateLimitWindowSeconds: 600,
+    adminLoginVisible: true,
     pdfWatermarkEnabled: true,
     pdfWatermarkOpacity: 0.04
   };
-  const { data, error } = await client.from("app_settings").select("key,value").in("key", ["travel_rate_per_km","max_travel_km","max_receipts","max_file_size_mb","max_total_upload_mb","allowed_mime_types","cc_self_enabled","receipt_email_to","email_delivery_mode","email_test_recipient","submission_rate_limit_requests","submission_rate_limit_window_seconds","pdf_watermark_enabled","pdf_watermark_opacity"]);
+  const { data, error } = await client.from("app_settings").select("key,value").in("key", ["travel_rate_per_km","max_travel_km","max_receipts","max_file_size_mb","max_total_upload_mb","allowed_mime_types","cc_self_enabled","receipt_email_to","email_delivery_mode","email_test_recipient","submission_rate_limit_requests","submission_rate_limit_window_seconds","admin_login_visible","pdf_watermark_enabled","pdf_watermark_opacity"]);
   if (error) { console.error("app settings unavailable", error); return defaults; }
   const values = Object.fromEntries((data ?? []).map((row: { key: string; value: unknown }) => [row.key, row.value]));
   return {
@@ -52,6 +53,7 @@ async function runtimeSettings(client: SupabaseClient) {
     allowedTypes: Array.isArray(values.allowed_mime_types) && values.allowed_mime_types.every(value => typeof value === "string") ? values.allowed_mime_types : defaults.allowedTypes,
     rateLimitRequests: Math.floor(boundedNumber(values.submission_rate_limit_requests, defaults.rateLimitRequests, 100)),
     rateLimitWindowSeconds: Math.floor(boundedNumber(values.submission_rate_limit_window_seconds, defaults.rateLimitWindowSeconds, 86400)),
+    adminLoginVisible: typeof values.admin_login_visible === "boolean" ? values.admin_login_visible : defaults.adminLoginVisible,
     pdfWatermarkEnabled: typeof values.pdf_watermark_enabled === "boolean" ? values.pdf_watermark_enabled : defaults.pdfWatermarkEnabled,
     pdfWatermarkOpacity: boundedOpacity(values.pdf_watermark_opacity, defaults.pdfWatermarkOpacity)
   };
@@ -69,7 +71,7 @@ Deno.serve(async (req: Request) => {
     const url = Deno.env.get("SUPABASE_URL"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !serviceKey) return respond({ error: "Tjänsten är inte konfigurerad." }, 503, origin);
     const settings = await runtimeSettings(createClient(url, serviceKey, { auth: { persistSession: false } }));
-    return respond({ ok: true, email_configured: Boolean(resolveDeliveryRecipient(settings) && settings.ccSelfEnabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RECEIPT_EMAIL_FROM")), settings: { travel_rate_per_km: settings.travelRatePerKm, max_travel_km: settings.maxTravelKm, max_receipts: settings.maxReceipts, max_file_size_mb: settings.maxFileSizeMb, max_total_upload_mb: settings.maxTotalUploadMb, allowed_mime_types: settings.allowedTypes, cc_self_enabled: settings.ccSelfEnabled, receipt_email_to: settings.receiptEmailTo, email_delivery_mode: settings.emailDeliveryMode, email_test_recipient: settings.emailTestRecipient } }, 200, origin);
+    return respond({ ok: true, email_configured: Boolean(resolveDeliveryRecipient(settings) && settings.ccSelfEnabled && Deno.env.get("RESEND_API_KEY") && Deno.env.get("RECEIPT_EMAIL_FROM")), settings: { travel_rate_per_km: settings.travelRatePerKm, max_travel_km: settings.maxTravelKm, max_receipts: settings.maxReceipts, max_file_size_mb: settings.maxFileSizeMb, max_total_upload_mb: settings.maxTotalUploadMb, allowed_mime_types: settings.allowedTypes, cc_self_enabled: settings.ccSelfEnabled, receipt_email_to: settings.receiptEmailTo, email_delivery_mode: settings.emailDeliveryMode, email_test_recipient: settings.emailTestRecipient, admin_login_visible: settings.adminLoginVisible } }, 200, origin);
   }
   if (req.method !== "POST") return respond({ error: "Metoden stöds inte." }, 405, origin);
   const reply = (body: unknown, status = 200) => respond(body, status, origin);
