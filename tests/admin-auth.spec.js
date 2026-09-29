@@ -398,3 +398,28 @@ for(const dark of [false,true])test(`receipt cards group payout details in ${dar
   await expect(card.locator('.submission-details')).toBeHidden();
   await expect(card.locator('.compact-summary')).toBeVisible();
 });
+
+test('short case number is displayed while actions keep the internal UUID',async({page})=>{
+  await api(page);
+  await page.route('**/admin-api/submissions*',route=>route.fulfill({json:{submissions:[
+    {id,case_number:'2026-0042',sender_name:'Exempelperson',sender_email:'exempel@example.org',status:'new'}
+  ]}}));
+  let archiveBody;
+  await page.route('**/admin-api/archive',async route=>{
+    archiveBody=route.request().postDataJSON();
+    await route.fulfill({json:{submission:{id,archived_at:'2026-09-29T12:00:00Z'}}});
+  });
+  await page.goto('/admin.html');await login(page);
+  const card=page.locator('.submission-item').first();
+  await expect(card.locator('.submission-meta')).toContainText('Ärende 2026-0042');
+  await expect(card.locator('.submission-meta [title]')).toHaveAttribute('title',id);
+  await expect(card.locator('.submission-email')).toHaveAttribute('href',/2026-0042/);
+  const pdfRequest=page.waitForRequest(request=>request.url().includes('/admin-api/pdf?id='));
+  await card.click();expect((await pdfRequest).url()).toContain(id);
+  let confirmation;
+  page.once('dialog',async dialog=>{confirmation=dialog.message();await dialog.accept();});
+  await card.getByRole('button',{name:'Arkivera',exact:true}).click();
+  await expect.poll(()=>archiveBody).toEqual({id,archived:true});
+  expect(confirmation).toContain('2026-0042');
+  await expect(card.locator('.submission-meta')).toContainText('Ärende 2026-0042');
+});

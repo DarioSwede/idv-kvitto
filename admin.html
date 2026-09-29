@@ -95,6 +95,7 @@
 
   <script type="module">
     import {verifiedSession, loginUrl, signOut, ADMIN_API} from './js/admin-auth.js';
+    import {caseReference} from './js/case-reference.js';
     import {maskAccountNumber} from './js/bank-account.js';
     import {setupAdminSessionTimeout} from './js/admin-session-timeout.js';
     let verified;
@@ -209,7 +210,7 @@
         const blobUrl = URL.createObjectURL(await response.blob());
         const link = document.createElement('a');
         link.href = blobUrl;
-        link.download = `underlag-${shortId(selectedPdfId).replace('...', '-')}.pdf`;
+        link.download = `underlag-${caseReference(submissions.find(item => item.id === selectedPdfId) || {id: selectedPdfId}).replace('...', '-')}.pdf`;
         link.click();
         URL.revokeObjectURL(blobUrl);
       } catch (error) {
@@ -257,6 +258,7 @@
     function normalizeSubmission(item) {
       return {
         id: item.id || item.uuid || 'INV-0000',
+        caseNumber: item.case_number || '',
         name: `${item.is_test ? '[TEST] ' : ''}${item.sender_name || item.name || 'Okänt namn'}`,
         email: item.sender_email || item.email || '-',
         eventTag: item.event_tag || item.eventTag || '-',
@@ -268,10 +270,6 @@
         note: item.admin_note || '',
         createdAt: item.created_at || ''
       };
-    }
-
-    function shortId(id) {
-      return id.length > 18 ? `${id.slice(0, 8)}...${id.slice(-4)}` : id;
     }
 
     function escapeHtml(value) {
@@ -352,13 +350,13 @@
       list.innerHTML = visibleSubmissions.map((submission) => {
         const originalIndex = submissions.indexOf(submission);
         const safeId = escapeHtml(submission.id);
-        const safeShortId = escapeHtml(shortId(submission.id));
+        const safeShortId = escapeHtml(caseReference(submission));
         const safeName = escapeHtml(submission.name);
         const safeEmail = escapeHtml(submission.email);
         const safeAmount = escapeHtml(submission.amount);
         const safeEventTag = escapeHtml(submission.eventTag);
         const safeReceivedAt = escapeHtml(receivedAt(submission));
-        const emailHref = `mailto:${encodeURIComponent(submission.email)}?subject=${encodeURIComponent(`Fråga om underlag ${shortId(submission.id)}`)}`;
+        const emailHref = `mailto:${encodeURIComponent(submission.email)}?subject=${encodeURIComponent(`Fråga om underlag ${caseReference(submission)}`)}`;
         return `
         <div class="submission-item status-${statusClass[submission.status] || 'new'} ${originalIndex === selectedIndex ? 'active' : ''} ${selectedSubmissionIds.has(submission.id) ? 'selected' : ''}" data-index="${originalIndex}">
           <div class="submission-meta">
@@ -435,7 +433,7 @@
     async function archiveSubmission(index) {
       if (!canManage) return;
       const submission = submissions[index];
-      if (!submission || !window.confirm(`${submission.status === 'archived' ? 'Återställ' : 'Arkivera'} underlaget ${shortId(submission.id)}?`)) return;
+      if (!submission || !window.confirm(`${submission.status === 'archived' ? 'Återställ' : 'Arkivera'} underlaget ${caseReference(submission)}?`)) return;
       try {
         if (adminApiBase && authSession) {
           const response = await fetch(`${adminApiBase}/archive`, {
