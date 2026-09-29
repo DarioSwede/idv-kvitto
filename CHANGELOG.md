@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## Ej publicerat – Korta ärendenummer
+- Ärendekort, e-postämne, arkiveringsbekräftelse och nedladdat PDF-filnamn använder permanenta ärendenummer, till exempel 2026-0042. UUID används fortsatt internt.
+- Kräver databasmigrering och uppdaterad admin-api. Äldre backend visar tidigare förkortade UUID under övergången.
+
 ## 2026.09.29.3
 - Kontonummer maskeras i kvittoöversikten. Kassör, admin och SU kan visa och dölja hela numret med en knapp.
 
