@@ -60,7 +60,7 @@ async function initEmailCopy(){
     const result=await response.json();
     window.__idvRuntimeSettings=result.settings||{};
     const adminLoginAccess=document.getElementById('adminLoginAccess');
-    if(adminLoginAccess)adminLoginAccess.hidden=result.settings?.admin_login_visible!==true;
+    if(adminLoginAccess)adminLoginAccess.hidden=result.settings?.admin_login_visible===false;
     configureTravelReimbursement(result.settings);
     checkbox.disabled=!result.email_configured;
     checkbox.checked=Boolean(result.email_configured);

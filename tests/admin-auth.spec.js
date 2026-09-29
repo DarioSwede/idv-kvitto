@@ -201,7 +201,7 @@ for(const role of ['admin','cashier'])test(`${role} sees neither mileage setting
   await page.goto('/admin-settings.html');await expect(page).toHaveURL(/admin.html$/);
 });
 test('public form offers a separate admin login without requiring login to start an application',async({page})=>{
-  await page.route('**/functions/v1/submit-receipt',route=>route.fulfill({json:{email_configured:false,settings:{admin_login_visible:true}}}));
+  await page.route('**/functions/v1/submit-receipt',route=>route.fulfill({json:{email_configured:false,settings:{}}}));
   await page.goto('/index.html');
   await expect(page.getByRole('button',{name:'Starta ansökan'})).toBeVisible();
   const loginLink=page.getByRole('link',{name:'Logga in till administrationen'});

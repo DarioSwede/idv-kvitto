@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.29.2
+- Adminlänken visas med en äldre backend som ännu inte har den nya synlighetsinställningen; endast ett uttryckligt avstängt värde döljer den.
+
 ## 2026.09.29.1
 - Länken till admininloggningen ligger längst ned på välkomstsidan, ovanför sidfoten.
 - Superuser kan visa eller dölja länken helt under Systeminställningar. Länken förblir dold tills den publika konfigurationen har hämtats.
