@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## 2026.09.29.3
+- Kontonummer maskeras i kvittoöversikten. Kassör, admin och SU kan visa och dölja hela numret med en knapp.
+
 ## 2026.09.29.2
 - Adminlänken visas med en äldre backend som ännu inte har den nya synlighetsinställningen; endast ett uttryckligt avstängt värde döljer den.
 

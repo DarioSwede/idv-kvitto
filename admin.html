@@ -95,6 +95,7 @@
 
   <script type="module">
     import {verifiedSession, loginUrl, signOut, ADMIN_API} from './js/admin-auth.js';
+    import {maskAccountNumber} from './js/bank-account.js';
     import {setupAdminSessionTimeout} from './js/admin-session-timeout.js';
     let verified;
     try { verified = await verifiedSession(); }
@@ -373,7 +374,8 @@
             <div class="submission-purpose"><span class="field-label">Ändamål</span><span>${safeEventTag}</span></div>
             <section class="submission-payment" aria-label="Konto för utbetalning">
               <div class="field-label">Konto för utbetalning</div>
-              <dl><div><dt>Clearingnummer</dt><dd>${escapeHtml(submission.clearingNumber || 'Saknas')}</dd></div><div><dt>Kontonummer</dt><dd>${escapeHtml(submission.accountNumber || 'Saknas')}</dd></div></dl>
+              <dl><div><dt>Clearingnummer</dt><dd>${escapeHtml(submission.clearingNumber || 'Saknas')}</dd></div><div><dt>Kontonummer</dt><dd class="payment-account">${escapeHtml(submission.accountNumber ? maskAccountNumber(submission.accountNumber) : 'Saknas')}</dd></div></dl>
+              ${submission.accountNumber && canManage ? `<button class="item-action toggle-account" type="button" data-index="${originalIndex}" aria-pressed="false">Visa kontonummer</button>` : ''}
               ${!submission.clearingNumber || !submission.accountNumber ? '<p class="payment-missing">Kontouppgifter saknas – kontrollera före utbetalning.</p>' : ''}
             </section>
           </div>
@@ -393,6 +395,16 @@
           selectedIndex = Number(item.dataset.index);
           updateSelection();
           loadPdfPreview(submissions[selectedIndex]);
+        });
+      });
+      list.querySelectorAll('.toggle-account').forEach((button) => {
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const reveal = button.getAttribute('aria-pressed') !== 'true';
+          const account = submissions[Number(button.dataset.index)].accountNumber;
+          button.closest('.submission-payment').querySelector('.payment-account').textContent = reveal ? account : maskAccountNumber(account);
+          button.setAttribute('aria-pressed', String(reveal));
+          button.textContent = reveal ? 'Dölj kontonummer' : 'Visa kontonummer';
         });
       });
       list.querySelectorAll('.archive-submission').forEach((button) => {
