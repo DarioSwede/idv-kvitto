@@ -382,7 +382,13 @@ for(const dark of [false,true])test(`receipt cards group payout details in ${dar
   await expect(card.locator('.submission-heading')).toHaveText('Exempelperson639,5 kr');
   if(dark)await page.locator('#themeSwitch').click();
   await expect(page.locator('#themeSwitch')).toHaveAttribute('aria-checked',String(dark));
-  await expect(card.getByRole('region',{name:'Konto för utbetalning'})).toContainText('0000000000');
+  await expect(card.locator('.payment-account')).toHaveText('•••• 0000');
+  await expect(card).not.toContainText('0000000000');
+  await card.getByRole('button',{name:'Visa kontonummer',exact:true}).click();
+  await expect(card.locator('.payment-account')).toHaveText('0000000000');
+  await expect(card.getByRole('button',{name:'Dölj kontonummer'})).toHaveAttribute('aria-pressed','true');
+  await card.getByRole('button',{name:'Dölj kontonummer'}).click();
+  await expect(card.locator('.payment-account')).toHaveText('•••• 0000');
   await expect(card.locator('.payment-missing')).toHaveCount(0);
   await expect(page.locator('.submission-item').nth(1)).toContainText('Kontouppgifter saknas');
   await expect(card.getByRole('button',{name:'Inkommen',exact:true})).toHaveAttribute('aria-pressed','true');
