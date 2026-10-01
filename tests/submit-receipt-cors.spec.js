@@ -13,8 +13,10 @@ test.describe('submit-receipt CORS', () => {
   });
 
   test('continues to allow the production origin and rejects other origins', () => {
+    expect(isAllowedOrigin('https://idv.utiskogen.se')).toBe(true);
+    expect(isAllowedOrigin('https://idv.utiskogen.se.evil.example')).toBe(false);
     expect(isAllowedOrigin('https://darioswede.github.io')).toBe(true);
     expect(isAllowedOrigin('https://example.com')).toBe(false);
-    expect(corsHeaders('https://example.com')['Access-Control-Allow-Origin']).toBe('https://darioswede.github.io');
+    expect(corsHeaders('https://example.com')['Access-Control-Allow-Origin']).toBe('https://idv.utiskogen.se');
   });
 });

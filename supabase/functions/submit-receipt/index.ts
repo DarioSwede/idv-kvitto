@@ -138,7 +138,7 @@ Deno.serve(async (req: Request) => {
     try {
       const fileRows = [], finalPdf = await PDFDocument.create(), footerFont = await finalPdf.embedFont(StandardFonts.Helvetica);
       let logo: Awaited<ReturnType<typeof finalPdf.embedPng>> | null = null;
-      try { const logoResponse = await fetch("https://darioswede.github.io/idv-kvitto/idv-mark.png"); if (logoResponse.ok) logo = await finalPdf.embedPng(new Uint8Array(await logoResponse.arrayBuffer())); } catch { /* PDF remains valid without the decorative mark. */ }
+      try { const logoResponse = await fetch("https://idv.utiskogen.se/idv-mark.png"); if (logoResponse.ok) logo = await finalPdf.embedPng(new Uint8Array(await logoResponse.arrayBuffer())); } catch { /* PDF remains valid without the decorative mark. */ }
       const summaryPage = finalPdf.addPage([595.28, 841.89]);
       const ink = rgb(0.1, 0.18, 0.16), muted = rgb(0.35, 0.42, 0.39), brand = rgb(0.18, 0.42, 0.31);
       const reference = submissionReference(senderName, submittedAt, submission.id);

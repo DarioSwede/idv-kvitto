@@ -4,7 +4,7 @@ const toBase64 = (bytes) => { let result = ""; for (let i = 0; i < bytes.length;
 const modeLabel = (mode) => mode === "travel" ? "Endast milersättning" : mode === "combined" ? "Kvitton + milersättning" : "Endast kvitton";
 const maskAccountNumber = (value) => value.length > 4 ? `•••• ${value.slice(-4)}` : "••••";
 export function adminLink(id) {
-  const url = new URL('https://darioswede.github.io/idv-kvitto/admin.html');
+  const url = new URL('https://idv.utiskogen.se/admin.html');
   if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || '')) url.searchParams.set('submission', id);
   return url.href;
 }
