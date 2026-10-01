@@ -1,6 +1,7 @@
-const productionOrigin = "https://darioswede.github.io";
+const productionOrigin = "https://idv.utiskogen.se";
 const allowedOrigins = new Set([
   productionOrigin,
+  "https://darioswede.github.io",
   "http://localhost:43921",
   "http://localhost:43922",
   "http://127.0.0.1:43921",

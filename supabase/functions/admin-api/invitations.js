@@ -1,6 +1,6 @@
 import {validEmail} from '../submit-receipt/email-config.js';
 export class InvitationError extends Error {}
-export const INVITE_REDIRECT = 'https://darioswede.github.io/idv-kvitto/admin-login.html';
+export const INVITE_REDIRECT = 'https://idv.utiskogen.se/admin-login.html';
 
 async function existingAuthUser(client, email) {
   const {data,error}=await client.auth.admin.listUsers({page:1,perPage:1000});

@@ -1,5 +1,7 @@
 # Versionshistorik
 
+- Webbplatsen flyttas till `https://idv.utiskogen.se`; mejl- och inbjudningslänkar samt tillåtna webbursprung följer med.
+
 ## Ej publicerat – Korta ärendenummer
 - Ärendekort, e-postämne, arkiveringsbekräftelse och nedladdat PDF-filnamn använder permanenta ärendenummer, till exempel 2026-0042. UUID används fortsatt internt.
 - Kräver databasmigrering och uppdaterad admin-api. Äldre backend visar tidigare förkortade UUID under övergången.
