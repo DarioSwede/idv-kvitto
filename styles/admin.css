@@ -245,6 +245,7 @@
       .pdf-preview iframe:not([hidden]) {
         width: 200%;
         height: 200%;
+        place-self: start;
         transform: scale(.5);
         transform-origin: top left;
       }
