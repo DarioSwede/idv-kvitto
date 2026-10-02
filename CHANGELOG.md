@@ -1,5 +1,8 @@
 # Versionshistorik
 
+## Ej publicerat – Mobil PDF-förhandsvisning
+- PDF-underlaget skalas ned i mobilens adminvy så att hela sidbredden syns utan beskärning. PDF-filen, utskrift och nedladdning behåller originalformatet.
+
 ## 2026.10.02.1
 - Fordonsval styr milersättningen och följer med till kontrollsteg, administration, e-post och PDF. Servern validerar beloppet utifrån fordonet.
 - Förtydligat att kontonummer anges utan clearingnummer.
