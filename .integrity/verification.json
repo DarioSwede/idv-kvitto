@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "algorithm": "sha256",
-  "generated_at_utc": "2026-10-02T16:28:57.761137Z",
+  "generated_at_utc": "2026-10-02T16:36:07.961841Z",
   "tracked_file_count": 144,
-  "aggregate_sha256": "844a41738dd0dae482018e62779e69d144f42431fc501d8da1c7a9810cafe361",
+  "aggregate_sha256": "aa498ea3ac102473a64b64c2c51f944ed2ac99ccd1e2e9d68a307032e0c94790",
   "manifest": ".integrity/source-manifest.sha256",
   "excludes": [
     ".integrity/**"
