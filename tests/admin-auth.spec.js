@@ -77,6 +77,30 @@ test('staff actions stack without horizontal overflow on narrow screens',async({
   expect(await actions.evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length)).toBe(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
 });
+test('mobile PDF preview fits the complete page inside the visible frame',async({page})=>{
+  await page.setViewportSize({width:390,height:844});await api(page);
+  await page.goto('/admin.html');await login(page);
+  await page.locator('.submission-item').first().click();
+  const frame=page.locator('#pdfFrame');await expect(frame).toBeVisible();
+  const geometry=await frame.evaluate(element=>{
+    const frameRect=element.getBoundingClientRect();
+    const previewRect=element.parentElement.getBoundingClientRect();
+    return{
+      internalWidth:element.offsetWidth,
+      previewWidth:element.parentElement.clientWidth,
+      visibleLeft:frameRect.left,
+      visibleRight:frameRect.right,
+      previewLeft:previewRect.left,
+      previewRight:previewRect.right,
+      transform:getComputedStyle(element).transform
+    };
+  });
+  expect(geometry.internalWidth).toBeGreaterThanOrEqual(geometry.previewWidth*1.9);
+  expect(geometry.visibleLeft).toBeGreaterThanOrEqual(geometry.previewLeft-1);
+  expect(geometry.visibleRight).toBeLessThanOrEqual(geometry.previewRight+1);
+  expect(geometry.transform).toContain('0.5');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
+});
 test('external returnTo cannot redirect login off site',async({page})=>{
   await api(page);await page.goto('/admin-login.html?returnTo=https://evil.example/');await login(page);
   await expect(page).toHaveURL(/127.0.0.1:43921\/admin.html$/);
