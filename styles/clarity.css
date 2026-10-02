@@ -188,3 +188,8 @@ input:focus,textarea:focus{border-color:var(--action);box-shadow:0 0 0 3px rgba(
   .seg-index{width:28px;height:28px}
   .seg-label{letter-spacing:-.01em}
 }
+
+.travel-rate-guide{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:.9rem;line-height:1.5}
+.travel-rate-guide p{margin:0 0 10px}.travel-rate-guide ul{margin:0 0 10px;padding-left:22px}.travel-rate-guide li+li{margin-top:4px}.travel-rate-guide .travel-rate-note{margin-bottom:0;color:var(--muted);font-size:.9em}
+
+.travel-vehicle-label{display:block;font-weight:700;margin-bottom:8px}#travelVehicle{display:block;width:100%;min-width:0;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:inherit}#travelVehicleHelp{display:block;margin:8px 0 16px;color:var(--muted)}

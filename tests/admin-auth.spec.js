@@ -13,7 +13,7 @@ async function api(page,{role='superuser',meStatus=200}={}) {
       {id:'second',email:'second@example.org',created_at:'2026-09-24T11:00:00Z',status:'done',is_test:true}
     ]}});
     if(url.pathname.endsWith('/staff'))return route.fulfill({json:{users:[{user_id:'test-user',email:'test@example.org',role:'superuser',is_current:true}]}});
-    if(url.pathname.endsWith('/submissions'))return route.fulfill({json:{submissions:[{id,sender_name:'Testperson',sender_email:'example@example.org',status:'new',is_test:true}]}});
+    if(url.pathname.endsWith('/submissions'))return route.fulfill({json:{submissions:[{id,sender_name:'Testperson',sender_email:'example@example.org',travel_description:'Testresa · Förmånsbil (helt eldriven) · 9,50 kr/mil',status:'new',is_test:true}]}});
     if(url.pathname.endsWith('/pdf'))return route.fulfill({json:{url:'about:blank'}});
     if(url.pathname.endsWith('/logout'))return route.fulfill({status:204});
     return route.abort();
@@ -33,6 +33,7 @@ test('admin always starts at login and preserves the requested case after server
   await expect(page).toHaveURL(new RegExp(`admin.html\\?submission=${id}$`));
   await expect(page.locator('#connectionStatus')).toContainText('Ansluten som');
   await expect(page.locator('#submissionList')).toContainText('[TEST] Testperson');
+  await expect(page.locator('#submissionList')).toContainText('Förmånsbil (helt eldriven) · 9,50 kr/mil');
   await expect(page.locator('#mileagePanel')).toHaveCount(0);
   expect(await page.evaluate(()=>localStorage.getItem('idv-admin-state'))).toBeNull();
 });

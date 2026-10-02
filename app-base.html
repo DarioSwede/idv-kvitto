@@ -128,10 +128,10 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <p>Ange kontot som ersättningen ska betalas till. Uppgifterna visas maskerade i nästa steg.</p>
 <div class="bank-account-grid">
 <label>Clearingnummer<input id="clearingNumber" inputmode="numeric" autocomplete="off" maxlength="4" aria-describedby="clearingHelp bankAccountStatus" placeholder="4 siffror *"></label>
-<label>Kontonummer<input id="accountNumber" inputmode="numeric" autocomplete="off" aria-describedby="accountHelp bankAccountStatus" placeholder="7–12 siffror *"></label>
+<label>Kontonummer *<input id="accountNumber" inputmode="numeric" autocomplete="off" aria-describedby="accountHelp bankAccountStatus" placeholder="7–12 siffror *"></label>
 </div>
 <small id="clearingHelp">Swedbank: ange de första fyra siffrorna och utelämna eventuell femte kontrollsiffra.</small>
-<small id="accountHelp">Skriv bara siffror och ta inte med clearingnumret igen.</small>
+<small id="accountHelp">* Skriv bara siffror och ta inte med clearingnumret igen.</small>
 <p class="bank-account-status" id="bankAccountStatus" aria-live="polite"></p>
 </fieldset>
 <input id="event" aria-label="Vilket tillfälle gäller det?" placeholder="Tillfälle (valfritt), t.ex. Fyradagarsmarschen 2026">
@@ -139,11 +139,30 @@ canvas{display:block;width:100%;height:auto;touch-action:none}
 <section class="travel-card">
 <input id="travelEnabled" type="checkbox" hidden aria-controls="travelFields" aria-expanded="false">
 <div id="travelFields" hidden>
+<label class="travel-vehicle-label" for="travelVehicle">Vilket fordon reste du med? *</label>
+<select id="travelVehicle" aria-describedby="travelVehicleHelp">
+<option value="">Välj fordon</option>
+<option value="private_car">Privat bil — 25 kr/mil</option>
+<option value="company_car">Förmånsbil, bensin/diesel/etanol/hybrid — 12 kr/mil</option>
+<option value="company_electric">Förmånsbil, helt eldriven — 9,50 kr/mil</option>
+<option value="motorcycle">Motorcykel eller mopedbil — 12 kr/mil</option>
+</select>
+<small id="travelVehicleHelp">Fordonet avgör milersättningen. Ange sedan antal kilometer och godkänn beloppet.</small>
 <div class="travel-km-row">
 <label id="travelKmLabel" for="travelKm"><span id="travelKmLabelText">Ange antal kilometer</span></label>
 <div class="travel-km-input"><input id="travelKm" type="number" inputmode="decimal" min="0.01" max="10000" step="0.01" aria-label="Antal kilometer" placeholder="Ange antal kilometer"><span aria-hidden="true">kilometer</span></div>
 <button class="travel-calculation" id="travelCalculation" type="button" disabled aria-pressed="false">Milersättning: 25 kr per mil.</button>
 </div>
+<aside class="travel-rate-guide" aria-label="Ersättningsnivåer för olika fordon">
+<p><strong>Privat bil</strong> (egen bil, inklusive el- och hybridbil): <span id="privateCarRate">25</span> kr/mil</p>
+<p><strong>Förmånsbil (tjänstebil):</strong></p>
+<ul>
+<li>Bensin, diesel, etanol och hybrid: 12 kr/mil</li>
+<li>Helt eldriven bil: 9,50 kr/mil</li>
+</ul>
+<p><strong>Motorcykel och mopedbil:</strong> 12 kr/mil</p>
+
+</aside>
 <p class="travel-error" id="travelError" aria-live="polite"></p>
 <input id="travelApprove" type="checkbox" hidden>
 </div>

@@ -47,6 +47,7 @@ test('kombinationsflödet validerar kvitto och milersättning',async({page})=>{
   await page.getByLabel(/Kvitton för utlägg/).check();
   await page.getByLabel(/^Milersättning/).check();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Resa till samlingen');
+  await page.getByLabel('Vilket fordon reste du med?').selectOption('private_car');
   await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('34');
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
   await expect(page.locator('#travelCalculation')).toContainText('Klicka här för att godkänna:');
@@ -130,6 +131,7 @@ test('endast milersättning går igenom utan kvittofil även efter uppladdat kvi
   await expect(page.locator('#dropzone')).toBeHidden();
   await expect(page.locator('.missing-receipt')).toBeHidden();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Tur och retur till samlingen');
+  await page.getByLabel('Vilket fordon reste du med?').selectOption('private_car');
   await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('40');
   await expect(page.getByRole('button',{name:'Nästa: kontrollera och skicka'})).toBeDisabled();
   await page.locator('#travelCalculation').click();
@@ -172,6 +174,7 @@ test('avstängd milersättning nollställer reseuppgifter',async({page})=>{
   await fillProfileAndContinue(page);
   await page.getByLabel(/^Milersättning/).check();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
+  await page.getByLabel('Vilket fordon reste du med?').selectOption('private_car');
   await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('34');
   await page.locator('#travelCalculation').click();
   await page.getByLabel(/^Milersättning/).uncheck();
@@ -270,6 +273,7 @@ test('testläget märker hela kombinationsflödet och förklarar testkopian',asy
   await page.getByLabel(/Kvitton för utlägg/).check();
   await page.getByLabel(/^Milersättning/).check();
   await page.getByLabel('Tillfälle eller kort beskrivning av resan').fill('Testresa');
+  await page.getByLabel('Vilket fordon reste du med?').selectOption('private_car');
   await page.getByRole('spinbutton',{name:'Antal kilometer'}).fill('10');
   await addTestReceipt(page);
   await page.locator('#travelCalculation').click();

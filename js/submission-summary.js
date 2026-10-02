@@ -30,6 +30,7 @@ export function renderSubmissionSummary({container,documentRef=document,submissi
   if(bank?.valid)appendSummaryRow(container,documentRef,'Konto för utbetalning',`Clearing ${bank.clearingNumber} · ${maskAccountNumber(bank.accountNumber)}`,'bank-summary');
   appendSummaryRow(container,documentRef,'Summa kvitton',totals.hasReceiptAmounts?formatSek(totals.receiptTotal):'—','receipt-total');
   if(travel.enabled){
+    appendSummaryRow(container,documentRef,'Fordon och ersättning',travel.vehicleLabel||'—','travel-summary');
     appendSummaryRow(container,documentRef,'Resa',travel.description||'—','travel-summary');
     appendSummaryRow(container,documentRef,'Kilometer och beräkning',travel.calculation||'—','travel-summary');
     appendSummaryRow(container,documentRef,'Godkänd milersättning',formatSek(travel.amount),'travel-summary');
