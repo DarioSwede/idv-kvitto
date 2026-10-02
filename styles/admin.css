@@ -235,6 +235,21 @@
       .detail-panel { min-height: auto; }
     }
 
+    @media (max-width: 600px) {
+      /*
+       * Mobile Safari renders an embedded PDF at its intrinsic page width and
+       * clips it to the iframe viewport. Give the PDF viewer a wider internal
+       * viewport, then scale the complete viewer back to the preview width.
+       * The PDF itself is untouched, so printing and downloads retain A4 size.
+       */
+      .pdf-preview iframe:not([hidden]) {
+        width: 200%;
+        height: 200%;
+        transform: scale(.5);
+        transform-origin: top left;
+      }
+    }
+
     .nav-btn { text-decoration:none; display:inline-flex; align-items:center; }
 
     .audit-legend { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px; }
