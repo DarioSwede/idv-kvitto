@@ -269,6 +269,7 @@
         status: item.archived_at ? 'archived' : (item.status || 'new'),
         previousStatus: item.status || 'new',
         note: item.admin_note || '',
+        travelDescription: item.travel_description || '',
         createdAt: item.created_at || ''
       };
     }
@@ -371,6 +372,7 @@
             <div class="submission-heading"><strong>${safeName}</strong><strong class="submission-amount">${safeAmount}</strong></div>
             <a class="submission-email" href="${emailHref}" aria-label="E-posta ${safeEmail}">${safeEmail}</a>
             <div class="submission-purpose"><span class="field-label">Ändamål</span><span>${safeEventTag}</span></div>
+            ${submission.travelDescription ? `<div class="submission-purpose"><span class="field-label">Resa och milersättning</span><span>${escapeHtml(submission.travelDescription)}</span></div>` : ''}
             <section class="submission-payment" aria-label="Konto för utbetalning">
               <div class="field-label">Konto för utbetalning</div>
               <dl><div><dt>Clearingnummer</dt><dd>${escapeHtml(submission.clearingNumber || 'Saknas')}</dd></div><div><dt>Kontonummer</dt><dd class="payment-account">${escapeHtml(submission.accountNumber ? maskAccountNumber(submission.accountNumber) : 'Saknas')}</dd></div></dl>

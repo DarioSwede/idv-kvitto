@@ -14,6 +14,7 @@ export async function buildSubmissionFormData({submissionMode='receipts',name,em
   formData.append('other_info',String(otherInfo||'').trim());
   formData.append('amount_total',receiptTotal+travelAmount||'');
   formData.append('travel_enabled',needsTravel&&travel.enabled?'true':'false');
+  formData.append('travel_vehicle',needsTravel?(travel.vehicleType||''):'');
   formData.append('travel_km',needsTravel?(travel.km??''):'');
   formData.append('travel_description',needsTravel?(travel.description||String(eventTag||'').trim()):'');
   formData.append('travel_amount',needsTravel?(travel.amount||''):'');

@@ -1,5 +1,9 @@
 # Versionshistorik
 
+## 2026.10.02.1
+- Fordonsval styr milersättningen och följer med till kontrollsteg, administration, e-post och PDF. Servern validerar beloppet utifrån fordonet.
+- Förtydligat att kontonummer anges utan clearingnummer.
+
 - Webbplatsen flyttas till `https://idv.utiskogen.se`; mejl- och inbjudningslänkar samt tillåtna webbursprung följer med.
 
 ## Ej publicerat – Korta ärendenummer
